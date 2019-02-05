@@ -93,7 +93,7 @@ class Configuration extends AbstractConfiguration
      */
     public function appName($default = '')
     {
-        $appName = $this->stringValue('trace.app.name');
+        $appName = $this->stringValue('service.name');
         if ($appName) {
             return $appName;
         }
@@ -102,5 +102,54 @@ class Configuration extends AbstractConfiguration
             return trim($appName);
         }
         return $default;
+    }
+
+    public function getEndpointURL()
+    {
+        $endpoint = $this->stringValue("endpoint.url", '');
+        if ($endpoint === "") {
+            $parts = [
+                "scheme" => $this->getEndpointHTTPS() === true ? "https" : "http",
+                "host" => $this->getEndpointHost(),
+                "port" => $this->getEndpointPort(),
+                "path" => $this->getEndpointPath(),
+            ];
+        } else {
+            $parts = parse_url($endpoint);
+        }
+
+        $portPart = "";
+        if (isset($parts['port']) &&
+            (($parts['scheme'] === "https" && $parts['port'] !== "443") ||
+                ($parts['scheme'] === "http" && $parts['port'] !== "80"))) {
+            $portPart = ":" . $parts['port'];
+        }
+
+        return "${parts['scheme']}://${parts['host']}${portPart}${parts['path']}";
+    }
+
+    private function getEndpointHost()
+    {
+        return $this->stringValue("endpoint.host", 'localhost');
+    }
+
+    private function getEndpointPort()
+    {
+        return $this->stringValue("endpoint.port", '9080');
+    }
+
+    private function getEndpointPath()
+    {
+        return $this->stringValue("endpoint.path", '/v1/trace');
+    }
+
+    private function getEndpointHTTPS()
+    {
+        return $this->boolValue("endpoint.https", false);
+    }
+
+    public function getAccessToken()
+    {
+        return $this->stringValue("access.token");
     }
 }

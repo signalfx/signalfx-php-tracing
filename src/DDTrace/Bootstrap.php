@@ -2,10 +2,10 @@
 
 namespace DDTrace;
 
-use DDTrace\Encoders\Json;
+use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Http\Request;
 use DDTrace\Integrations\IntegrationsLoader;
-use DDTrace\Transport\Http;
+use DDTrace\Transport\HttpSignalFx;
 
 /**
  * Bootstrap the the datadog tracer.
@@ -53,7 +53,7 @@ final class Bootstrap
     public static function resetTracer()
     {
         GlobalTracer::set(
-            new Tracer(new Http(new Json()))
+            new Tracer(new HttpSignalFx(new JsonZipkinV2()))
         );
     }
 

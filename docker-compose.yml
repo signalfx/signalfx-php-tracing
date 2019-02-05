@@ -14,6 +14,7 @@ x-aliases:
       tmpfs: [ '/home/circleci/app/tmp:uid=3434,gid=3434,exec' ]
       depends_on:
         - ddagent_integration
+        - signalfx_agent_integration
         - request_replayer
         - elasticsearch2_integration
         - httpbin_integration
@@ -23,7 +24,8 @@ x-aliases:
         - memcached_integration
       environment:
         - REDIS_HOSTNAME=redis_integration
-        - DDAGENT_HOSTNAME=ddagent_integration
+        - DDAGENT_HOSTNAME=agent_integration
+        - AGENT_HOSTNAME=signalfx_agent_integration
         - APP_ENV=dd_testing
       cap_add:
         - SYS_PTRACE
@@ -101,6 +103,18 @@ services:
       - DD_API_KEY=invalid_key_but_its_ok
     ports:
       - "8126:8126"
+
+  signalfx_agent_integration:
+    image: quay.io/signalfx/signalfx-agent:4.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-X", "HEAD", "http://localhost:8095"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
+    volumes:
+      - ./dockerfiles/agent-test.yaml:/etc/signalfx/agent.yaml
+    ports:
+      - "9080:9080"
 
   request_replayer:
     image: php:7.2

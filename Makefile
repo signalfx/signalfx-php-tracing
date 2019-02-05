@@ -4,7 +4,7 @@ SO_FILE := $(BUILD_DIR)/modules/ddtrace.so
 WALL_FLAGS := -Wall -Wextra
 CFLAGS := -O2 $(WALL_FLAGS)
 VERSION:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2)
-VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2 | cut -d- -f1)
+VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2 | cut -d- -f1,2)
 
 INI_FILE := /usr/local/etc/php/conf.d/ddtrace.ini
 
@@ -61,10 +61,10 @@ sudo:
 debug:
 	$(eval CFLAGS="-g")
 
-EXT_DIR:=/opt/datadog-php
-PACKAGE_NAME:=datadog-php-tracer
-FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m dev@datadoghq.com --license "BSD 3-Clause License" --version $(VERSION) \
-	--provides $(PACKAGE_NAME) --vendor DataDog  --url "https://docs.datadoghq.com/tracing/setup/php/" --no-depends
+EXT_DIR:=/opt/signalfx-php
+PACKAGE_NAME:=signalfx-php-tracer
+FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m support@signalfx.com --license "BSD 3-Clause License" --version $(VERSION) \
+	--provides $(PACKAGE_NAME) --vendor DataDog  --url "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" --no-depends
 FPM_DIR_OPTS=--directories $(EXT_DIR)/etc --config-files $(EXT_DIR)/etc -s dir
 FPM_FILES=extensions/=$(EXT_DIR)/extensions \
 	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/ddtrace.ini.example=$(EXT_DIR)/etc/ \

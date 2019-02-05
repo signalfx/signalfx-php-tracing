@@ -9,11 +9,28 @@ final class ConfigurationTest extends BaseTestCase
     protected function setUp()
     {
         parent::setUp();
-        putenv('DD_TRACE_ENABLED');
-        putenv('DD_DISTRIBUTED_TRACING');
-        putenv('DD_PRIORITY_SAMPLING');
-        putenv('DD_INTEGRATIONS_DISABLED');
-        putenv('DD_TRACE_DEBUG');
+        $this->cleanEnv();
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+        $this->cleanEnv();
+    }
+
+    private function cleanEnv()
+    {
+        putenv('SIGNALFX_TRACE_ENABLED');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
+        putenv('SIGNALFX_PRIORITY_SAMPLING');
+        putenv('SIGNALFX_INTEGRATIONS_DISABLED');
+        putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('SIGNALFX_SERVICE_NAME');
+        putenv('SIGNALFX_ENDPOINT_URL');
+        putenv('SIGNALFX_ENDPOINT_HOST');
+        putenv('SIGNALFX_ENDPOINT_PORT');
+        putenv('SIGNALFX_ENDPOINT_PATH');
+        putenv('SIGNALFX_ENDPOINT_HTTPS');
     }
 
     public function testTracerEnabledByDefault()
@@ -23,7 +40,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testTracerDisabled()
     {
-        putenv('DD_TRACE_ENABLED=false');
+        putenv('SIGNALFX_TRACE_ENABLED=false');
         $this->assertFalse(Configuration::get()->isEnabled());
     }
 
@@ -34,7 +51,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testDebugModeCanBeEnabled()
     {
-        putenv('DD_TRACE_DEBUG=true');
+        putenv('SIGNALFX_TRACE_DEBUG=true');
         $this->assertTrue(Configuration::get()->isDebugModeEnabled());
     }
 
@@ -45,7 +62,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testDistributedTracingDisabled()
     {
-        putenv('DD_DISTRIBUTED_TRACING=false');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING=false');
         $this->assertFalse(Configuration::get()->isDistributedTracingEnabled());
     }
 
@@ -56,7 +73,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testPrioritySamplingDisabled()
     {
-        putenv('DD_PRIORITY_SAMPLING=false');
+        putenv('SIGNALFX_PRIORITY_SAMPLING=false');
         $this->assertFalse(Configuration::get()->isPrioritySamplingEnabled());
     }
 
@@ -67,7 +84,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testIntegrationsDisabled()
     {
-        putenv('DD_INTEGRATIONS_DISABLED=one,two');
+        putenv('SIGNALFX_INTEGRATIONS_DISABLED=one,two');
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('one'));
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('two'));
         $this->assertTrue(Configuration::get()->isIntegrationEnabled('three'));
@@ -75,27 +92,36 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testIntegrationsDisabledIfGlobalDisabled()
     {
-        putenv('DD_INTEGRATIONS_DISABLED=one');
-        putenv('DD_TRACE_ENABLED=false');
+        putenv('SIGNALFX_INTEGRATIONS_DISABLED=one');
+        putenv('SIGNALFX_TRACE_ENABLED=false');
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('one'));
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('two'));
     }
 
     public function testAppNameFallbackPriorities()
     {
-        putenv('ddtrace_app_name');
-        putenv('DD_TRACE_APP_NAME');
-        $this->assertSame(
-            'fallback_name',
-            Configuration::get()->appName('fallback_name')
-        );
-
-        putenv('ddtrace_app_name=foo_app');
-        $this->assertSame('foo_app', Configuration::get()->appName());
-
-        Configuration::clear();
-        putenv('ddtrace_app_name=foo_app');
-        putenv('DD_TRACE_APP_NAME=bar_app');
+        putenv('SIGNALFX_SERVICE_NAME=bar_app');
         $this->assertSame('bar_app', Configuration::get()->appName());
+    }
+
+    public function testEndpointURLTakesPrecedence()
+    {
+        putenv('SIGNALFX_ENDPOINT_URL=https://ingest.signalfx.com/asdf');
+        $this->assertSame("https://ingest.signalfx.com/asdf", Configuration::get()->getEndpointURL());
+    }
+
+    public function testEndpointURLMadeFromDefaultParts()
+    {
+        putenv('SIGNALFX_ENDPOINT_URL');
+        $this->assertSame("http://localhost:9080/v1/trace", Configuration::get()->getEndpointURL());
+    }
+
+    public function testEndpointURLMadeFromOverriddenParts()
+    {
+        putenv('SIGNALFX_ENDPOINT_HTTPS=true');
+        putenv('SIGNALFX_ENDPOINT_HOST=example.com');
+        putenv('SIGNALFX_ENDPOINT_PORT=500');
+        putenv('SIGNALFX_ENDPOINT_PATH=/asdf');
+        $this->assertSame("https://example.com:500/asdf", Configuration::get()->getEndpointURL());
     }
 }

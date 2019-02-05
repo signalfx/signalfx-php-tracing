@@ -2,12 +2,13 @@
 
 namespace DDTrace\Tests\Common;
 
-use DDTrace\Encoders\Json;
+use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Span;
 use DDTrace\SpanContext;
+use DDTrace\Tag;
 use DDTrace\Tests\DebugTransport;
 use DDTrace\Tracer;
-use DDTrace\Transport\Http;
+use DDTrace\Transport\HttpSignalFx;
 use DDTrace\GlobalTracer;
 
 
@@ -44,7 +45,7 @@ trait TracerTestTrait
         // Clearing existing dumped file
         $this->resetRequestDumper();
 
-        $transport = new Http(new Json(), ['endpoint' => self::$agentRequestDumperUrl]);
+        $transport = new HttpSignalFx(new JsonZipkinV2(), ['endpoint' => self::$agentRequestDumperUrl]);
         $tracer = $tracer ?: new Tracer($transport);
         GlobalTracer::set($tracer);
 
@@ -98,10 +99,10 @@ trait TracerTestTrait
         $curl =  curl_init(self::$agentRequestDumperUrl . '/replay');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($curl);
+
         if (!$response) {
             return [];
         }
-
         // For now we only support asserting traces against one dump at a time.
         $loaded = json_decode($response, true);
 
@@ -109,24 +110,34 @@ trait TracerTestTrait
             return [];
         }
 
-        $rawTraces = json_decode($loaded['body'], true);
+        $rawTraces = [json_decode($loaded['body'], true)];
         $traces = [];
 
         foreach ($rawTraces as $spansInTrace) {
             $spans = [];
             foreach ($spansInTrace as $rawSpan) {
                 $spanContext = new SpanContext(
-                    $rawSpan['trace_id'],
-                    $rawSpan['span_id'],
-                    isset($rawSpan['parent_id']) ? $rawSpan['parent_id'] : null
+                    $rawSpan['traceId'],
+                    $rawSpan['id'],
+                    isset($rawSpan['parentId']) ? $rawSpan['parentId'] : null
                 );
                 $span = new Span(
                     $rawSpan['name'],
                     $spanContext,
-                    $rawSpan['service'],
-                    $rawSpan['resource'],
-                    $rawSpan['start']
+                    $rawSpan['tags']['component'],
+                    $rawSpan['tags'][Tag::RESOURCE_NAME],
+                    $rawSpan['timestamp']
                 );
+                unset($rawSpan['tags']['component']);
+                unset($rawSpan['tags'][Tag::RESOURCE_NAME]);
+                if (isset($rawSpan['tags'][Tag::SPAN_TYPE])) {
+                    $rawSpan['type'] = $rawSpan['tags'][Tag::SPAN_TYPE];
+                    unset($rawSpan['tags'][Tag::SPAN_TYPE]);
+                }
+                if (isset($rawSpan['tags']['error'])) {
+                    $rawSpan['error'] = $rawSpan['tags']['error'] === "true";
+                    unset($rawSpan['tags'][Tag::ERROR]);
+                }
 
                 // We want to use reflection to set properties so that we do not fire
                 // potentials changes in setters.
@@ -139,7 +150,7 @@ trait TracerTestTrait
                 });
                 $this->setRawPropertyFromArray($span, $rawSpan, 'type');
                 $this->setRawPropertyFromArray($span, $rawSpan, 'duration');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'tags', 'meta');
+                $this->setRawPropertyFromArray($span, $rawSpan, 'tags');
 
                 $spans[] = $span;
             }

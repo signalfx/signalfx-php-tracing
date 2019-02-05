@@ -1,0 +1,6 @@
+ingestUrl: http://localhost:4444  # Invalid
+apiUrl: http://localhost:4444     # Invalid
+
+monitors:
+  - type: trace-forwarder
+    listenAddress: 0.0.0.0:9080

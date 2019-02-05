@@ -15,6 +15,11 @@ aliases:
       - DD_BIND_HOST=0.0.0.0
       - DD_API_KEY=invalid_key_but_this_is_fine
 
+  - &IMAGE_DOCKER_SIGNALFX_AGENT
+    image: quay.io/signalfx/signalfx-agent:4.0.0
+    command: |
+      bash -c 'echo {\"ingestUrl\": \"http://invalid\", \"monitors\": [{\"type\": \"trace-forwarder\", \"listenAddress\": \"0.0.0.0:9080\"}]} > /etc/signalfx/agent.yaml; signalfx-agent'
+
   - &IMAGE_DOCKER_REDIS
     image: circleci/redis:4.0-alpine
     name: redis_integration
@@ -102,7 +107,7 @@ aliases:
   - &STEP_WAIT_AGENT
     run:
       name: Waiting for Dockerized agent
-      command: dockerize -wait tcp://127.0.0.1:8126 -timeout 1m
+      command: dockerize -wait tcp://127.0.0.1:8126 -timeout 1m && dockerize -wait tcp://127.0.0.1:9080 -timeout 1m
 
   - &STEP_WAIT_MYSQL
     run:
@@ -213,7 +218,7 @@ jobs:
           command: mkdir -p test-results/phpcs
       - run:
           name: Running eclint
-          command: node_modules/.bin/eclint check '**/*' '!config.*' '!tmp/**/*' '!vendor/**/*' '!src/ext/.libs/*' '!LICENSE' '!phpstan.neon' '!tests/Frameworks/*/Version_*/**' '!tests/dockerfiles/**' || touch .failure
+          command: node_modules/.bin/eclint check '**/*' '!config.*' '!tmp/**/*' '!vendor/**/*' '!src/ext/.libs/*' '!LICENSE' '!phpstan.neon' '!tests/Frameworks/*/Version_*/**' '!tests/dockerfiles/**' '!dockerfiles/**' || touch .failure
       - run:
           name: Running phpcs
           command: composer lint -- --report=junit | tee test-results/phpcs/results.xml || touch .failure
@@ -263,6 +268,7 @@ jobs:
     docker:
       - image: datadog/docker-library:ddtrace_php_5_4
       - <<: *IMAGE_DOCKER_DD_AGENT
+      - <<: *IMAGE_DOCKER_SIGNALFX_AGENT
       - <<: *IMAGE_DOCKER_ELASTICSEARCH2
       - <<: *IMAGE_DOCKER_HTTPBIN
       - <<: *IMAGE_DOCKER_REDIS
@@ -298,6 +304,7 @@ jobs:
     docker:
       - image: datadog/docker-library:ddtrace_php_5_6
       - <<: *IMAGE_DOCKER_DD_AGENT
+      - <<: *IMAGE_DOCKER_SIGNALFX_AGENT
       - <<: *IMAGE_DOCKER_ELASTICSEARCH2
       - <<: *IMAGE_DOCKER_HTTPBIN
       - <<: *IMAGE_DOCKER_REDIS
@@ -333,6 +340,7 @@ jobs:
     docker:
       - image: datadog/docker-library:ddtrace_php_7_0
       - <<: *IMAGE_DOCKER_DD_AGENT
+      - <<: *IMAGE_DOCKER_SIGNALFX_AGENT
       - <<: *IMAGE_DOCKER_ELASTICSEARCH2
       - <<: *IMAGE_DOCKER_HTTPBIN
       - <<: *IMAGE_DOCKER_REDIS
@@ -368,6 +376,7 @@ jobs:
     docker:
       - image: datadog/docker-library:ddtrace_php_7_1
       - <<: *IMAGE_DOCKER_DD_AGENT
+      - <<: *IMAGE_DOCKER_SIGNALFX_AGENT
       - <<: *IMAGE_DOCKER_ELASTICSEARCH2
       - <<: *IMAGE_DOCKER_HTTPBIN
       - <<: *IMAGE_DOCKER_REDIS
@@ -403,6 +412,7 @@ jobs:
     docker:
       - image: datadog/docker-library:ddtrace_php_7_2
       - <<: *IMAGE_DOCKER_DD_AGENT
+      - <<: *IMAGE_DOCKER_SIGNALFX_AGENT
       - <<: *IMAGE_DOCKER_ELASTICSEARCH2
       - <<: *IMAGE_DOCKER_HTTPBIN
       - <<: *IMAGE_DOCKER_REDIS

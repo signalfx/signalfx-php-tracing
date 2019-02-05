@@ -11,6 +11,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tracer;
 use DDTrace\Util\ArrayKVStore;
 use DDTrace\GlobalTracer;
+use DDTrace\Util\HexConversion;
 use DDTrace\Util\Versions;
 
 final class CurlIntegrationTest extends IntegrationTestCase
@@ -202,10 +203,15 @@ final class CurlIntegrationTest extends IntegrationTestCase
         });
 
         // trace is: some_operation
-        $this->assertSame($traces[0][0]->getContext()->getSpanId(), $found['headers']['X-Datadog-Trace-Id']);
+        $this->assertSame(
+            HexConversion::idToHex($traces[0][0]->getContext()->getSpanId()),
+            $found['headers']['X-B3-Traceid']
+        );
         // parent is: curl_exec
-        $this->assertSame($traces[0][1]->getContext()->getSpanId(), $found['headers']['X-Datadog-Parent-Id']);
-        $this->assertSame('1', $found['headers']['X-Datadog-Sampling-Priority']);
+        $this->assertSame(
+            HexConversion::idToHex($traces[0][1]->getContext()->getSpanId()),
+            $found['headers']['X-B3-Spanid']
+        );
         // existing headers are honored
         $this->assertSame('preserved_value', $found['headers']['Honored']);
     }
@@ -232,8 +238,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
             $span->finish();
         });
 
-        $this->assertArrayNotHasKey('X-Datadog-Trace-Id', $found['headers']);
-        $this->assertArrayNotHasKey('X-Datadog-Parent-Id', $found['headers']);
-        $this->assertArrayNotHasKey('X-Datadog-Sampling-Priority', $found['headers']);
+        $this->assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
+        $this->assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
     }
 }

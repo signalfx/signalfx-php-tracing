@@ -1,9 +1,10 @@
 {
-    "name": "datadog/dd-trace",
+    "name": "signalfx/signalfx-tracing",
     "type": "library",
     "description": "PHP APM Client",
     "keywords": [
         "datadog",
+        "signalfx",
         "php",
         "tracing"
     ],
@@ -16,6 +17,11 @@
         {
             "name": "DataDog",
             "email": "dev@datadoghq.com",
+            "role": "Developer"
+        },
+        {
+            "name": "SignalFx",
+            "email": "info@signalfx.com",
             "role": "Developer"
         }
     ],

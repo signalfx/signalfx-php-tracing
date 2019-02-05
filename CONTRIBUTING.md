@@ -1,6 +1,6 @@
-# Contributing to dd-trace-php
+# Contributing to signalfx-php-tracing
 
-As an open-source project we welcome contributions of many forms, but due to the experimental pre-beta nature of this repository, you should [reach out to us](https://github.com/DataDog/dd-trace-php/issues) before starting work on any major code changes. This will ensure we avoid duplicating work, or that your code can't be merged due to a rapidly changing base.
+As an open-source project we welcome contributions of many forms, but due to the experimental pre-beta nature of this repository, you should [reach out to us](https://github.com/signalfx/signalfx-php-tracing/issues) before starting work on any major code changes. This will ensure we avoid duplicating work, or that your code can't be merged due to a rapidly changing base.
 
 ## Getting set up with Docker
 
@@ -145,7 +145,7 @@ $ composer static-analyze
 
 ## Sending a pull request (PR)
 
-There are a number of checks that are run automatically with [CircleCI](https://circleci.com/gh/DataDog/dd-trace-php/tree/master) when a PR is submitted. To ensure your PHP code changes pass the CircleCI checks, make sure to run all the same checks before submitting a PR.
+There are a number of checks that are run automatically with [CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master) when a PR is submitted. To ensure your PHP code changes pass the CircleCI checks, make sure to run all the same checks before submitting a PR.
 
 ```bash
 $ composer test && composer lint && composer static-analyze

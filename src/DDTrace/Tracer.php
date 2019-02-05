@@ -2,14 +2,14 @@
 
 namespace DDTrace;
 
-use DDTrace\Encoders\Json;
+use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Log\LoggingTrait;
-use DDTrace\Propagators\CurlHeadersMap;
+use DDTrace\Propagators\B3CurlHeadersMap;
+use DDTrace\Propagators\B3TextMap;
 use DDTrace\Propagators\Noop as NoopPropagator;
-use DDTrace\Propagators\TextMap;
 use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Sampling\Sampler;
-use DDTrace\Transport\Http;
+use DDTrace\Transport\HttpSignalFx;
 use DDTrace\Transport\Noop as NoopTransport;
 use DDTrace\Exceptions\UnsupportedFormat;
 use DDTrace\Contracts\Scope as ScopeInterface;
@@ -20,7 +20,7 @@ final class Tracer implements TracerInterface
 {
     use LoggingTrait;
 
-    const VERSION = '0.11.0-beta';
+    const VERSION = '0.11.0-sfx0';
 
     /**
      * @var Span[][]
@@ -86,12 +86,12 @@ final class Tracer implements TracerInterface
      */
     public function __construct(Transport $transport = null, array $propagators = null, array $config = [])
     {
-        $this->transport = $transport ?: new Http(new Json());
-        $textMapPropagator = new TextMap($this);
+        $this->transport = $transport ?: new HttpSignalFx(new JsonZipkinV2());
+        $textMapPropagator = new B3TextMap($this);
         $this->propagators = $propagators ?: [
             Format::TEXT_MAP => $textMapPropagator,
             Format::HTTP_HEADERS => $textMapPropagator,
-            Format::CURL_HTTP_HEADERS => new CurlHeadersMap($this),
+            Format::CURL_HTTP_HEADERS => new B3CurlHeadersMap($this),
         ];
         $this->config = array_merge($this->config, $config);
         $this->reset();

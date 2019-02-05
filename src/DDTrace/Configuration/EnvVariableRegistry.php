@@ -125,13 +125,13 @@ class EnvVariableRegistry implements Registry
     /**
      * Given a dot separated key, it converts it to an expected variable name.
      *
-     * e.g.: 'distributed_tracing' -> 'DD_DISTRIBUTED_TRACING'
+     * e.g.: 'distributed_tracing' -> 'SIGNALFX_DISTRIBUTED_TRACING'
      *
      * @param string $key
      * @return string
      */
     private static function convertKeyToEnvVariableName($key)
     {
-        return 'DD_' . strtoupper(str_replace('.', '_', trim($key)));
+        return 'SIGNALFX_' . strtoupper(str_replace('.', '_', trim($key)));
     }
 }

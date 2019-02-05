@@ -37,8 +37,8 @@ class WebServer
     private $envs = [];
 
     private $defaultEnvs = [
-        'DD_TRACE_AGENT_PORT' => 80,
-        'DD_AGENT_HOST' => 'request_replayer',
+        'SIGNALFX_ENDPOINT_PORT' => 80,
+        'SIGNALFX_ENDPOINT_HOST' => 'request_replayer',
     ];
 
     /**

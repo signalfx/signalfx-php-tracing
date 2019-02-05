@@ -10,7 +10,7 @@ use DDTrace\Log\LoggingTrait;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Transport;
 
-final class Http implements Transport
+class Http implements Transport
 {
     use LoggingTrait;
 
@@ -37,7 +37,7 @@ final class Http implements Transport
     /**
      * @var array
      */
-    private $config;
+    protected $config;
 
     public function __construct(Encoder $encoder, array $config = [])
     {
@@ -56,7 +56,7 @@ final class Http implements Transport
      *
      * @param array $config
      */
-    private function configure($config)
+    protected function configure($config)
     {
         $host = getenv(self::AGENT_HOST_ENV) ?: self::DEFAULT_AGENT_HOST;
         $port = getenv(self::TRACE_AGENT_PORT_ENV) ?: self::DEFAULT_TRACE_AGENT_PORT;
@@ -142,7 +142,7 @@ final class Http implements Transport
      *
      * @return bool
      */
-    private function isPrioritySamplingUsed()
+    protected function isPrioritySamplingUsed()
     {
         /** @var Tracer $tracer */
         $tracer = GlobalTracer::get();
