@@ -223,6 +223,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
             'isAutofinishSpansEnabled' => false,
             'isDistributedTracingEnabled' => false,
             'isPrioritySamplingEnabled' => false,
+            'getGlobalTags' => [],
         ]));
 
         $this->isolateTracer(function () use (&$found) {
