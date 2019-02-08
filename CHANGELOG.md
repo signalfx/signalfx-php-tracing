@@ -1,7 +1,27 @@
 # Changelog
 All notable changes to this project will be documented in this file - [read more](docs/changelog.md).
 
-## [UNRELEASED]
+## [Unreleased]
+
+## [0.12.2]
+
+### Fixed
+- Zend integration incompatibility with Yii #282
+
+## [0.12.1]
+
+### Fixed
+- Post-install to link the extension to all installed SAPI's for common configurations #277
+
+## [0.12.0]
+
+### Added
+- Support for global tags via the environment variable `DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2` #273
+
+### Fixed
+- Memory leaks in `$this` object and return value handling in PHP 5.6 and 7.x #268
+- Alpine APK package file being badly formatted when some file paths were over 100 character long #274
+- Extension being compatible with CentOS 6 and other distributions using old Glibc #265
 
 ## [0.11.0]
 
@@ -254,7 +274,10 @@ At an high level here are the breaking changes we introduced:
 ### Added
 - OpenTracing compliance tha can be used for manual instrumentation
 
-[Unreleased]: https://github.com/DataDog/dd-trace-php/compare/0.11.0...HEAD
+[Unreleased]: https://github.com/DataDog/dd-trace-php/compare/0.12.2...HEAD
+[0.12.2]: https://github.com/DataDog/dd-trace-php/compare/0.12.1...0.12.2
+[0.12.1]: https://github.com/DataDog/dd-trace-php/compare/0.12.0...0.12.1
+[0.12.0]: https://github.com/DataDog/dd-trace-php/compare/0.11.0...0.12.0
 [0.11.0]: https://github.com/DataDog/dd-trace-php/compare/0.10.0...0.11.0
 [0.10.0]: https://github.com/DataDog/dd-trace-php/compare/0.9.1...0.10.0
 [0.9.1]: https://github.com/DataDog/dd-trace-php/compare/0.9.0...0.9.1

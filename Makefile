@@ -4,7 +4,7 @@ SO_FILE := $(BUILD_DIR)/modules/ddtrace.so
 WALL_FLAGS := -Wall -Wextra
 CFLAGS := -O2 $(WALL_FLAGS)
 VERSION:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2)
-VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2 | cut -d- -f1,2)
+VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2 | cut -d- -f1,3)
 
 INI_FILE := /usr/local/etc/php/conf.d/ddtrace.ini
 
@@ -68,7 +68,7 @@ FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m support@signalfx.com --license "BS
 FPM_DIR_OPTS=--directories $(EXT_DIR)/etc --config-files $(EXT_DIR)/etc -s dir
 FPM_FILES=extensions/=$(EXT_DIR)/extensions \
 	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/ddtrace.ini.example=$(EXT_DIR)/etc/ \
-	docs=$(EXT_DIR)/docs README.md=$(EXT_DIR)/docs/README.md UPGRADE-0.10.md=$(EXT_DIR)/docs/UPGRADE-0.10.md\
+	docs=$(EXT_DIR)/docs README.md=$(EXT_DIR)/docs/README.md \
 	src=$(EXT_DIR)/dd-trace-sources \
 	bridge=$(EXT_DIR)/dd-trace-sources
 FPM_OPTS=$(FPM_INFO_OPTS) $(FPM_DIR_OPTS) --after-install=package/post-install.sh --depends="php > 7"

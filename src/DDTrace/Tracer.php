@@ -20,7 +20,7 @@ final class Tracer implements TracerInterface
 {
     use LoggingTrait;
 
-    const VERSION = '0.11.0-sfx0';
+    const VERSION = '0.12.2-beta-sfx0';
 
     /**
      * @var Span[][]
@@ -95,6 +95,7 @@ final class Tracer implements TracerInterface
         ];
         $this->config = array_merge($this->config, $config);
         $this->reset();
+        $this->config['global_tags'] = array_merge($this->config['global_tags'], $this->globalConfig->getGlobalTags());
     }
 
     /**
