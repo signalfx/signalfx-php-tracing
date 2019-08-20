@@ -17,6 +17,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     {
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_TRACE_GLOBAL_TAGS' => 'some.key1:value,some.key2:value2',
+            'SIGNALFX_TRACE_DEBUG' => 'true',
         ]);
     }
 
@@ -49,6 +50,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.status_code' => '200',
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'integration.name' => 'laravel',
                         ]),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
@@ -57,6 +59,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         ->withExactTags([
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'integration.name' => 'laravel',
                         ]),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],
@@ -71,6 +74,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         ->withExactTags([
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'integration.name' => 'laravel',
                         ]),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
@@ -85,19 +89,19 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.status_code' => '500',
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
-                        ]),
+                            'integration.name' => 'laravel',
+                        ])->setError(),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::build('laravel.action', 'laravel', 'web', 'error')
                         ->withExactTags([
-                            'error.msg' => 'Controller error',
-                            'error.type' => 'Exception',
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'integration.name' => 'laravel',
                         ])
                         ->withExistingTagsNames(['error.stack'])
-                        ->setError(),
+                        ->setError('Exception', 'Controller error'),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],
             ]

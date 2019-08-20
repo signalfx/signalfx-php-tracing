@@ -3,6 +3,7 @@
 namespace DDTrace\Tests\Common;
 
 use DDTrace\Encoders\JsonZipkinV2;
+use DDTrace\Encoders\SpanEncoder;
 use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
@@ -10,6 +11,7 @@ use DDTrace\Tests\DebugTransport;
 use DDTrace\Tracer;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\GlobalTracer;
+use DDTrace\Configuration;
 
 
 trait TracerTestTrait
@@ -28,6 +30,31 @@ trait TracerTestTrait
         GlobalTracer::set($tracer);
 
         $fn($tracer);
+
+        // Checking spans belong to the proper integration
+        $this->assertSpansBelongsToProperIntegration($this->readTraces($tracer));
+
+        return $this->flushAndGetTraces($transport);
+    }
+
+
+    /**
+     * @param $fn
+     * @param null $tracer
+     * @return Span[][]
+     */
+    public function isolateLimitedTracer($fn, $tracer = null)
+    {
+        Configuration::replace(\Mockery::mock(Configuration::get(), [
+            'getSpansLimit' => 0
+        ]));
+
+        $transport = new DebugTransport();
+        $tracer = $tracer ?: new Tracer($transport);
+        GlobalTracer::set($tracer);
+
+        $fn($tracer);
+
         return $this->flushAndGetTraces($transport);
     }
 
@@ -37,7 +64,7 @@ trait TracerTestTrait
      *
      * @param $fn
      * @param null $tracer
-     * @return Span[][]
+     * @return array[]
      * @throws \Exception
      */
     public function simulateAgent($fn, $tracer = null)
@@ -54,6 +81,9 @@ trait TracerTestTrait
         $tracer = GlobalTracer::get();
         /** @var DebugTransport $transport */
         $tracer->flush();
+
+        // Checking that spans belong to the correct integrations.
+        $this->assertSpansBelongsToProperIntegration($this->readTraces($tracer));
 
         return $this->parseTracesFromDumpedData();
     }
@@ -111,9 +141,21 @@ trait TracerTestTrait
         }
 
         $rawTraces = [json_decode($loaded['body'], true)];
+        return $this->jsonTracesToSpans($rawTraces);
+    }
+
+    /**
+     * Parses json traces provided by fake agent and returns the parsed traces.
+     *
+     * @param array $jsonTraces
+     * @return Span[][]
+     * @throws \Exception
+     */
+    protected function jsonTracesToSpans(array $jsonTraces)
+    {
         $traces = [];
 
-        foreach ($rawTraces as $spansInTrace) {
+        foreach ($jsonTraces as $spansInTrace) {
             $spans = [];
             foreach ($spansInTrace as $rawSpan) {
                 $spanContext = new SpanContext(
@@ -151,8 +193,9 @@ trait TracerTestTrait
                 $this->setRawPropertyFromArray($span, $rawSpan, 'type');
                 $this->setRawPropertyFromArray($span, $rawSpan, 'duration');
                 $this->setRawPropertyFromArray($span, $rawSpan, 'tags');
+                $this->setRawPropertyFromArray($span, $rawSpan, 'metrics', 'metrics');
 
-                $spans[] = $span;
+                $spans[] = SpanEncoder::encode($span);
             }
             $traces[] = $spans;
         }
@@ -239,5 +282,35 @@ trait TracerTestTrait
             $fn($tracer);
             $scope->close();
         });
+    }
+
+    /**
+     * Extracts traces from a real tracer using reflection.
+     *
+     * @param Tracer $tracer
+     * @return array
+     */
+    private function readTraces(Tracer $tracer)
+    {
+        // Extracting traces
+        $tracerReflection = new \ReflectionObject($tracer);
+        $tracesProperty = $tracerReflection->getProperty('traces');
+        $tracesProperty->setAccessible(true);
+        return $tracesProperty->getValue($tracer);
+    }
+
+    /**
+     * Asserting that a Span belongs to the expected integration.
+     *
+     * @param array $traces
+     */
+    private function assertSpansBelongsToProperIntegration(array $traces)
+    {
+        $spanIntegrationChecker = new SpanIntegrationChecker();
+        foreach ($traces as $trace) {
+            foreach ($trace as $span) {
+                $spanIntegrationChecker->checkIntegration($this, $span);
+            }
+        }
     }
 }

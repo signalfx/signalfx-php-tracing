@@ -8,6 +8,8 @@ class Tag
     const ENV = 'env';
     const SPAN_TYPE = 'span.type';
     const SERVICE_NAME = 'service.name';
+    const MANUAL_KEEP = 'manual.keep';
+    const MANUAL_DROP = 'manual.drop';
     const PID = 'system.pid';
     const RESOURCE_NAME = 'resource.name';
     const DB_STATEMENT = 'sql.query';
@@ -26,6 +28,8 @@ class Tag
     const TARGET_HOST = 'out.host';
     const TARGET_PORT = 'out.port';
     const BYTES_OUT = 'net.out.bytes';
+    const ANALYTICS_KEY = '_dd1.sr.eausr';
+    const HOSTNAME = '_dd.hostname';
 
     // Elasticsearch
     const ELASTICSEARCH_BODY = 'elasticsearch.body';

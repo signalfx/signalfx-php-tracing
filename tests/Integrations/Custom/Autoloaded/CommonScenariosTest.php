@@ -15,9 +15,9 @@ final class CommonScenariosTest extends WebFrameworkTestCase
 
     protected static function getEnvs()
     {
-        return [
+        return array_merge(parent::getEnvs(), [
             'APP_NAME' => 'custom_autoloaded_app',
-        ];
+        ]);
     }
 
     /**
@@ -44,10 +44,12 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'web.request',
                         'web.request',
                         'web',
-                        'web.request'
+                        'GET /simple'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/simple',
+                        'http.status_code' => '200',
+                        'integration.name' => 'web',
                     ]),
                 ],
                 'A simple GET request with a view' => [
@@ -55,10 +57,12 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'web.request',
                         'web.request',
                         'web',
-                        'web.request'
+                        'GET /simple_view'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/simple_view',
+                        'http.status_code' => '200',
+                        'integration.name' => 'web',
                     ]),
                 ],
                 'A GET request with an exception' => [
@@ -66,11 +70,13 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'web.request',
                         'web.request',
                         'web',
-                        'web.request'
+                        'GET /error'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/error',
-                    ]),
+                        'http.status_code' => '500',
+                        'integration.name' => 'web',
+                    ])->setError(),
                 ],
             ]
         );

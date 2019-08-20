@@ -47,6 +47,7 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
         });
         $this->assertSpans($traces, [
             SpanAssertion::build('GuzzleHttp\Client.transfer', 'guzzle', 'http', 'transfer')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.method' => strtoupper($method),
                     'http.url' => 'http://example.com/',
@@ -75,7 +76,9 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
             $this->getMockedClient()->send($request);
         });
         $this->assertSpans($traces, [
+            SpanAssertion::exists('GuzzleHttp\Client.send', 'guzzle', 'http', 'send'),
             SpanAssertion::build('GuzzleHttp\Client.transfer', 'guzzle', 'http', 'transfer')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.method' => 'PUT',
                     'http.url' => 'http://example.com',
@@ -91,6 +94,7 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
         });
         $this->assertSpans($traces, [
             SpanAssertion::build('GuzzleHttp\Client.transfer', 'guzzle', 'http', 'transfer')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.method' => 'GET',
                     'http.url' => 'http://example.com',
@@ -108,7 +112,7 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
             /** @var Tracer $tracer */
             $tracer = GlobalTracer::get();
             $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
-            $span = $tracer->startActiveSpan('some_operation')->getSpan();
+            $span = $tracer->startActiveSpan('custom')->getSpan();
 
             $response = $client->get(self::URL . '/headers', [
                 'headers' => [
@@ -122,12 +126,12 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
 
         // trace is: some_operation
         $this->assertSame(
-            HexConversion::idToHex($traces[0][0]->getContext()->getSpanId()),
+            HexConversion::idToHex($traces[0][0]['trace_id']),
             $found['headers']['X-B3-Traceid']
         );
         // parent is: curl_exec, used under the hood
         $this->assertSame(
-            HexConversion::idToHex($traces[0][2]->getContext()->getSpanId()),
+            HexConversion::idToHex($traces[0][2]['span_id']),
             $found['headers']['X-B3-Spanid']
         );
         // existing headers are honored
@@ -138,18 +142,15 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
     {
         $client = $this->getRealClient();
         $found = [];
-        Configuration::replace(\Mockery::mock('\DDTrace\Configuration', [
-            'isAutofinishSpansEnabled' => false,
+        Configuration::replace(\Mockery::mock(Configuration::get(), [
             'isDistributedTracingEnabled' => false,
-            'isPrioritySamplingEnabled' => false,
-            'getGlobalTags' => [],
         ]));
 
         $this->isolateTracer(function () use (&$found, $client) {
             /** @var Tracer $tracer */
             $tracer = GlobalTracer::get();
             $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
-            $span = $tracer->startActiveSpan('some_operation')->getSpan();
+            $span = $tracer->startActiveSpan('custom')->getSpan();
 
             $response = $client->get(self::URL . '/headers');
 
@@ -160,5 +161,65 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
         $this->assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
         $this->assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
         $this->assertArrayNotHasKey('X-Datadog-Sampling-Priority', $found['headers']);
+    }
+
+    public function testLimitedTracer()
+    {
+        $traces = $this->isolateLimitedTracer(function () {
+            $this->getMockedClient()->get('http://example.com');
+
+            $request = new Request('put', 'http://example.com');
+            $this->getMockedClient()->send($request);
+        });
+
+        $this->assertEmpty($traces);
+    }
+
+    public function testLimitedTracerDistributedTracingIsPropagated()
+    {
+        $client = new Client();
+        $found = [];
+
+        $traces = $this->isolateLimitedTracer(function () use (&$found, $client) {
+            /** @var Tracer $tracer */
+            $tracer = GlobalTracer::get();
+            $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
+            $span = $tracer->startActiveSpan('custom')->getSpan();
+
+            $response = $client->get(self::URL . '/headers', [
+                'headers' => [
+                    'honored' => 'preserved_value',
+                ],
+            ]);
+
+            $found = json_decode($response->getBody(), 1);
+            $span->finish();
+        });
+
+        // trace is: custom
+        $this->assertSame(HexConversion::idToHex($traces[0][0]['trace_id']), $found['headers']['X-B3-Traceid']);
+        $this->assertSame(HexConversion::idToHex($traces[0][0]['span_id']), $found['headers']['X-B3-Spanid']);
+        $this->assertEquals(1, sizeof($traces[0]));
+
+        // existing headers are honored
+        $this->assertSame('preserved_value', $found['headers']['Honored']);
+    }
+
+    public function testAppendHostnameToServiceName()
+    {
+        putenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
+
+        $traces = $this->isolateTracer(function () {
+            $this->getMockedClient()->get('http://example.com');
+        });
+        $this->assertSpans($traces, [
+            SpanAssertion::build('GuzzleHttp\Client.transfer', 'host-example.com', 'http', 'transfer')
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags([
+                    'http.method' => 'GET',
+                    'http.url' => 'http://example.com',
+                    'http.status_code' => '200',
+                ]),
+        ]);
     }
 }

@@ -7,7 +7,6 @@ use DDTrace\GlobalTracer;
 use DDTrace\Span;
 use DDTrace\Tag;
 use DDTrace\Type;
-use DDTrace\Util\TryCatchFinally;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,15 +45,18 @@ class LaravelProvider extends ServiceProvider
         $this->app->instance('DDTrace\Tracer', $tracer);
         $self = $this;
 
-        dd_trace('\Illuminate\Foundation\Application', 'handle', function () use ($appName, $tracer, $self) {
+        dd_trace('Illuminate\Foundation\Application', 'handle', function () use ($appName, $tracer, $self) {
             // Create a span that starts from when Laravel first boots (public/index.php)
             $self->rootScope = $tracer->getRootScope();
 
             $requestSpan = $self->rootScope->getSpan();
             $requestSpan->overwriteOperationName('laravel.request');
+            // Overwriting the default web integration
+            $requestSpan->setIntegration(\DDTrace\Integrations\Laravel\LaravelIntegration::getInstance());
+            $requestSpan->setTraceAnalyticsCandidate();
             $requestSpan->setTag(Tag::SERVICE_NAME, $appName);
 
-            $response = call_user_func_array([$this, 'handle'], func_get_args());
+            $response = dd_trace_forward_call();
             $requestSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
 
             return $response;
@@ -72,8 +74,7 @@ class LaravelProvider extends ServiceProvider
 
         // Name the scope when the route matches
         $this->app['events']->listen('router.matched', function () use ($self) {
-            $args = func_get_args();
-            list($route, $request) = $args;
+            list($route, $request) = func_get_args();
             $span = $self->rootScope->getSpan();
 
             $span->setTag(Tag::RESOURCE_NAME, $route->getActionName() . ' ' . Route::currentRouteName());
@@ -86,23 +87,23 @@ class LaravelProvider extends ServiceProvider
         dd_trace('Symfony\Component\HttpFoundation\Response', 'setStatusCode', function () use ($self) {
             $args = func_get_args();
             $self->rootScope->getSpan()->setTag(Tag::HTTP_STATUS_CODE, $args[0]);
-            return call_user_func_array([$this, 'setStatusCode'], $args);
+            return dd_trace_forward_call();
         });
 
         dd_trace('Illuminate\Routing\Route', 'run', function () {
             $scope = LaravelProvider::buildBaseScope('laravel.action', $this->uri);
-            return TryCatchFinally::executePublicMethod($scope, $this, 'run', func_get_args());
+            return include __DIR__ . '/../../../try_catch_finally.php';
         });
 
         dd_trace('Illuminate\View\View', 'render', function () {
             $scope = LaravelProvider::buildBaseScope('laravel.view.render', $this->view);
-            return TryCatchFinally::executePublicMethod($scope, $this, 'render', func_get_args());
+            return include __DIR__ . '/../../../try_catch_finally.php';
         });
 
         dd_trace('Illuminate\Events\Dispatcher', 'fire', function () {
             $args = func_get_args();
             $scope = LaravelProvider::buildBaseScope('laravel.event.handle', $args[0]);
-            return TryCatchFinally::executePublicMethod($scope, $this, 'fire', $args);
+            return include __DIR__ . '/../../../try_catch_finally.php';
         });
     }
 
@@ -115,7 +116,10 @@ class LaravelProvider extends ServiceProvider
      */
     public static function buildBaseScope($operation, $resource)
     {
-        $scope = GlobalTracer::get()->startActiveSpan($operation);
+        $scope = GlobalTracer::get()->startIntegrationScopeAndSpan(
+            \DDTrace\Integrations\Laravel\LaravelIntegration::getInstance(),
+            $operation
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
         $span->setTag(Tag::SERVICE_NAME, self::getAppName());
@@ -129,9 +133,6 @@ class LaravelProvider extends ServiceProvider
      */
     private function shouldLoad()
     {
-        if ('cli' === PHP_SAPI && 'dd_testing' !== getenv('APP_ENV')) {
-            return false;
-        }
         if (!Configuration::get()->isIntegrationEnabled(self::NAME)) {
             return false;
         }

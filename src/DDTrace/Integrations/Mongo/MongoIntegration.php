@@ -2,15 +2,39 @@
 
 namespace DDTrace\Integrations\Mongo;
 
-use DDTrace\Span;
+use DDTrace\Contracts\Span;
+use DDTrace\Integrations\Integration;
 use DDTrace\Tag;
 use DDTrace\Type;
-use DDTrace\Integrations\Integration;
 use DDTrace\Util\Versions;
 
-final class MongoIntegration
+final class MongoIntegration extends Integration
 {
     const NAME = 'mongo';
+
+    /**
+     * @var self
+     */
+    private static $instance;
+
+    /**
+     * @return self
+     */
+    public static function getInstance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * @return string The integration name.
+     */
+    public function getName()
+    {
+        return self::NAME;
+    }
 
     public static function load()
     {

@@ -10,10 +10,21 @@ namespace DDTrace\Contracts;
 use DDTrace\Exceptions\InvalidReferencesSet;
 use DDTrace\Exceptions\InvalidSpanOption;
 use DDTrace\Exceptions\UnsupportedFormat;
+use DDTrace\Integrations\Integration;
 use DDTrace\StartSpanOptions;
 
 interface Tracer
 {
+    /**
+     * Checks if Tracer is in limited mode.
+     *
+     * Tracer needs to handle any operation even if its in limited mode,
+     * however users can opt not to use tracer when its in limited mode.
+     *
+     * @return bool
+     */
+    public function limited();
+
     /**
      * Returns the current {@link ScopeManager}, which may be a noop but may not be null.
      *
@@ -58,6 +69,17 @@ interface Tracer
      *               a ScopeManager.
      */
     public function startActiveSpan($operationName, $options = []);
+
+    /**
+     * Starts an active span for a supported integration and store the integration that originated the span in the
+     * span itself.
+     *
+     * @param Integration $integration
+     * @param string $operationName
+     * @param array $options
+     * @return Scope
+     */
+    public function startIntegrationScopeAndSpan(Integration $integration, $operationName, $options = []);
 
     /**
      * Starts and returns a new span representing a unit of work.
@@ -124,6 +146,11 @@ interface Tracer
     public function flush();
 
     /**
+     * @param mixed $prioritySampling
+     */
+    public function setPrioritySampling($prioritySampling);
+
+    /**
      * @return mixed
      */
     public function getPrioritySampling();
@@ -142,4 +169,25 @@ interface Tracer
      * @return Scope|null
      */
     public function getRootScope();
+
+    /**
+     * Returns the root span or null and never throws an exception.
+     *
+     * @return Span|null
+     */
+    public function getSafeRootSpan();
+
+    /**
+     * Returns the entire trace encoded as a plain-old PHP array.
+     *
+     * @return array
+     */
+    public function getTracesAsArray();
+
+    /**
+     * Returns the count of currently stored traces
+     *
+     * @return int
+     */
+    public function getTracesCount();
 }

@@ -11,6 +11,21 @@ final class EnvVariableRegistryTest extends BaseTestCase
     {
         parent::setUp();
         putenv('SIGNALFX_SOME_TEST_PARAMETER');
+        putenv('SIGNALFX_CUSTOM_PREFIX_SOME_TEST_PARAMETER');
+    }
+
+    public function testPrefixDefaultToSIGNALFX()
+    {
+        putenv('SIGNALFX_SOME_TEST_PARAMETER=bar');
+        $registry = new EnvVariableRegistry();
+        $this->assertSame('bar', $registry->stringValue('some.test.parameter', 'foo'));
+    }
+
+    public function testPrefixCanBeCustomized()
+    {
+        putenv('SIGNALFX_CUSTOM_PREFIX_SOME_TEST_PARAMETER=bar');
+        $registry = new EnvVariableRegistry('SIGNALFX_CUSTOM_PREFIX_');
+        $this->assertSame('bar', $registry->stringValue('some.test.parameter', 'foo'));
     }
 
     public function testStringFromEnv()

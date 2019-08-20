@@ -6,11 +6,7 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/signalfx/signalfx-tracing.svg)](https://packagist.org/packages/signalfx/signalfx-tracing)
 
-PHP Tracer
-
-This is forked from the [DataDog PHP Tracer](https://github.com/DataDog/dd-trace-php).
-
-> **This is Beta software.** We do not recommend using it in production yet.
+## Getting Started
 
 ### Installing the extension
 
@@ -31,3 +27,8 @@ Before contributing to this open source project, read our [CONTRIBUTING.md](CONT
 
 See [RELEASING](RELEASING.md) for more information on releasing new versions.
 
+
+## License and Versioning
+
+The SignalFx Tracing Library for PHP is released under the terms of the BSD 3-Clause license. See the license file for more details.
+This library is a fork of the [DataDog PHP Tracer](https://github.com/DataDog/dd-trace-php).

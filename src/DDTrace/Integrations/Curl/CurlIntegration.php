@@ -11,44 +11,63 @@ use DDTrace\Tag;
 use DDTrace\Type;
 use DDTrace\Util\ArrayKVStore;
 use DDTrace\GlobalTracer;
-use DDTrace\Util\Versions;
 
 /**
  * Integration for curl php client.
  */
-class CurlIntegration
+class CurlIntegration extends Integration
 {
     const NAME = 'curl';
+
+    /**
+     * @return string The integration name.
+     */
+    public function getName()
+    {
+        return self::NAME;
+    }
 
     /**
      * Loads the integration.
      */
     public static function load()
     {
-        if (!function_exists('curl_exec') || Versions::phpVersionMatches('5.4')) {
-            // `curl_exec` doesn't come from an autoloader, if it does not exists we can return this integration as
+        if (!extension_loaded('curl')) {
+            // `curl` extension is not loaded, if it does not exists we can return this integration as
             // not available.
             return Integration::NOT_AVAILABLE;
         }
 
+        // Waiting for refactoring from static to singleton.
+        $integration = new self();
         $globalConfig = Configuration::get();
 
-        dd_trace('curl_exec', function ($ch) {
+        dd_trace('curl_exec', function ($ch) use ($integration, $globalConfig) {
             $tracer = GlobalTracer::get();
-            $scope = $tracer->startActiveSpan('curl_exec');
-            $span = $scope->getSpan();
-            $span->setTag(Tag::SERVICE_NAME, 'curl');
-            $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
+            if ($tracer->limited()) {
+                CurlIntegration::injectDistributedTracingHeaders($ch);
 
+                return dd_trace_forward_call();
+            }
+
+            $scope = $tracer->startIntegrationScopeAndSpan($integration, 'curl_exec');
+            $span = $scope->getSpan();
+            $span->setTraceAnalyticsCandidate();
+            $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
             CurlIntegration::injectDistributedTracingHeaders($ch);
 
-            $result = curl_exec($ch);
+            $result = dd_trace_forward_call();
             if ($result === false && $span instanceof Span) {
                 $span->setRawError(curl_error($ch), 'curl error');
             }
 
             $info = curl_getinfo($ch);
             $sanitizedUrl = Urls::sanitize($info['url']);
+            if ($globalConfig->isHttpClientSplitByDomain()) {
+                $span->setTag(Tag::SERVICE_NAME, Urls::hostnameForTag($sanitizedUrl));
+            } else {
+                $span->setTag(Tag::SERVICE_NAME, 'curl');
+            }
             $span->setTag(Tag::RESOURCE_NAME, $sanitizedUrl);
             $span->setTag(Tag::HTTP_URL, $sanitizedUrl);
             $span->setTag(Tag::HTTP_STATUS_CODE, $info['http_code']);
@@ -68,7 +87,7 @@ class CurlIntegration
                 ArrayKVStore::putForResource($ch, Format::CURL_HTTP_HEADERS, $value);
             }
 
-            return curl_setopt($ch, $option, $value);
+            return dd_trace_forward_call();
         });
 
         dd_trace('curl_setopt_array', function ($ch, $options) use ($globalConfig) {
@@ -81,12 +100,12 @@ class CurlIntegration
                 ArrayKVStore::putForResource($ch, Format::CURL_HTTP_HEADERS, $options[CURLOPT_HTTPHEADER]);
             }
 
-            return curl_setopt_array($ch, $options);
+            return dd_trace_forward_call();
         });
 
         dd_trace('curl_close', function ($ch) use ($globalConfig) {
             ArrayKVStore::deleteResource($ch);
-            return curl_close($ch);
+            return dd_trace_forward_call();
         });
 
         return Integration::LOADED;
@@ -104,10 +123,13 @@ class CurlIntegration
         $httpHeaders = ArrayKVStore::getForResource($ch, Format::CURL_HTTP_HEADERS, []);
         if (is_array($httpHeaders)) {
             $tracer = GlobalTracer::get();
-            $context = $tracer->getActiveSpan()->getContext();
-            $tracer->inject($context, Format::CURL_HTTP_HEADERS, $httpHeaders);
+            $activeSpan = $tracer->getActiveSpan();
+            if ($activeSpan !== null) {
+                $context = $activeSpan->getContext();
+                $tracer->inject($context, Format::CURL_HTTP_HEADERS, $httpHeaders);
 
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $httpHeaders);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $httpHeaders);
+            }
         }
     }
 }

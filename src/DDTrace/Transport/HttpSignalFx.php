@@ -3,6 +3,7 @@
 namespace DDTrace\Transport;
 
 use DDTrace\Configuration;
+use DDTrace\Contracts\Tracer;
 use DDTrace\Log\LoggingTrait;
 use DDTrace\Encoder;
 use DDTrace\Transport;
@@ -53,10 +54,11 @@ final class HttpSignalFx implements Transport
         ], $config);
     }
 
-    public function send(array $traces)
+    public function send(Tracer $tracer)
     {
-        $tracesPayload = $this->encoder->encodeTraces($traces);
-        self::logDebug('About to send {count} traces', ['count' => count($traces)]);
+        $tracesCount = $tracer->getTracesCount();
+        $tracesPayload = $this->encoder->encodeTraces($tracer);
+        self::logDebug("About to send ~{$tracesCount} traces");
 
         $this->sendRequest($this->config['endpoint'], $this->headers, $tracesPayload);
     }

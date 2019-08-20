@@ -2,6 +2,7 @@
 
 namespace DDTrace\Util;
 
+use DDTrace\Integrations\Integration;
 use DDTrace\GlobalTracer;
 
 final class CodeTracer
@@ -28,18 +29,49 @@ final class CodeTracer
      * @param string $method
      * @param \Closure|null $preCallHook
      * @param \Closure|null $postCallHook
+     * @param Integration|null $integration
+     * @param bool $isTraceAnalyticsCandidate
      */
-    public function tracePublicMethod($className, $method, \Closure $preCallHook = null, \Closure $postCallHook = null)
-    {
+    public function tracePublicMethod(
+        $className,
+        $method,
+        \Closure $limitedTracerCallHook = null,
+        \Closure $preCallHook = null,
+        \Closure $postCallHook = null,
+        Integration $integration = null,
+        $isTraceAnalyticsCandidate = false
+    ) {
         dd_trace($className, $method, function () use (
             $className,
             $method,
+            $limitedTracerCallHook,
             $preCallHook,
-            $postCallHook
+            $postCallHook,
+            $integration,
+            $isTraceAnalyticsCandidate
         ) {
+            $tracer = GlobalTracer::get();
+            if ($tracer->limited()) {
+                if ($limitedTracerCallHook) {
+                    $limitedTracerCallHook(func_get_args());
+                }
+
+                return dd_trace_forward_call();
+            }
+
             $args = func_get_args();
-            $scope = GlobalTracer::get()->startActiveSpan($className . '.' . $method);
+            $scope = $tracer->startActiveSpan($className . '.' . $method);
+
             $span = $scope->getSpan();
+
+            if ($integration) {
+                $span->setIntegration($integration);
+            }
+
+            if ($isTraceAnalyticsCandidate) {
+                $span->setTraceAnalyticsCandidate();
+            }
+
             if (null !== $preCallHook) {
                 $preCallHook($span, $args);
             }
@@ -47,7 +79,7 @@ final class CodeTracer
             $returnVal = null;
             $thrownException = null;
             try {
-                $returnVal = call_user_func_array([$this, $method], $args);
+                $returnVal = dd_trace_forward_call();
             } catch (\Exception $e) {
                 $span->setError($e);
                 $thrownException = $e;

@@ -41,11 +41,7 @@ final class HttpSignalFxTest extends BaseTestCase
 
         $span->finish();
 
-        $traces = [
-            [$span],
-        ];
-
-        $httpTransport->send($traces);
+        $httpTransport->send($tracer);
         $this->assertTrue($logger->has(
             'error',
             'Reporting of spans failed: 7 / Failed to connect to 0.0.0.0 port 8127: Connection refused'
@@ -79,12 +75,8 @@ final class HttpSignalFxTest extends BaseTestCase
 
         $span->finish();
 
-        $traces = [
-            [$span, $childSpan],
-        ];
-
-        $httpTransport->send($traces);
-        $this->assertTrue($logger->has('debug', 'About to send 1 traces'));
+        $httpTransport->send($tracer);
+        $this->assertTrue($logger->has('debug', 'About to send ~1 traces'));
         $this->assertTrue($logger->has('debug', 'Spans successfully sent'));
     }
 
@@ -99,9 +91,8 @@ final class HttpSignalFxTest extends BaseTestCase
         $span = $tracer->startSpan('test');
         $span->finish();
 
-        $traces = [[$span]];
         $httpTransport->setHeader('X-my-custom-header', 'my-custom-value');
-        $httpTransport->send($traces);
+        $httpTransport->send($tracer);
 
         $traceRequest = $this->getLastAgentRequest();
 

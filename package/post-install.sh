@@ -1,6 +1,6 @@
 #!/bin/bash --login
 
-EXTENSION_BASE_DIR=/opt/signalfx-php
+EXTENSION_BASE_DIR=/opt/signalfx-php-tracing
 EXTENSION_DIR=${EXTENSION_BASE_DIR}/extensions
 EXTENSION_CFG_DIR=${EXTENSION_BASE_DIR}/etc
 EXTENSION_LOGS_DIR=${EXTENSION_BASE_DIR}/log

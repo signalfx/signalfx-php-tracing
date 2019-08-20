@@ -29,16 +29,15 @@ final class JsonZipkinV2 implements Encoder
     {
         $this->logger = $logger ?: Logger::get();
         $config = Configuration::get();
-        $this->serviceName = $config->appName("unnamed_php_app");
+        $this->serviceName = $config->appName("unnamed-php-service");
     }
 
     /**
      * {@inheritdoc}
      */
-    public function encodeTraces(array $traces)
+    public function encodeTraces(Tracer $tracer)
     {
-        /** @var Tracer $tracer */
-        $tracer = GlobalTracer::get();
+        $traces = $tracer->getTracesAsArray();
         return '[' . implode(',', array_map(function ($trace) {
                 return implode(',', array_filter(array_map(function ($span) {
                     return $this->encodeSpan($span);
@@ -55,10 +54,10 @@ final class JsonZipkinV2 implements Encoder
     }
 
     /**
-     * @param Span $span
+     * @param array $span
      * @return string
      */
-    private function encodeSpan(Span $span)
+    private function encodeSpan(array $span)
     {
         $json = json_encode($this->spanToArray($span), JSON_FORCE_OBJECT);
         if (false === $json) {
@@ -70,45 +69,51 @@ final class JsonZipkinV2 implements Encoder
             '"start_micro":"-"',
             '"duration_micro":"-"',
         ], [
-            '"timestamp":' . $span->getStartTime(),
-            '"duration":' . $span->getDuration(),
+            '"timestamp":' . $span['start'],
+            '"duration":' . $span['duration'],
         ], $json);
     }
 
     /**
-     * @param Span $span
+     * @param array $span
      * @return array
      */
-    private function spanToArray(Span $span)
+    private function spanToArray(array $span)
     {
         $arraySpan = [
-            'traceId' => HexConversion::idToHex($span->getTraceId()),
-            'id' => HexConversion::idToHex($span->getSpanId()),
-            'name' => $span->getOperationName(),
+            'traceId' => HexConversion::idToHex($span['trace_id']),
+            'id' => HexConversion::idToHex($span['span_id']),
+            'name' => $span['name'],
             // This gets filled in by string substitution to avoid exponential formats.
             'start_micro' => '-',
         ];
 
-        if ($span->isFinished()) {
+        if (isset($span['duration'])) {
             $arraySpan['duration_micro'] = '-';
         }
 
-        if ($span->getParentId() !== null) {
-            $arraySpan['parentId'] = HexConversion::idToHex($span->getParentId());
+        if (isset($span['parent_id'])) {
+            $arraySpan['parentId'] = HexConversion::idToHex($span['parent_id']);
         }
 
-        $arraySpan['tags'] = $span->getAllTags();
+        $span['tags'] = [];
 
-        if ($span->getTag('component') === null) {
-            $arraySpan['tags']['component'] = $span->getService();
+        if (isset($span['meta'])) {
+            foreach ($span['meta'] as $key => $value) {
+                $arraySpan['tags'][$key] = $value;
+            }
         }
 
-        if ($span->getTag(Tag::RESOURCE_NAME) === null) {
-            $arraySpan['tags'][Tag::RESOURCE_NAME] = $span->getResource();
+        if (!isset($span['meta']['component'])) {
+            $arraySpan['tags']['component'] = $span['service'];
         }
 
-        if ($span->getType() !== null) {
-            switch ($span->getType()) {
+        if (!isset($span['meta'][Tag::RESOURCE_NAME])) {
+            $arraySpan['tags'][Tag::RESOURCE_NAME] = $span['resource'];
+        }
+
+        if (isset($span['type'])) {
+            switch ($span['type']) {
                 case Type::HTTP_CLIENT:
                     $arraySpan['kind'] = "CLIENT";
                     break;
@@ -117,10 +122,10 @@ final class JsonZipkinV2 implements Encoder
                     $arraySpan['kind'] = "SERVER";
                     break;
             }
-            $arraySpan['tags'][Tag::SPAN_TYPE] = $span->getType();
+            $arraySpan['tags'][Tag::SPAN_TYPE] = $span['type'];
         }
 
-        if ($span->hasError()) {
+        if (isset($span['error']) && $span['error']) {
             $arraySpan['tags'][Tag::ERROR] = "true";
         }
 

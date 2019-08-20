@@ -3,12 +3,12 @@
 namespace DDTrace\Integrations\Symfony\V3;
 
 use DDTrace\Configuration;
+use DDTrace\Contracts\Span;
 use DDTrace\GlobalTracer;
 use DDTrace\Integrations\Symfony\SymfonyIntegration as DDSymfonyIntegration;
-use DDTrace\Span;
+use DDTrace\Integrations\Symfony\SymfonyIntegration;
 use DDTrace\Tag;
 use DDTrace\Type;
-use DDTrace\Util\TryCatchFinally;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -48,10 +48,6 @@ class SymfonyBundle extends Bundle
             return;
         }
 
-        if (getenv('APP_ENV') != 'dd_testing' && php_sapi_name() == 'cli') {
-            return;
-        }
-
         $tracer = GlobalTracer::get();
 
         // Create a span that starts from when Symfony first boots
@@ -59,6 +55,9 @@ class SymfonyBundle extends Bundle
         $appName = $this->getAppName();
         $symfonyRequestSpan = $scope->getSpan();
         $symfonyRequestSpan->overwriteOperationName('symfony.request');
+        // Overwriting the default web integration
+        $symfonyRequestSpan->setIntegration(SymfonyIntegration::getInstance());
+        $symfonyRequestSpan->setTraceAnalyticsCandidate();
         $symfonyRequestSpan->setTag(Tag::SERVICE_NAME, $appName);
         $request = null;
 
@@ -67,11 +66,13 @@ class SymfonyBundle extends Bundle
             'Symfony\Component\HttpKernel\HttpKernel',
             'handle',
             function () use ($symfonyRequestSpan, &$request) {
-                $args = func_get_args();
                 /** @var Request $request */
-                $request = $args[0];
+                list($request) = func_get_args();
 
-                $scope = GlobalTracer::get()->startActiveSpan('symfony.kernel.handle');
+                $scope = GlobalTracer::get()->startIntegrationScopeAndSpan(
+                    SymfonyIntegration::getInstance(),
+                    'symfony.kernel.handle'
+                );
                 $symfonyRequestSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
                 $symfonyRequestSpan->setTag(Tag::HTTP_URL, $request->getUriForPath($request->getPathInfo()));
 
@@ -79,7 +80,7 @@ class SymfonyBundle extends Bundle
                 $response = null;
 
                 try {
-                    $response = call_user_func_array([$this, 'handle'], $args);
+                    $response = dd_trace_forward_call();
                     $symfonyRequestSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
                 } catch (\Exception $e) {
                     $span = $scope->getSpan();
@@ -107,7 +108,10 @@ class SymfonyBundle extends Bundle
             'Symfony\Component\HttpKernel\HttpKernel',
             'handleException',
             function (\Exception $e, Request $request, $type) use ($symfonyRequestSpan) {
-                $scope = GlobalTracer::get()->startActiveSpan('symfony.kernel.handleException');
+                $scope = GlobalTracer::get()->startIntegrationScopeAndSpan(
+                    SymfonyIntegration::getInstance(),
+                    'symfony.kernel.handleException'
+                );
                 $symfonyRequestSpan->setError($e);
 
                 // PHP 5.4 compliant try-catch-finally block.
@@ -131,15 +135,30 @@ class SymfonyBundle extends Bundle
             }
         );
 
-        // public function dispatch($eventName, Event $event = null)
+        $tracedEventDispatcherClasses = [];
         dd_trace(
-            'Symfony\Component\EventDispatcher\EventDispatcher',
-            'dispatch',
-            function () use ($symfonyRequestSpan, &$request) {
+            'Symfony\Component\HttpKernel\HttpKernel',
+            '__construct',
+            function ($eventName, $event = null) use (&$tracedEventDispatcherClasses, &$request, &$symfonyRequestSpan) {
                 $args = func_get_args();
-                $scope = GlobalTracer::get()->startActiveSpan('symfony.' . $args[0]);
-                SymfonyBundle::injectRouteInfo($args, $request, $symfonyRequestSpan);
-                return TryCatchFinally::executePublicMethod($scope, $this, 'dispatch', $args);
+                if (count($args) > 0) {
+                    $dispatcherClass = get_class($args[0]);
+                    if (!in_array($dispatcherClass, $tracedEventDispatcherClasses)) {
+                        $tracedEventDispatcherClasses[] = $dispatcherClass;
+
+                        dd_trace($dispatcherClass, 'dispatch', function () use (&$request, &$symfonyRequestSpan) {
+                            $args = func_get_args();
+                            $scope = GlobalTracer::get()->startIntegrationScopeAndSpan(
+                                SymfonyIntegration::getInstance(),
+                                'symfony.' . $args[0]
+                            );
+                            SymfonyBundle::injectRouteInfo($args, $request, $symfonyRequestSpan);
+                            return include __DIR__ . '/../../../try_catch_finally.php';
+                        });
+                    }
+                }
+
+                return dd_trace_forward_call();
             }
         );
 
@@ -147,20 +166,24 @@ class SymfonyBundle extends Bundle
         $renderTraceCallback = function () use ($appName) {
             $args = func_get_args();
 
-            $scope = GlobalTracer::get()->startActiveSpan('symfony.templating.render');
+            $scope = GlobalTracer::get()->startIntegrationScopeAndSpan(
+                SymfonyIntegration::getInstance(),
+                'symfony.templating.render'
+            );
             $span = $scope->getSpan();
             $span->setTag(Tag::SERVICE_NAME, $appName);
             $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
             $span->setTag(Tag::RESOURCE_NAME, get_class($this) . ' ' . $args[0]);
-            return TryCatchFinally::executePublicMethod($scope, $this, 'render', $args);
+            return include __DIR__ . '/../../../try_catch_finally.php';
         };
 
         // This can be replaced once and for all by EngineInterface tracing
-        dd_trace('\Symfony\Bridge\Twig\TwigEngine', 'render', $renderTraceCallback);
-        dd_trace('\Symfony\Bundle\FrameworkBundle\Templating\TimedPhpEngine', 'render', $renderTraceCallback);
-        dd_trace('\Symfony\Bundle\TwigBundle\TwigEngine', 'render', $renderTraceCallback);
-        dd_trace('\Symfony\Component\Templating\DelegatingEngine', 'render', $renderTraceCallback);
-        dd_trace('\Symfony\Component\Templating\PhpEngine', 'render', $renderTraceCallback);
+        dd_trace('Symfony\Bridge\Twig\TwigEngine', 'render', $renderTraceCallback);
+        dd_trace('Symfony\Bundle\FrameworkBundle\Templating\TimedPhpEngine', 'render', $renderTraceCallback);
+        dd_trace('Symfony\Bundle\TwigBundle\TwigEngine', 'render', $renderTraceCallback);
+        dd_trace('Symfony\Component\Templating\DelegatingEngine', 'render', $renderTraceCallback);
+        dd_trace('Symfony\Component\Templating\PhpEngine', 'render', $renderTraceCallback);
+        dd_trace('Twig\Environment', 'render', $renderTraceCallback);
         dd_trace('Twig_Environment', 'render', $renderTraceCallback);
     }
 
@@ -172,7 +195,11 @@ class SymfonyBundle extends Bundle
     public static function injectRouteInfo($args, $request, Span $requestSpan)
     {
         $eventName = $args[0];
-        if ($eventName !== KernelEvents::CONTROLLER_ARGUMENTS) {
+        if (defined("KernelEvents::CONTROLLER_ARGUMENTS")) {
+            if ($eventName !== KernelEvents::CONTROLLER_ARGUMENTS) {
+                return;
+            }
+        } elseif ($eventName !== KernelEvents::CONTROLLER) {
             return;
         }
 
@@ -194,6 +221,11 @@ class SymfonyBundle extends Bundle
         $action = get_class($controllerAndAction[0]) . '@' . $controllerAndAction[1];
         $requestSpan->setTag('symfony.route.action', $action);
         $requestSpan->setTag('symfony.route.name', $request->get('_route'));
+
+        if ($route = $request->get('_route')) {
+            $rootSpan = GlobalTracer::get()->getRootScope()->getSpan();
+            $rootSpan->setResource($route);
+        }
     }
 
     private function getAppName()

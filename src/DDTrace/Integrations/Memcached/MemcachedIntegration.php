@@ -2,11 +2,11 @@
 
 namespace DDTrace\Integrations\Memcached;
 
+use DDTrace\Contracts\Span;
 use DDTrace\Integrations\Integration;
 use DDTrace\Obfuscation;
 use DDTrace\Tag;
 use DDTrace\Type;
-use DDTrace\Util\Versions;
 use DDTrace\Util\TryCatchFinally;
 use DDTrace\GlobalTracer;
 
@@ -23,201 +23,316 @@ use DDTrace\GlobalTracer;
  * might be different for each key. setMultiByKey does, since you're pinning a
  * specific server.
  */
-class MemcachedIntegration
+class MemcachedIntegration extends Integration
 {
     const NAME = 'memcached';
 
+    /**
+     * @var self
+     */
+    private static $instance;
+
+    /**
+     * @return self
+     */
+    public static function getInstance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * @return string The integration name.
+     */
+    public function getName()
+    {
+        return self::NAME;
+    }
+
     public static function load()
     {
-        if (!class_exists('Memcached') || Versions::phpVersionMatches('5.4')) {
+        if (!extension_loaded('memcached')) {
             // Memcached is provided through an extension and not through a class loader.
             return Integration::NOT_AVAILABLE;
         }
 
         // bool Memcached::add ( string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'add', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'add', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'add', func_get_args());
         });
 
         // bool Memcached::addByKey ( string $server_key , string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'addByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'addByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'addByKey', func_get_args());
         });
 
         // bool Memcached::append ( string $key , string $value )
         dd_trace('Memcached', 'append', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'append', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'append', func_get_args());
         });
 
         // bool Memcached::appendByKey ( string $server_key , string $key , string $value )
         dd_trace('Memcached', 'appendByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'appendByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'appendByKey', func_get_args());
         });
 
         // bool Memcached::cas ( float $cas_token , string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'cas', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCas($this, $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCas($this, func_get_args());
         });
 
         // bool Memcached::casByKey ( float $cas_token , string $server_key , string $key , mixed $value
         //     [, int $expiration ] )
         dd_trace('Memcached', 'casByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCasByKey($this, $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCasByKey($this, func_get_args());
         });
 
         // int Memcached::decrement ( string $key [, int $offset = 1 [, int $initial_value = 0
         //     [, int $expiry = 0 ]]] )
         dd_trace('Memcached', 'decrement', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'decrement', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'decrement', func_get_args());
         });
 
         // int Memcached::decrementByKey ( string $server_key , string $key
         //      [, int $offset = 1 [, int $initial_value = 0 [, int $expiry = 0 ]]] )
         dd_trace('Memcached', 'decrementByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'decrementByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'decrementByKey', func_get_args());
         });
 
         // bool Memcached::delete ( string $key [, int $time = 0 ] )
         dd_trace('Memcached', 'delete', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'delete', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'delete', func_get_args());
         });
 
         // bool Memcached::deleteByKey ( string $server_key , string $key [, int $time = 0 ] )
         dd_trace('Memcached', 'deleteByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'deleteByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'deleteByKey', func_get_args());
         });
 
         // array Memcached::deleteMulti ( array $keys [, int $time = 0 ] )
         dd_trace('Memcached', 'deleteMulti', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMulti($this, 'deleteMulti', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMulti($this, 'deleteMulti', func_get_args());
         });
 
         // bool Memcached::deleteMultiByKey ( string $server_key , array $keys [, int $time = 0 ] )
         dd_trace('Memcached', 'deleteMultiByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMultiByKey($this, 'deleteMultiByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMultiByKey($this, 'deleteMultiByKey', func_get_args());
         });
 
         // bool Memcached::flush ([ int $delay = 0 ] )
         dd_trace('Memcached', 'flush', function () {
-            $args = func_get_args();
-            $scope = GlobalTracer::get()->startActiveSpan('Memcached.flush');
+            $tracer = GlobalTracer::get();
+            if ($tracer->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            $scope = $tracer->startIntegrationScopeAndSpan(
+                MemcachedIntegration::getInstance(),
+                'Memcached.flush'
+            );
             $span = $scope->getSpan();
             $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
             $span->setTag(Tag::SERVICE_NAME, 'memcached');
             $span->setTag('memcached.command', 'flush');
             $span->setTag(Tag::RESOURCE_NAME, 'flush');
 
-            return TryCatchFinally::executePublicMethod($scope, $this, 'flush', $args);
+            return TryCatchFinally::executePublicMethod($scope, $this, 'flush', func_get_args());
         });
 
         // mixed Memcached::get ( string $key [, callable $cache_cb [, int &$flags ]] )
         dd_trace('Memcached', 'get', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'get', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'get', func_get_args());
         });
 
         // mixed Memcached::getByKey ( string $server_key , string $key [, callable $cache_cb [, int $flags ]] )
         dd_trace('Memcached', 'getByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'getByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'getByKey', func_get_args());
         });
 
         // mixed Memcached::getMulti ( array $keys [, int $flags ] )
         dd_trace('Memcached', 'getMulti', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMulti($this, 'getMulti', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMulti($this, 'getMulti', func_get_args());
         });
 
         // array Memcached::getMultiByKey ( string $server_key , array $keys [, int $flags ] )
         dd_trace('Memcached', 'getMultiByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMultiByKey($this, 'getMultiByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMultiByKey($this, 'getMultiByKey', func_get_args());
         });
 
         // int Memcached::increment ( string $key [, int $offset = 1 [, int $initial_value = 0
         //     [, int $expiry = 0 ]]] )
         dd_trace('Memcached', 'increment', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'increment', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'increment', func_get_args());
         });
 
         // int Memcached::incrementByKey ( string $server_key , string $key [, int $offset = 1
         //     [, int $initial_value = 0 [, int $expiry = 0 ]]] )
         dd_trace('Memcached', 'incrementByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'incrementByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'incrementByKey', func_get_args());
         });
 
         // bool Memcached::prepend ( string $key , string $value )
         dd_trace('Memcached', 'prepend', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'prepend', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'prepend', func_get_args());
         });
 
         // bool Memcached::prependByKey ( string $server_key , string $key , string $value )
         dd_trace('Memcached', 'prependByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'prependByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'prependByKey', func_get_args());
         });
 
         // bool Memcached::replace ( string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'replace', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'replace', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'replace', func_get_args());
         });
 
         // bool Memcached::replaceByKey ( string $server_key , string $key , mixed $value [, int $expiration  ] )
         dd_trace('Memcached', 'replaceByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'replaceByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'replaceByKey', func_get_args());
         });
 
         // bool Memcached::set ( string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'set', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'set', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'set', func_get_args());
         });
 
         // bool Memcached::setByKey ( string $server_key , string $key , mixed $value [, int $expiration ] )
         dd_trace('Memcached', 'setByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'setByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'setByKey', func_get_args());
         });
 
         // bool Memcached::setMulti ( array $items [, int $expiration ] )
         dd_trace('Memcached', 'setMulti', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMulti($this, 'setMulti', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMulti($this, 'setMulti', func_get_args());
         });
 
         // bool Memcached::setMultiByKey ( string $server_key , array $items [, int $expiration ] )
         dd_trace('Memcached', 'setMultiByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceMultiByKey($this, 'setMultiByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceMultiByKey($this, 'setMultiByKey', func_get_args());
         });
 
         // bool Memcached::touch ( string $key , int $expiration )
         dd_trace('Memcached', 'touch', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommand($this, 'touch', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommand($this, 'touch', func_get_args());
         });
 
         // bool Memcached::touchByKey ( string $server_key , string $key , int $expiration )
         dd_trace('Memcached', 'touchByKey', function () {
-            $args = func_get_args();
-            return MemcachedIntegration::traceCommandByKey($this, 'touchByKey', $args);
+            if (GlobalTracer::get()->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            return MemcachedIntegration::traceCommandByKey($this, 'touchByKey', func_get_args());
         });
 
         return Integration::LOADED;
@@ -225,7 +340,11 @@ class MemcachedIntegration
 
     public static function traceCommand($memcached, $command, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan("Memcached.$command");
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            "Memcached.$command"
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -237,12 +356,18 @@ class MemcachedIntegration
         $span->setTag('memcached.query', "$command " . Obfuscation::toObfuscatedString($args[0]));
         $span->setTag(Tag::RESOURCE_NAME, $command);
 
+        MemcachedIntegration::markForTraceAnalytics($span, $command);
+
         return TryCatchFinally::executePublicMethod($scope, $memcached, $command, $args);
     }
 
     public static function traceCommandByKey($memcached, $command, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan("Memcached.$command");
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            "Memcached.$command"
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -253,12 +378,18 @@ class MemcachedIntegration
         $span->setTag('memcached.query', "$command " . Obfuscation::toObfuscatedString($args[1]));
         $span->setTag(Tag::RESOURCE_NAME, $command);
 
+        MemcachedIntegration::markForTraceAnalytics($span, $command);
+
         return TryCatchFinally::executePublicMethod($scope, $memcached, $command, $args);
     }
 
     public static function traceCas($memcached, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan('Memcached.cas');
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            'Memcached.cas'
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -274,7 +405,11 @@ class MemcachedIntegration
 
     public static function traceCasByKey($memcached, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan('Memcached.casByKey');
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            'Memcached.casByKey'
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -292,7 +427,11 @@ class MemcachedIntegration
 
     public static function traceMulti($memcached, $command, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan("Memcached.$command");
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            "Memcached.$command"
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -307,7 +446,11 @@ class MemcachedIntegration
 
     public static function traceMultiByKey($memcached, $command, $args)
     {
-        $scope = GlobalTracer::get()->startActiveSpan("Memcached.$command");
+        $tracer = GlobalTracer::get();
+        $scope = $tracer->startIntegrationScopeAndSpan(
+            MemcachedIntegration::getInstance(),
+            "Memcached.$command"
+        );
         $span = $scope->getSpan();
         $span->setTag(Tag::SPAN_TYPE, Type::MEMCACHED);
         $span->setTag(Tag::SERVICE_NAME, 'memcached');
@@ -336,5 +479,27 @@ class MemcachedIntegration
         $server = $memcached->getServerByKey($key);
         $span->setTag(Tag::TARGET_HOST, $server['host']);
         $span->setTag(Tag::TARGET_PORT, $server['port']);
+    }
+
+    /**
+     * @param Span $span
+     * @param string $command
+     */
+    public static function markForTraceAnalytics(Span $span, $command)
+    {
+        $commandsForAnalytics = [
+            'add',
+            'addByKey',
+            'delete',
+            'deleteByKey',
+            'get',
+            'getByKey',
+            'set',
+            'setByKey',
+        ];
+
+        if (in_array($command, $commandsForAnalytics)) {
+            $span->setTraceAnalyticsCandidate();
+        }
     }
 }
