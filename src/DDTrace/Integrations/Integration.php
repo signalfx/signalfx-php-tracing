@@ -3,8 +3,8 @@
 namespace DDTrace\Integrations;
 
 use DDTrace\Configuration;
+use DDTrace\Contracts\Span;
 use DDTrace\Tag;
-use DDTrace\Span;
 use DDTrace\GlobalTracer;
 
 abstract class Integration
@@ -19,14 +19,71 @@ abstract class Integration
 
     const CLASS_NAME = '';
 
+    /**
+     * @var DefaultIntegrationConfiguration|mixed
+     */
+    private $configuration;
+
+    /**
+     * @return string The integration name.
+     */
+    abstract public function getName();
+
+
+    protected function __construct()
+    {
+        $this->configuration = $this->buildConfiguration();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTraceAnalyticsEnabled()
+    {
+        return $this->configuration->isTraceAnalyticsEnabled();
+    }
+
+    /**
+     * @return float
+     */
+    public function getTraceAnalyticsSampleRate()
+    {
+        return $this->configuration->getTraceAnalyticsSampleRate();
+    }
+
+    /**
+     * Whether or not this integration trace analytics configuration is enabled when the global
+     * switch is turned on or it requires explicit enabling.
+     *
+     * @return bool
+     */
+    public function requiresExplicitTraceAnalyticsEnabling()
+    {
+        return true;
+    }
+
+    /**
+     * Build the integration's configuration object. Override to provide your own implementation.
+     *
+     * @return DefaultIntegrationConfiguration|mixed
+     */
+    protected function buildConfiguration()
+    {
+        return new DefaultIntegrationConfiguration($this->getName(), $this->requiresExplicitTraceAnalyticsEnabling());
+    }
+
+    /**
+     * @return DefaultIntegrationConfiguration|mixed
+     */
+    protected function getConfiguration()
+    {
+        return $this->configuration;
+    }
+
     public static function load()
     {
-        if (!class_exists(static::CLASS_NAME)) {
-            return self::NOT_LOADED;
-        }
         // See comment on the commented out abstract function definition.
         static::loadIntegration();
-
         return self::LOADED;
     }
 
@@ -47,9 +104,14 @@ abstract class Integration
      * @param string $method
      * @param \Closure|null $preCallHook
      * @param \Closure|null $postCallHook
+     * @param Integration|null $integration
      */
-    protected static function traceMethod($method, \Closure $preCallHook = null, \Closure $postCallHook = null)
-    {
+    protected static function traceMethod(
+        $method,
+        \Closure $preCallHook = null,
+        \Closure $postCallHook = null,
+        Integration $integration = null
+    ) {
         $className = static::CLASS_NAME;
         $integrationClass = get_called_class();
         dd_trace($className, $method, function () use (
@@ -57,20 +119,30 @@ abstract class Integration
             $integrationClass,
             $method,
             $preCallHook,
-            $postCallHook
+            $postCallHook,
+            $integration
         ) {
-            $args = func_get_args();
-            $scope = GlobalTracer::get()->startActiveSpan($className . '.' . $method);
+            $tracer = GlobalTracer::get();
+            if ($tracer->limited()) {
+                return dd_trace_forward_call();
+            }
+
+            $scope = $tracer->startActiveSpan($className . '.' . $method);
             $span = $scope->getSpan();
+
+            if (null !== $integration) {
+                $span->setIntegration($integration);
+            }
+
             $integrationClass::setDefaultTags($span, $method);
             if (null !== $preCallHook) {
-                $preCallHook($span, $args);
+                $preCallHook($span, func_get_args());
             }
 
             $returnVal = null;
             $thrownException = null;
             try {
-                $returnVal = call_user_func_array([$this, $method], $args);
+                $returnVal = dd_trace_forward_call();
             } catch (\Exception $e) {
                 $span->setError($e);
                 $thrownException = $e;
@@ -103,14 +175,11 @@ abstract class Integration
      */
     protected static function shouldLoad($name)
     {
-        if ('cli' === PHP_SAPI && 'dd_testing' !== getenv('APP_ENV')) {
-            return false;
-        }
         if (!Configuration::get()->isIntegrationEnabled($name)) {
             return false;
         }
         if (!extension_loaded('ddtrace')) {
-            trigger_error('ddtrace extension required to load Laravel integration.', E_USER_WARNING);
+            trigger_error('ddtrace extension required to load integration.', E_USER_WARNING);
             return false;
         }
 

@@ -1,7 +1,269 @@
 # Changelog
+
 All notable changes to this project will be documented in this file - [read more](docs/changelog.md).
 
 ## [Unreleased]
+
+## [0.30.0]
+
+### Fixed
+- Shutdown span flushing blocking the process when forked #493
+- Memory access errors in cases when PHP code was run after extension data was freed on request shutdown #505
+- Request init hook working when open_basedir restriction is in effect #505
+- Ensure global resources are freed in shutdown #521 #523
+- Http transport not setting required `X-Datadog-Trace-Count` header #525
+
+### Changed
+- Remove `zend_execute_ex` override and trace `ZEND_DO_UCALL` #519
+
+## [0.29.0]
+
+### Fixed
+- Edge case where the extension version and userland version can get out of sync #488
+
+### Changed
+- Prefix hostnames as service names with `host-` to ensure compatibility with the Agent #490
+
+## [0.28.1]
+
+### Fixed
+- Race condition when reading configuration from within writer thread context #486
+
+## [0.28.0]
+
+### Added
+- Officially support Symfony 3.0 and 4.0 #475
+
+### Fixed
+- Stack level too deep error due to changes in how PHP interprets Opcodes caused by the extension #477
+
+### Changed
+- Backtrace handler will be run only once and will display information about maximum stack size being reached #478
+
+## [0.27.2]
+
+### Changed
+- Valgrind configuration to perform more thorough memory consistency verification #472
+
+### Fixed
+- Memory leak detected in tests #472
+
+## [0.27.1]
+
+### Fixed
+- Memory leak when garbage collecting span stacks #469
+
+## [0.27.0]
+
+### Added
+- Set the hostname of a URL as the service name for curl and Guzzle requests when `DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true` #459
+
+### Changed
+- Replace multiple calls to `mt_rand()` (32-bit) with one call to `dd_trace_generate_id()` which implements [MT19937-64](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/VERSIONS/C-LANG/mt19937-64.c) and returns a 63-bit unsigned integer as a string #449
+
+### Fixed
+- Traces no longer affect deterministic random from `mt_rand()` #449
+- Fix API change with Symfony 4.x EventDispatcher #466
+
+## [0.26.0]
+
+### Added
+- Initial implementation of flushing spans via background thread #450
+
+### Changed
+- URL-normalization rule boundaries #457
+
+## [0.25.0]
+
+### Added
+- Support for Slim Framework v3 #446
+- IPC based configurable Circuit breaker `DD_TRACE_AGENT_ATTEMPT_RETRY_TIME_MSEC` and `DD_TRACE_AGENT_MAX_CONSECUTIVE_FAILURES` used when communicating with the agent #440
+- Normalized URL's as resource names; a CSV string of URL-to-resource-name mapping rules with `*` and `$*` wildcards can be set from `DD_TRACE_RESOURCE_URI_MAPPING`. This feature is disabled by default to reduce cardinality in resource names; to enable this feature set `DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED=true` #442
+
+## [0.24.0]
+
+### Added
+- Tracer limited mode, stopping span creation when memory use raises to 80% of current PHP memory limit #437
+- Configurable Curl timeouts `DD_TRACE_AGENT_TIMEOUT` and `DD_TRACE_AGENT_CONNECT_TIMEOUT` when communicating with the agent #150
+- Configurable `DD_TRACE_REPORT_HOSTNAME` reporting of hostname via root span #441
+- Support for CakePHP v2 and Cake Console v2 #436
+
+### Fixed
+- Generation of `E_WARNING` in certain contexts of PHP 5 installs when the `date.timezone` INI setting is not set #435
+
+## [0.23.0]
+
+**NOTE: We changed the way the service name can be configured. Now you must use `DD_SERVICE_NAME` instead of `DD_TRACE_APP_NAME` for consistency with other tracers. Usage of `DD_TRACE_APP_NAME` is now deprecated and will be removed in a future release.**
+
+### Added
+- Support for [Lumen](https://lumen.laravel.com/) 5.2+ #416
+- Tracing support from the CLI SAPI #422
+- Support for Laravel Artisan #422
+
+### Changed
+- Now the way to configure service name is through `DD_SERVICE_NAME` instead of `DD_TRACE_APP_NAME` #432
+
+## [0.22.0]
+
+### Added
+- Official support for PHP 7.3 #429
+- Tracer limited mode where spans are not created to preserve resources #417
+
+### Fixed
+- Error when a subclassed integration returns an object that cannot be cast as a string #423
+
+## [0.21.0]
+
+### Added
+- `dd_trace_forward_call()` to forward the original call from within a tracing closure #284
+
+### Fixed
+- `parent::` keyword not honored from a subclass when forwarding a call from a tracing closure #284
+- Private and protected callable strings not resolved properly from a tracing closure #303
+
+## [0.20.0]
+
+### Added
+- Force tracing or discarding trace via special Span tag (manual.keep and manual.drop) #409
+
+### Fixed
+- Resource use by caching configuration values instead of processing data on every access #406
+
+## [0.19.1]
+
+### Fixed
+- Tracing of functions called using DO_FCALL_BY_NAME opcode #404
+- Curl headers not being correctly set #404
+
+## [0.19.0]
+
+### Changed
+- Span and SpanContext main implementation uses public fields to share data to allow faster serialization and overall Span overhead #398
+- `DDTrace\Encoders\SpanEncoder::encode()` now takes an instance of `DDTrace\Data\Span` instead of `DDTrace\Contracts\Span` #398
+- `DDTrace\Processing\TraceAnalyticsProcessor::process()` now takes an instance of `DDTrace\Data\Span` instead of `DDTrace\Contracts\Span` #398
+- Improve performance of setTag and setResource #398
+- Load required PHP files in one go #387
+- Load optional PHP files without filesystem check #387
+
+## [0.18.0]
+
+**NOTE: THIS IS A BREAKING CHANGE RELEASE**
+
+This change should not impact most users.
+
+### Added
+- MessagePack serialization for traces sent to the Agent with a new function `dd_trace_serialize_msgpack()` #378
+
+### Changed
+- Request init hook module blacklist now avoids miss matching partial matches #372
+- Add 10MB cap to payloads sent to the Agent #388
+- Added an `getTracesAsArray()` method to `DDTrace\Contracts\Tracer` which returns an array of spans (which are also encoded as an array.) To encode an instance of `DDTrace\Contracts\Span` as an array, use `DDTrace\Encoders\SpanEncoder::encode($span)` #378
+- `DDTrace\Transport::send()` now takes an instance of `DDTrace\Contracts\Tracer` instead of an `array` #378
+- `DDTrace\Encoder::encodeTraces()` now takes an instance of `DDTrace\Contracts\Tracer` instead of an `array` #378
+- The default encoder is now `DDTrace\Encoders\MessagePack`. You can still use the JSON encoder by setting the environment variable `DD_TRACE_ENCODER=json`. It is generally not recommended to use the JSON encoder as parsing JSON payloads at the Agent level is more CPU & memory intensive.
+
+## [0.17.0]
+
+### Added
+- Integration aware spans #360
+- Trace Analytics Client Configuration #367
+
+## [0.16.1]
+
+### Fixed
+- Error traces don't appear in "Total Errors" panel #375
+
+## [0.16.0]
+
+### Changed
+- When shutdown hook is executed we disable all tracing to avoid creating unnecessary spans #361
+- Inside request init hook we disable all function tracing when we decide not to trace #361
+
+### Added
+- Disable request_init_hook functionality in presence of blacklisted modules via `ddtrace.internal_blacklisted_modules_list=some_module,some_other_module` #345 & #370
+- Integration-level configuration #354
+- `dd_trace_disable_in_request` function which disables all function tracing until request ends #361
+
+### Fixed
+- Symfony template rendering spans #359
+- Laravel integration user ID errors #363
+- Non-success HTTP response codes aren't properly categorized as errors in the APM UI #366
+
+## [0.15.1]
+
+### Added
+- Symfony 2.3 web tests for resource name #349
+- Update images and enable leak detection, split tests in CI to Unit, Integration and Web #299
+
+### Fixed
+- Resource name on Symfony 2.x requests served through controllers #341
+- Sanitize url in web spans #344
+- Laravel 5.8 compatibility #351
+
+## [0.15.0]
+
+### Changed
+- Removed beta references and get ready for GA #339
+
+## [0.14.2]
+
+### Fixed
+- Ensure Function name is safely copied to avoid freeing persistent string #333
+
+## [0.14.1]
+
+### Fixed
+- Large number of mysqli spans not containing relevant information #330
+
+## [0.14.0]
+
+### Added
+- Loading of integrations before knowing if the library will be actually used #319
+- Ability to define tracing for not yet defined methods and classes #325
+
+## [0.13.4]
+
+Special thanks to @stayallive for helping us debugging the memory issues in his environment! His help and guidance were
+of paramount importance.
+
+### Fixed
+- Accessing freed memory when instrumentation code un/instrumented itself #314
+- Freeing `$this` object prematurely in PHP-FPM VM #317
+
+## [0.13.3]
+
+### Fixed
+- 7.x handling of `$this` pointer passed to the closure causing errors in PHP VM #311
+
+## [0.13.2]
+
+### Added
+- Optional extension .so files compiled with "-g" flag #306
+- Log backtrace on segmentation fault, enabled via ddtrace.log_backtrace=1 #300
+
+### Fixed
+- Auto-instrumentation when user's autoloader throws exception on not found #305
+
+## [0.13.1]
+
+### Fixed
+- Honor ddtrace provided by composer if user provided one #276
+- Remove unused function that was moved to dispatch_table_dtor() #291
+- PHP 5.4 incorrectly handling nested internal functions #295
+
+## [0.13.0]
+
+### Added
+- Span::setResource as a legit method # 287
+- Logging more span's info when in debug mode # 292
+
+### Fixed
+- Symfony 4.2 traces generation #280
+- Memory leak and misshandling of return value in PHP 5.4 #281
+- Drupal crashes (temporary workaround) #285
+- Tracing of http status code in generic web requests #288
+- Route not set in symfony 3.4 when user calls exit() #289
+- Fix hash table dtor for PHP 7 #290
 
 ## [0.12.2]
 
@@ -274,7 +536,37 @@ At an high level here are the breaking changes we introduced:
 ### Added
 - OpenTracing compliance tha can be used for manual instrumentation
 
-[Unreleased]: https://github.com/DataDog/dd-trace-php/compare/0.12.2...HEAD
+[Unreleased]: https://github.com/DataDog/dd-trace-php/compare/0.30.0...HEAD
+[0.30.0]: https://github.com/DataDog/dd-trace-php/compare/0.29.0...0.30.0
+[0.29.0]: https://github.com/DataDog/dd-trace-php/compare/0.28.1...0.29.0
+[0.28.1]: https://github.com/DataDog/dd-trace-php/compare/0.28.0...0.28.1
+[0.28.0]: https://github.com/DataDog/dd-trace-php/compare/0.27.2...0.28.0
+[0.27.2]: https://github.com/DataDog/dd-trace-php/compare/0.27.1...0.27.2
+[0.27.1]: https://github.com/DataDog/dd-trace-php/compare/0.27.0...0.27.1
+[0.27.0]: https://github.com/DataDog/dd-trace-php/compare/0.26.0...0.27.0
+[0.26.0]: https://github.com/DataDog/dd-trace-php/compare/0.25.0...0.26.0
+[0.25.0]: https://github.com/DataDog/dd-trace-php/compare/0.24.0...0.25.0
+[0.24.0]: https://github.com/DataDog/dd-trace-php/compare/0.23.0...0.24.0
+[0.23.0]: https://github.com/DataDog/dd-trace-php/compare/0.22.0...0.23.0
+[0.22.0]: https://github.com/DataDog/dd-trace-php/compare/0.21.0...0.22.0
+[0.21.0]: https://github.com/DataDog/dd-trace-php/compare/0.20.0...0.21.0
+[0.20.0]: https://github.com/DataDog/dd-trace-php/compare/0.19.1...0.20.0
+[0.19.1]: https://github.com/DataDog/dd-trace-php/compare/0.19.0...0.19.1
+[0.19.0]: https://github.com/DataDog/dd-trace-php/compare/0.18.0...0.19.0
+[0.18.0]: https://github.com/DataDog/dd-trace-php/compare/0.17.0...0.18.0
+[0.17.0]: https://github.com/DataDog/dd-trace-php/compare/0.16.1...0.17.0
+[0.16.1]: https://github.com/DataDog/dd-trace-php/compare/0.16.0...0.16.1
+[0.16.0]: https://github.com/DataDog/dd-trace-php/compare/0.15.1...0.16.0
+[0.15.1]: https://github.com/DataDog/dd-trace-php/compare/0.15.0...0.15.1
+[0.15.0]: https://github.com/DataDog/dd-trace-php/compare/0.14.2...0.15.0
+[0.14.2]: https://github.com/DataDog/dd-trace-php/compare/0.14.1...0.14.2
+[0.14.1]: https://github.com/DataDog/dd-trace-php/compare/0.14.0...0.14.1
+[0.14.0]: https://github.com/DataDog/dd-trace-php/compare/0.13.4...0.14.0
+[0.13.4]: https://github.com/DataDog/dd-trace-php/compare/0.13.3...0.13.4
+[0.13.3]: https://github.com/DataDog/dd-trace-php/compare/0.13.2...0.13.3
+[0.13.2]: https://github.com/DataDog/dd-trace-php/compare/0.13.1...0.13.2
+[0.13.1]: https://github.com/DataDog/dd-trace-php/compare/0.13.0...0.13.1
+[0.13.0]: https://github.com/DataDog/dd-trace-php/compare/0.12.2...0.13.0
 [0.12.2]: https://github.com/DataDog/dd-trace-php/compare/0.12.1...0.12.2
 [0.12.1]: https://github.com/DataDog/dd-trace-php/compare/0.12.0...0.12.1
 [0.12.0]: https://github.com/DataDog/dd-trace-php/compare/0.11.0...0.12.0
@@ -304,3 +596,4 @@ At an high level here are the breaking changes we introduced:
 [0.2.0]: https://github.com/DataDog/dd-trace-php/compare/v0.1.2...0.2.0
 [0.1.2]: https://github.com/DataDog/dd-trace-php/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/DataDog/dd-trace-php/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/DataDog/dd-trace-php/compare/29ee1d9f9fac5076cd0c96f8b8e9b205f15fb660...v0.1.0

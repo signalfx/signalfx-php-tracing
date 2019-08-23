@@ -5,6 +5,9 @@ namespace DDTrace\Tests\Unit;
 use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
+use DDTrace\Sampling\PrioritySampling;
+use DDTrace\GlobalTracer;
+use DDTrace\Tracer;
 use Exception;
 use PHPUnit\Framework;
 
@@ -21,6 +24,29 @@ final class SpanTest extends Framework\TestCase
     const TAG_VALUE = 'test_value';
     const EXCEPTION_MESSAGE = 'exception message';
     const DUMMY_STACK_TRACE = 'dummy stack trace';
+
+    /**
+     * @var Tracer|MockInterface
+     */
+    private $tracer;
+
+
+    /**
+     * @var Tracer
+     */
+    private $oldTracer;
+
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->tracer = new Tracer();
+        $this->oldTracer = \DDTrace\GlobalTracer::get();
+        \DDTrace\GlobalTracer::set($this->tracer);
+    }
+    protected function tearDown()
+    {
+        \DDTrace\GlobalTracer::set($this->oldTracer);
+    }
 
     public function testCreateSpanSuccess()
     {
@@ -68,6 +94,14 @@ final class SpanTest extends Framework\TestCase
 
         $span->setTag(Tag::ERROR, false);
         $this->assertFalse($span->hasError());
+    }
+
+    public function testSpanTagWithObjectIsIgnored()
+    {
+        $span = $this->createSpan();
+        $span->setTag('foo', new \stdClass());
+
+        $this->assertNull($span->getTag('foo'));
     }
 
     public function testLogWithErrorBoolProperlyMarksError()
@@ -151,6 +185,14 @@ final class SpanTest extends Framework\TestCase
         $this->assertFalse($span->hasError());
     }
 
+    public function testSpanSetResource()
+    {
+        $span = $this->createSpan();
+        $span->setResource('modified_test_resource');
+
+        $this->assertSame('modified_test_resource', $span->getResource());
+    }
+
     /**
      * @expectedException \DDTrace\Exceptions\InvalidSpanArgument
      * @expectedExceptionMessage Error should be either Exception or Throwable, got integer.
@@ -181,6 +223,115 @@ final class SpanTest extends Framework\TestCase
     {
         $span = $this->createSpan();
         $span->setTag(1, self::TAG_VALUE);
+    }
+
+    public function testHttpUrlIsSanitizedInTag()
+    {
+        $span = $this->createSpan();
+        $url = 'https://example.com/some/path/index.php?some=param&other=param';
+
+        $span->setTag(Tag::HTTP_URL, $url);
+        $this->assertSame('https://example.com/some/path/index.php', $span->getAllTags()[Tag::HTTP_URL]);
+    }
+
+    public function testForceTracingTagKeepsTrace()
+    {
+        $span = $this->createSpan();
+        $this->assertSame(PrioritySampling::UNKNOWN, $this->tracer->getPrioritySampling());
+        $span->setTag(Tag::MANUAL_KEEP, null);
+        $this->assertSame(PrioritySampling::USER_KEEP, $this->tracer->getPrioritySampling());
+    }
+
+    public function testForceDropTracingTagRejectsTrace()
+    {
+        $span = $this->createSpan();
+        $this->assertSame(PrioritySampling::UNKNOWN, $this->tracer->getPrioritySampling());
+        $span->setTag(Tag::MANUAL_DROP, null);
+        $this->assertSame(PrioritySampling::USER_REJECT, $this->tracer->getPrioritySampling());
+    }
+
+    public function testHasTag()
+    {
+        $span = $this->createSpan();
+        $span->setTag('exists', 'yes');
+
+        $this->assertTrue($span->hasTag('exists'));
+        $this->assertFalse($span->hasTag('other'));
+    }
+
+    public function testMetricsSetGet()
+    {
+        $span = $this->createSpan();
+        $span->setMetric('exists', 1.0);
+
+        $this->assertSame(1.0, $span->getMetrics()['exists']);
+    }
+
+    public function testIsTraceAnalyticsConfigCandidate()
+    {
+        $span = $this->createSpan();
+        $this->assertFalse($span->isTraceAnalyticsCandidate());
+        $span->setTraceAnalyticsCandidate();
+        $this->assertTrue($span->isTraceAnalyticsCandidate());
+        $span->setTraceAnalyticsCandidate(false);
+        $this->assertFalse($span->isTraceAnalyticsCandidate());
+    }
+
+    public function testTraceAnalyticsConfigEnabledByTag()
+    {
+        $span = $this->createSpan();
+        $span->setTag(Tag::ANALYTICS_KEY, 0.5);
+
+        $this->assertSame(0.5, $span->getMetrics()[Tag::ANALYTICS_KEY]);
+    }
+
+    public function testTraceAnalyticsConfigEnabledByMetric()
+    {
+        $span = $this->createSpan();
+        $span->setMetric(Tag::ANALYTICS_KEY, 0.5);
+
+        $this->assertSame(0.5, $span->getMetrics()[Tag::ANALYTICS_KEY]);
+    }
+
+    public function testTraceAnalyticsConfigEnabledTrueResultTo1()
+    {
+        $span = $this->createSpan();
+        $span->setMetric(Tag::ANALYTICS_KEY, true);
+
+        $this->assertSame(1.0, $span->getMetrics()[Tag::ANALYTICS_KEY]);
+    }
+
+    public function testTraceAnalyticsConfigDisabled()
+    {
+        $span = $this->createSpan();
+        $span->setMetric(Tag::ANALYTICS_KEY, true);
+        $this->assertSame(1.0, $span->getMetrics()[Tag::ANALYTICS_KEY]);
+
+        $span->setMetric(Tag::ANALYTICS_KEY, false);
+        $this->assertArrayNotHasKey(Tag::ANALYTICS_KEY, $span->getMetrics());
+    }
+
+    public function testTraceAnalyticsConfigSpecificRate()
+    {
+        $span = $this->createSpan();
+        $span->setMetric(Tag::ANALYTICS_KEY, 0.3);
+        $this->assertSame(0.3, $span->getMetrics()[Tag::ANALYTICS_KEY]);
+    }
+
+    public function testSpanCreationDoesNotInterfereWithDeterministicRandomness()
+    {
+        // Ensures old mt_rand() behavior before PHP 7.1 changes
+        if (PHP_VERSION >= '70100') {
+            mt_srand(42, MT_RAND_PHP);
+        } else {
+            mt_srand(42);
+        }
+        mt_rand(); // The first number is different on PHP <= 7.0 for some reason...
+        $randInts = [mt_rand()];
+        $this->createSpan();
+        $randInts[] = mt_rand();
+
+        $this->assertSame([1710563033, 2041643438], $randInts);
     }
 
     private function createSpan()

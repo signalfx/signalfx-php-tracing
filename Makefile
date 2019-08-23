@@ -1,15 +1,18 @@
+SHELL := /bin/bash
 BUILD_SUFFIX := extension
 BUILD_DIR := tmp/build_$(BUILD_SUFFIX)
 SO_FILE := $(BUILD_DIR)/modules/ddtrace.so
 WALL_FLAGS := -Wall -Wextra
 CFLAGS := -O2 $(WALL_FLAGS)
-VERSION:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2)
-VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/Tracer.php | grep VERSION | awk '{print $$NF}' | cut -d\' -f2 | cut -d- -f1,3)
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+VERSION:=$(shell cat src/DDTrace/version.php | grep return | awk '{print $$2}' | cut -d\' -f2)
+VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/version.php | grep return | awk '{print $$2}' | cut -d\' -f2 | cut -d- -f1)
 
 INI_FILE := /usr/local/etc/php/conf.d/ddtrace.ini
 
 C_FILES := $(shell find src/ext -name '*.c' -o -name '*.h' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
-TEST_FILES := $(shell find tests/ext -name '*.phpt' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
+TEST_FILES := $(shell find tests/ext -name '*.php*' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
 
 ALL_FILES := $(C_FILES) $(TEST_FILES) $(BUILD_DIR)/config.m4
 
@@ -17,6 +20,8 @@ $(BUILD_DIR)/%: %
 	$(Q) echo Copying $* to build dir
 	$(Q) mkdir -p $(dir $@)
 	$(Q) cp -a $* $@
+
+JUNIT_RESULTS_DIR := $(shell pwd)
 
 all: $(BUILD_DIR)/configure $(SO_FILE)
 Q := @
@@ -40,11 +45,25 @@ install_ini: $(INI_FILE)
 
 install_all: install install_ini
 
+test_c: export DD_TRACE_CLI_ENABLED=1
 test_c: $(SO_FILE)
-	$(MAKE) -C $(BUILD_DIR) test TESTS="-q --show-all $(TESTS)"
+	$(MAKE) -C $(BUILD_DIR) test TESTS="-q --show-all -d ddtrace.request_init_hook=$(ROOT_DIR)/bridge/dd_wrap_autoloader.php $(TESTS)"
 
+test_c_mem: export DD_TRACE_CLI_ENABLED=1
 test_c_mem: $(SO_FILE)
-	$(MAKE) -C $(BUILD_DIR) test TESTS="-q --show-all -m $(TESTS)"
+	$(MAKE) -C $(BUILD_DIR) test TESTS="-q --show-all -d ddtrace.request_init_hook=$(ROOT_DIR)/bridge/dd_wrap_autoloader.php -m $(TESTS)"
+
+test_extension_ci: $(SO_FILE)
+	( \
+	set -xe; \
+	export REPORT_EXIT_STATUS=1; \
+	\
+	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/normal-extension-test.xml; \
+	$(MAKE) -C $(BUILD_DIR) test  TESTS="-q --show-all $(TESTS)" && grep -e 'errors="0"' $$TEST_PHP_JUNIT; \
+	\
+	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/valgrind-extension-test.xml; \
+	$(MAKE) -C $(BUILD_DIR) test  TESTS="-q  -m --show-all $(TESTS)" && grep -e 'errors="0"' $$TEST_PHP_JUNIT; \
+	)
 
 test_integration: install_ini
 	composer test -- $(PHPUNIT)
@@ -61,8 +80,36 @@ sudo:
 debug:
 	$(eval CFLAGS="-g")
 
-EXT_DIR:=/opt/signalfx-php
-PACKAGE_NAME:=signalfx-php-tracer
+strict:
+	$(eval CFLAGS=-Wall -Werror -Wextra)
+
+clang_find_files_to_lint:
+	@find ./ \
+	-path ./tmp -prune -o \
+	-path ./vendor -prune -o \
+	-path ./tests -prune -o \
+	-path ./src/ext/mpack -prune -o \
+	-path ./src/ext/third-party -prune -o \
+	-iname "*.h" -o -iname "*.c" \
+	-type f
+
+CLANG_FORMAT := clang-format-6.0
+
+clang_format_check:
+	@while read fname; do \
+		changes=$$($(CLANG_FORMAT) -output-replacements-xml $$fname | grep -c "<replacement " || true); \
+		if [ $$changes != 0 ]; then \
+			$(CLANG_FORMAT) -output-replacements-xml $$fname; \
+			echo "$$fname did not pass clang-format, consider running: make clang_format_fix"; \
+			touch .failure; \
+		fi \
+	done <<< $$($(MAKE) clang_find_files_to_lint)
+
+clang_format_fix:
+	$(MAKE) clang_find_files_to_lint | xargs clang-format -i
+
+EXT_DIR:=/opt/signalfx-php-tracing
+PACKAGE_NAME:=signalfx-tracing
 FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m support@signalfx.com --license "BSD 3-Clause License" --version $(VERSION) \
 	--provides $(PACKAGE_NAME) --vendor DataDog  --url "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" --no-depends
 FPM_DIR_OPTS=--directories $(EXT_DIR)/etc --config-files $(EXT_DIR)/etc -s dir
@@ -72,7 +119,6 @@ FPM_FILES=extensions/=$(EXT_DIR)/extensions \
 	src=$(EXT_DIR)/dd-trace-sources \
 	bridge=$(EXT_DIR)/dd-trace-sources
 FPM_OPTS=$(FPM_INFO_OPTS) $(FPM_DIR_OPTS) --after-install=package/post-install.sh --depends="php > 7"
-
 
 PACKAGES_BUILD_DIR:=build/packages
 
@@ -92,18 +138,19 @@ packages: .apk .rpm .deb .tar.gz
 	tar -zcf packages.tar.gz $(PACKAGES_BUILD_DIR)
 
 verify_pecl_file_definitions:
-	@for i in src/ext/*.c src/ext/*.h tests/ext/*.phpt; do\
-		k=$$(basename $$i); \
-		grep -q $$k package.xml || ( echo missing $$k && exit 1); \
+	@for i in $(notdir $(C_FILES) $(TEST_FILES)); do\
+		grep -q $$i package.xml && continue;\
+		echo package.xml is missing \"$$i\"; \
+		exit 1;\
 	done
 	@echo "PECL file definitions are correct"
 
 verify_version:
-	@grep -q "<release>$(VERSION_WITHOUT_SUFFIX)</release>" package.xml || (echo package.xml release version missmatch && exit 1)
-	@grep -q "<api>$(VERSION_WITHOUT_SUFFIX)</api>" package.xml || (echo package.xml api version missmatch && exit 1)
 	@grep -q "#define PHP_DDTRACE_VERSION \"$(VERSION)" src/ext/version.h || (echo src/ext/version.h Version missmatch && exit 1)
+	@grep -q "const VERSION = '$(VERSION)" src/DDTrace/Tracer.php || (echo src/DDTrace/Tracer.php Version missmatch && exit 1)
 	@echo "All version files match"
 
 verify_all: verify_pecl_file_definitions verify_version
 
-.PHONY: dist_clean clean all install sudo_install test_c test_c_mem test test_integration install_ini install_all .apk .rpm .deb .tar.gz sudo debug run-tests.php verify_pecl_file_definitions verify_version verify_all
+.PHONY: dist_clean clean all clang_format_check clang_format_fix install sudo_install test_c test_c_mem test_extension_ci test test_integration install_ini install_all \
+	.apk .rpm .deb .tar.gz sudo debug strict run-tests.php verify_pecl_file_definitions verify_version verify_package_xml verify_all

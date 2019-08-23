@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Common;
 
+use DDTrace\Tag;
 
 final class SpanAssertion
 {
@@ -13,10 +14,13 @@ final class SpanAssertion
     private $exactTags = SpanAssertion::NOT_TESTED;
     /** @var string[] Tags the MUST be present but with any value */
     private $existingTags = ['system.pid'];
+    /** @var array Exact metrics set on the span */
+    private $exactMetrics = SpanAssertion::NOT_TESTED;
     private $service = SpanAssertion::NOT_TESTED;
     private $type = SpanAssertion::NOT_TESTED;
     private $resource = SpanAssertion::NOT_TESTED;
     private $onlyCheckExistence = false;
+    private $isTraceAnalyticsCandidate = false;
 
     /**
      * @param string $name
@@ -50,15 +54,25 @@ final class SpanAssertion
      * @param array $exactTags
      * @param null $parent
      * @param bool $error
+     * @param array $extactMetrics
      * @return SpanAssertion
      */
-    public static function build($name, $service, $type, $resource, $exactTags = [], $parent = null, $error = false)
-    {
+    public static function build(
+        $name,
+        $service,
+        $type,
+        $resource,
+        $exactTags = [],
+        $parent = null,
+        $error = false,
+        $extactMetrics = []
+    ) {
         return SpanAssertion::forOperation($name, $error)
             ->service($service)
             ->resource($resource)
             ->type($type)
             ->withExactTags($exactTags)
+            ->withExactMetrics($extactMetrics)
         ;
     }
 
@@ -74,11 +88,24 @@ final class SpanAssertion
     }
 
     /**
+     * @param string|null $errorType The expected error.type
+     * @param string|null $errorMessage The expected error.msg
      * @return $this
      */
-    public function setError()
+    public function setError($errorType = null, $errorMessage = null)
     {
         $this->hasError = true;
+        if (isset($this->exactTags[Tag::ERROR_TYPE])) {
+            return $this;
+        }
+        if (null !== $errorType) {
+            $this->exactTags[Tag::ERROR_TYPE] = $errorType;
+        } else {
+            $this->existingTags[] = Tag::ERROR_TYPE;
+        }
+        if (null !== $errorMessage) {
+            $this->exactTags[Tag::ERROR_MSG] = $errorMessage;
+        }
         return $this;
     }
 
@@ -88,7 +115,21 @@ final class SpanAssertion
      */
     public function withExactTags(array $tags)
     {
-        $this->exactTags = $tags;
+        if (is_array($this->exactTags)) {
+            $this->exactTags = array_merge($this->exactTags, $tags);
+        } else {
+            $this->exactTags = $tags;
+        }
+        return $this;
+    }
+
+    /**
+     * @param array $metrics
+     * @return $this
+     */
+    public function withExactMetrics(array $metrics)
+    {
+        $this->exactMetrics = $metrics;
         return $this;
     }
 
@@ -201,5 +242,41 @@ final class SpanAssertion
     public function isOnlyCheckExistence()
     {
         return $this->onlyCheckExistence;
+    }
+
+    /**
+     * @return self
+     */
+    public function setTraceAnalyticsCandidate()
+    {
+        $this->isTraceAnalyticsCandidate = true;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTraceAnalyticsCandidate()
+    {
+        return $this->isTraceAnalyticsCandidate;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExactMetrics()
+    {
+        return $this->exactMetrics;
+    }
+
+    /**
+     * @return array
+     */
+    public function getNotTestedMetricNames()
+    {
+        return [
+            '_sampling_priority_v1',
+            '_dd1.sr.eausr',
+        ];
     }
 }

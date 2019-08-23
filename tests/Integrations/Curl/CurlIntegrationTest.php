@@ -14,15 +14,40 @@ use DDTrace\GlobalTracer;
 use DDTrace\Util\HexConversion;
 use DDTrace\Util\Versions;
 
+class PrivateCallbackRequest
+{
+    private static function parseResponseHeaders($ch, $headers)
+    {
+        return strlen($headers);
+    }
+
+    public function request()
+    {
+        $ch = curl_init(CurlIntegrationTest::URL . '/status/200');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, __CLASS__ . '::parseResponseHeaders');
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
+    }
+}
+
 final class CurlIntegrationTest extends IntegrationTestCase
 {
     const URL = 'http://httpbin_integration';
-    const URL_NOT_EXISTS = 'http://__i_am_not_real__.invalid';
+    const URL_NOT_EXISTS = 'http://__i_am_not_real__.invalid/';
 
-    public static function setUpBeforeClass()
+    public function setUp()
     {
-        parent::setUpBeforeClass();
+        parent::setUp();
+        putenv('DD_CURL_ANALYTICS_ENABLED=true');
         IntegrationsLoader::load();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        putenv('DD_CURL_ANALYTICS_ENABLED');
     }
 
     public function testLoad200UrlOnInit()
@@ -37,6 +62,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://httpbin_integration/status/200')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => self::URL . '/status/200',
                     'http.status_code' => '200',
@@ -46,12 +72,8 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
     public function testSampleExternalAgent()
     {
-        if (Versions::phpVersionMatches('5.4')) {
-            $message = 'Strange behavior from the curl call to retrieve spans from teh fake agent. ' .
-                'Skipping this test for now on php 5.4 as the real behavior is tested in web framework tests.';
-            $this->markTestSkipped($message);
-        }
-
+        putenv('DD_CURL_ANALYTICS_ENABLED');
+        Configuration::clear();
         $traces = $this->simulateAgent(function () {
             $ch = curl_init(self::URL . '/status/200');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -82,6 +104,25 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://httpbin_integration/status/200')
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags([
+                    'http.url' => self::URL . '/status/200',
+                    'http.status_code' => '200',
+                ]),
+        ]);
+    }
+
+    public function testPrivateCallbackForResponseHeaders()
+    {
+        $traces = $this->isolateTracer(function () {
+            $foo = new PrivateCallbackRequest();
+            $response = $foo->request();
+            $this->assertEmpty($response);
+        });
+
+        $this->assertSpans($traces, [
+            SpanAssertion::build('curl_exec', 'curl', 'http', 'http://httpbin_integration/status/200')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => self::URL . '/status/200',
                     'http.status_code' => '200',
@@ -101,6 +142,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://httpbin_integration/status/404')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => self::URL . '/status/404',
                     'http.status_code' => '404',
@@ -120,13 +162,13 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://10.255.255.1/')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => 'http://10.255.255.1/',
                     'http.status_code' => '0',
-                    'error.type' => 'curl error',
                 ])
                 ->withExistingTagsNames(['error.msg'])
-                ->setError(),
+                ->setError('curl error'),
         ]);
     }
 
@@ -142,13 +184,13 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://10.255.255.1/')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => 'http://10.255.255.1/',
                     'http.status_code' => '0',
-                    'error.type' => 'curl error',
                 ])
                 ->withExistingTagsNames(['error.msg'])
-                ->setError(),
+                ->setError('curl error'),
         ]);
     }
 
@@ -164,13 +206,12 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build('curl_exec', 'curl', 'http', 'http://__i_am_not_real__.invalid/')
+                ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'http.url' => 'http://__i_am_not_real__.invalid/',
                     'http.status_code' => '0',
-                    'error.msg' => 'Could not resolve host: __i_am_not_real__.invalid',
-                    'error.type' => 'curl error',
                 ])
-                ->setError(),
+                ->setError('curl error', 'Could not resolve host: __i_am_not_real__.invalid'),
         ]);
     }
 
@@ -190,7 +231,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
             /** @var Tracer $tracer */
             $tracer = GlobalTracer::get();
             $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
-            $span = $tracer->startActiveSpan('some_operation')->getSpan();
+            $span = $tracer->startActiveSpan('custom')->getSpan();
 
             $ch = curl_init(self::URL . '/headers');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -204,12 +245,12 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         // trace is: some_operation
         $this->assertSame(
-            HexConversion::idToHex($traces[0][0]->getContext()->getSpanId()),
+            HexConversion::idToHex($traces[0][0]['span_id']),
             $found['headers']['X-B3-Traceid']
         );
         // parent is: curl_exec
         $this->assertSame(
-            HexConversion::idToHex($traces[0][1]->getContext()->getSpanId()),
+            HexConversion::idToHex($traces[0][1]['span_id']),
             $found['headers']['X-B3-Spanid']
         );
         // existing headers are honored
@@ -219,18 +260,21 @@ final class CurlIntegrationTest extends IntegrationTestCase
     public function testDistributedTracingIsNotPropagatedIfDisabled()
     {
         $found = [];
-        Configuration::replace(\Mockery::mock('\DDTrace\Configuration', [
+        Configuration::replace(\Mockery::mock(Configuration::get(), [
             'isAutofinishSpansEnabled' => false,
+            'isAnalyticsEnabled' => false,
             'isDistributedTracingEnabled' => false,
             'isPrioritySamplingEnabled' => false,
             'getGlobalTags' => [],
+            'getSpansLimit' => -1,
+            'isDebugModeEnabled' => false,
         ]));
 
         $this->isolateTracer(function () use (&$found) {
             /** @var Tracer $tracer */
             $tracer = GlobalTracer::get();
             $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
-            $span = $tracer->startActiveSpan('some_operation')->getSpan();
+            $span = $tracer->startActiveSpan('custom')->getSpan();
 
             $ch = curl_init(self::URL . '/headers');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -241,5 +285,88 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         $this->assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
         $this->assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
+    }
+
+    public function testTracerIsRunningAtLimitedCapacityWeStillPropagateTheSpan()
+    {
+        $found = [];
+        Configuration::replace(\Mockery::mock(Configuration::get(), [
+            'getSpansLimit' => 0
+        ]));
+
+        $traces = $this->isolateTracer(function () use (&$found) {
+            /** @var Tracer $tracer */
+            $tracer = GlobalTracer::get();
+            $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
+            $span = $tracer->startActiveSpan('custom')->getSpan();
+
+            $ch = curl_init(self::URL . '/headers');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'honored: preserved_value',
+            ]);
+            $found = json_decode(curl_exec($ch), 1);
+
+            $span->finish();
+        });
+
+        // existing headers are honored
+        $this->assertSame('preserved_value', $found['headers']['Honored']);
+
+        $this->assertEquals(1, sizeof($traces[0]));
+
+        // trace is: custom
+        $this->assertSame(HexConversion::idToHex($traces[0][0]['trace_id']), $found['headers']['X-B3-Traceid']);
+        // parent is: custom
+        $this->assertSame(HexConversion::idToHex($traces[0][0]['span_id']), $found['headers']['X-B3-Spanid']);
+    }
+
+    public function testTracerRunningAtLimitedCapacityCurlWorksWithoutARootSpan()
+    {
+        $found = [];
+        $traces = $this->isolateLimitedTracer(function () use (&$found) {
+            /** @var Tracer $tracer */
+            $ch = curl_init(self::URL . '/headers');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'honored: preserved_value',
+            ]);
+            $found = json_decode(curl_exec($ch), 1);
+        });
+
+        // existing headers are honored
+        $this->assertSame('preserved_value', $found['headers']['Honored']);
+
+        $this->assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
+        $this->assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
+
+        $this->assertEmpty($traces);
+    }
+
+    public function testAppendHostnameToServiceName()
+    {
+        putenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
+
+        $traces = $this->isolateTracer(function () {
+            $ch = curl_init(self::URL . '/status/200');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+            $this->assertSame('', $response);
+            curl_close($ch);
+        });
+
+        $this->assertSpans($traces, [
+            SpanAssertion::build(
+                'curl_exec',
+                'host-httpbin_integration',
+                'http',
+                'http://httpbin_integration/status/200'
+            )
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags([
+                    'http.url' => self::URL . '/status/200',
+                    'http.status_code' => '200',
+                ]),
+        ]);
     }
 }

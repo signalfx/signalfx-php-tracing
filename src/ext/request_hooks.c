@@ -1,9 +1,72 @@
 #include "request_hooks.h"
-#include "compat_zend_string.h"
 
 #include <Zend/zend.h>
 #include <Zend/zend_compile.h>
 #include <php_main.h>
+#include <string.h>
+
+#include "compat_zend_string.h"
+#include "ddtrace.h"
+#include "env_config.h"
+#include "logging.h"
+
+ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+
+#define DELIMETER ','
+static int find_exact_match(const char *haystack, const char *needle) {
+    int found = 0;
+    const char *match, *haystack_ptr = haystack;
+    size_t needle_len = strlen(needle);
+
+    while ((match = strstr(haystack_ptr, needle)) != NULL) {
+        haystack_ptr = match + needle_len;
+        if (match > haystack && *(match - 1) != DELIMETER) {
+            continue;
+        }
+
+        if (*haystack_ptr == '\0' || *haystack_ptr == DELIMETER) {
+            found = 1;
+            break;
+        }
+    }
+
+    return found;
+}
+
+int dd_no_blacklisted_modules(TSRMLS_D) {
+    int no_blacklisted_modules = 1;
+
+    char *blacklist = DDTRACE_G(internal_blacklisted_modules_list);
+    zend_module_entry *module;
+
+    if (blacklist == NULL) {
+        return no_blacklisted_modules;
+    }
+
+#if PHP_VERSION_ID < 70000
+    HashPosition pos;
+    zend_hash_internal_pointer_reset_ex(&module_registry, &pos);
+
+    while (zend_hash_get_current_data_ex(&module_registry, (void *)&module, &pos) != FAILURE) {
+        if (module && module->name && find_exact_match(blacklist, module->name)) {
+            ddtrace_log_errf("Found blacklisted module: %s, disabling conflicting functionality", module->name);
+            no_blacklisted_modules = 0;
+            break;
+        }
+        zend_hash_move_forward_ex(&module_registry, &pos);
+    }
+#else
+    ZEND_HASH_FOREACH_PTR(&module_registry, module) {
+        if (module && module->name && find_exact_match(blacklist, module->name)) {
+            ddtrace_log_errf("Found blacklisted module: %s, disabling conflicting functionality", module->name);
+            no_blacklisted_modules = 0;
+            break;
+        }
+    }
+    ZEND_HASH_FOREACH_END();
+#endif
+    return no_blacklisted_modules;
+}
 
 #if PHP_VERSION_ID < 70000
 int dd_execute_php_file(const char *filename TSRMLS_DC) {
@@ -16,6 +79,10 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
     zend_op_array *new_op_array;
     zval *result = NULL;
     int ret;
+
+    BOOL_T rv = FALSE;
+    char *original_open_basedir = PG(open_basedir);
+    PG(open_basedir) = NULL;
 
     ret = php_stream_open_for_zend_ex(filename, &file_handle, USE_PATH | STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
 
@@ -47,11 +114,12 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
                     zval_ptr_dtor(EG(return_value_ptr_ptr));
                 }
             }
-
-            return 1;
+            rv = TRUE;
         }
     }
-    return 0;
+
+    PG(open_basedir) = original_open_basedir;
+    return rv;
 }
 #else
 
@@ -64,8 +132,9 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
     zend_file_handle file_handle;
     zend_op_array *new_op_array;
     zval result;
-    int ret;
-
+    int ret, rv = FALSE;
+    char *original_open_basedir = PG(open_basedir);
+    PG(open_basedir) = NULL;
     ret = php_stream_open_for_zend_ex(filename, &file_handle, USE_PATH | STREAM_OPEN_FOR_INCLUDE);
 
     if (ret == SUCCESS) {
@@ -92,10 +161,11 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
             if (!EG(exception)) {
                 zval_ptr_dtor(&result);
             }
-
-            return 1;
+            rv = TRUE;
         }
     }
-    return 0;
+
+    PG(open_basedir) = original_open_basedir;
+    return rv;
 }
 #endif

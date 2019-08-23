@@ -4,13 +4,46 @@ namespace DDTrace\Integrations\Laravel;
 
 use DDTrace\Integrations\Integration;
 use DDTrace\Integrations\Laravel\V5\LaravelIntegrationLoader;
+use DDTrace\Util\Versions;
 
 /**
  * The base Laravel integration which delegates loading to the appropriate integration version.
  */
-class LaravelIntegration
+class LaravelIntegration extends Integration
 {
     const NAME = 'laravel';
+
+    /**
+     * @var self
+     */
+    private static $instance;
+
+    /**
+     * @return self
+     */
+    public static function getInstance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * @return string The integration name.
+     */
+    public function getName()
+    {
+        return self::NAME;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function requiresExplicitTraceAnalyticsEnabling()
+    {
+        return false;
+    }
 
     /**
      * Loads the integration.
@@ -19,20 +52,30 @@ class LaravelIntegration
      */
     public static function load()
     {
-        if (!defined('Illuminate\Foundation\Application::VERSION')) {
-            return Integration::NOT_LOADED;
-        }
+        $instance = new self();
+        return $instance->doLoad();
+    }
 
-        $version = \Illuminate\Foundation\Application::VERSION;
+    /**
+     * @return int
+     */
+    public function doLoad()
+    {
+        $kernelClass = null;
 
-        if (substr($version, 0, 3) === "4.2") {
-            \DDTrace\Integrations\Laravel\V4\LaravelIntegration::load();
-            return Integration::LOADED;
-        } elseif (substr($version, 0, 2) === "5.") {
-            $loader = new LaravelIntegrationLoader();
-            return $loader->load();
-        }
+        dd_trace('Illuminate\Foundation\Application', '__construct', function () {
 
-        return Integration::NOT_AVAILABLE;
+            $version = \Illuminate\Foundation\Application::VERSION;
+            if (Versions::versionMatches("4.2", $version)) {
+                \DDTrace\Integrations\Laravel\V4\LaravelIntegration::load();
+            } elseif (Versions::versionMatches("5", $version)) {
+                $loader = new LaravelIntegrationLoader();
+                $loader->load();
+            }
+
+            return dd_trace_forward_call();
+        });
+
+        return Integration::LOADED;
     }
 }

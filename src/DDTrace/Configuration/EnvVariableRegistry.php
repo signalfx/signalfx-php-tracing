@@ -13,20 +13,29 @@ class EnvVariableRegistry implements Registry
      */
     private $registry;
 
-    public function __construct()
+    /**
+     * @var string
+     */
+    private $prefix;
+
+    /**
+     * @param string $prefix
+     */
+    public function __construct($prefix = 'SIGNALFX_')
     {
+        $this->prefix = $prefix;
         $this->registry = [];
     }
 
     /**
-     * Return an env variable that starts with "DD_".
+     * Return an env variable that starts with "SIGNALFX_".
      *
      * @param string $key
      * @return string|null
      */
-    public static function get($key)
+    protected function get($key)
     {
-        $value = getenv(self::convertKeyToEnvVariableName($key));
+        $value = getenv($this->convertKeyToEnvVariableName($key));
         if (false === $value) {
             return null;
         }
@@ -41,11 +50,13 @@ class EnvVariableRegistry implements Registry
         if (isset($this->registry[$key])) {
             return $this->registry[$key];
         }
-        $value = self::get($key);
+        $value = $this->get($key);
         if (null !== $value) {
             return $this->registry[$key] = $value;
+        } else {
+            return $this->registry[$key] = $default;
         }
-        return $default;
+        return $this->registry[$key];
     }
 
     /**
@@ -57,7 +68,7 @@ class EnvVariableRegistry implements Registry
             return $this->registry[$key];
         }
 
-        $value = self::get($key);
+        $value = $this->get($key);
         if (null === $value) {
             return $default;
         }
@@ -68,7 +79,7 @@ class EnvVariableRegistry implements Registry
         } elseif ($value === '0' || $value === 'false') {
             $this->registry[$key] = false;
         } else {
-            return $default;
+            $this->registry[$key] = $default;
         }
 
         return $this->registry[$key];
@@ -80,7 +91,7 @@ class EnvVariableRegistry implements Registry
     public function floatValue($key, $default, $min = null, $max = null)
     {
         if (!isset($this->registry[$key])) {
-            $value = self::get($key);
+            $value = $this->get($key);
             $value = strtolower($value);
             if (is_numeric($value)) {
                 $floatValue = (float)$value;
@@ -116,7 +127,7 @@ class EnvVariableRegistry implements Registry
         }
 
         $default = [];
-        $value = self::get($key);
+        $value = $this->get($key);
 
         if (null === $value) {
             return $default;
@@ -151,7 +162,7 @@ class EnvVariableRegistry implements Registry
     public function inArray($key, $name)
     {
         if (!isset($this->registry[$key])) {
-            $value = self::get($key);
+            $value = $this->get($key);
             if (null !== $value) {
                 $disabledIntegrations = explode(',', $value);
                 $this->registry[$key] = array_map(function ($entry) {
@@ -173,8 +184,8 @@ class EnvVariableRegistry implements Registry
      * @param string $key
      * @return string
      */
-    private static function convertKeyToEnvVariableName($key)
+    private function convertKeyToEnvVariableName($key)
     {
-        return 'SIGNALFX_' . strtoupper(str_replace('.', '_', trim($key)));
+        return $this->prefix . strtoupper(str_replace('.', '_', trim($key)));
     }
 }

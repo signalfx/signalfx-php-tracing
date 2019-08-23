@@ -19,8 +19,10 @@
     <config name="testVersion" value="5.4-7.3"/>
     <exclude-pattern>playground*.php</exclude-pattern>
     <exclude-pattern>run-tests.php</exclude-pattern>
+    <exclude-pattern>src/dd-doctor.php</exclude-pattern>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>tests/ext/*</exclude-pattern>
     <exclude-pattern>tests/Frameworks/*/Version_*/*</exclude-pattern>
+    <exclude-pattern>tests/AutoInstrumentation</exclude-pattern>
 </ruleset>

@@ -13,6 +13,38 @@ class ZendFrameworkIntegration extends Integration
     const NAME = 'zendframework';
 
     /**
+     * @var self
+     */
+    private static $instance;
+
+    /**
+     * @return self
+     */
+    public static function getInstance()
+    {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * @return string The integration name.
+     */
+    public function getName()
+    {
+        return self::NAME;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function requiresExplicitTraceAnalyticsEnabling()
+    {
+        return false;
+    }
+
+    /**
      * Loads the zend framework integration.
      *
      * @return int
@@ -29,36 +61,21 @@ class ZendFrameworkIntegration extends Integration
             return self::NOT_AVAILABLE;
         }
 
-        if (!defined('Zend_Version::VERSION')) {
-            return Integration::NOT_LOADED;
-        }
-
-        $version = \Zend_Version::VERSION;
-        if (substr($version, 0, 5) === "1.12.") {
-            self::loadV1();
-            return Integration::LOADED;
-        }
-
-        return Integration::NOT_LOADED;
-    }
-
-    /**
-     * Loads version 1 of zend framework.
-     */
-    private static function loadV1()
-    {
         dd_trace('Zend_Application', 'setOptions', function () {
-            $args = func_get_args();
-            $options = $args[0];
+            list($options) = func_get_args();
 
             $classExist = class_exists('DDTrace_Ddtrace');
+
             if (!$classExist && !isset($options['resources']['ddtrace'])) {
                 $options['autoloaderNamespaces'][] = 'DDTrace_';
                 $options['pluginPaths']['DDTrace'] = __DIR__ . '/V1';
                 $options['resources']['ddtrace'] = true;
             }
 
-            return call_user_func_array([$this, 'setOptions'], [$options]);
+            // We can't use dd_trace_forward_call() here since we're changing the args
+            return $this->setOptions($options);
         });
+
+        return Integration::NOT_LOADED;
     }
 }

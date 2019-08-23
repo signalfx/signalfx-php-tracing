@@ -20,17 +20,20 @@ final class ConfigurationTest extends BaseTestCase
 
     private function cleanEnv()
     {
-        putenv('SIGNALFX_TRACE_ENABLED');
         putenv('SIGNALFX_DISTRIBUTED_TRACING');
-        putenv('SIGNALFX_PRIORITY_SAMPLING');
-        putenv('SIGNALFX_INTEGRATIONS_DISABLED');
-        putenv('SIGNALFX_TRACE_DEBUG');
-        putenv('SIGNALFX_SERVICE_NAME');
-        putenv('SIGNALFX_ENDPOINT_URL');
         putenv('SIGNALFX_ENDPOINT_HOST');
-        putenv('SIGNALFX_ENDPOINT_PORT');
-        putenv('SIGNALFX_ENDPOINT_PATH');
         putenv('SIGNALFX_ENDPOINT_HTTPS');
+        putenv('SIGNALFX_ENDPOINT_PATH');
+        putenv('SIGNALFX_ENDPOINT_PORT');
+        putenv('SIGNALFX_ENDPOINT_URL');
+        putenv('SIGNALFX_INTEGRATIONS_DISABLED');
+        putenv('SIGNALFX_PRIORITY_SAMPLING');
+        putenv('SIGNALFX_SERVICE_NAME');
+        putenv('SIGNALFX_TRACE_APP_NAME');
+        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
+        putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('SIGNALFX_TRACE_ENABLED');
+        putenv('ddtrace_app_name');
     }
 
     public function testTracerEnabledByDefault()
@@ -123,5 +126,39 @@ final class ConfigurationTest extends BaseTestCase
         putenv('SIGNALFX_ENDPOINT_PORT=500');
         putenv('SIGNALFX_ENDPOINT_PATH=/asdf');
         $this->assertSame("https://example.com:500/asdf", Configuration::get()->getEndpointURL());
+    }
+
+    public function testServiceName()
+    {
+        putenv('SIGNALFX_SERVICE_NAME');
+        putenv('SIGNALFX_TRACE_APP_NAME');
+        putenv('ddtrace_app_name');
+        Configuration::clear();
+
+        $this->assertSame('__default__', Configuration::get()->appName('__default__'));
+
+        putenv('SIGNALFX_SERVICE_NAME=my_app');
+        $this->assertSame('my_app', Configuration::get()->appName('my_app'));
+    }
+
+    public function testServiceNameHasPrecedenceOverDeprecatedMethods()
+    {
+        Configuration::clear();
+
+        putenv('SIGNALFX_SERVICE_NAME=my_app');
+        putenv('SIGNALFX_TRACE_APP_NAME=wrong_app');
+        putenv('ddtrace_app_name=wrong_app');
+        $this->assertSame('my_app', Configuration::get()->appName('my_app'));
+    }
+
+    public function testAnalyticsDisabledByDefault()
+    {
+        $this->assertFalse(Configuration::get()->isAnalyticsEnabled());
+    }
+
+    public function testAnalyticsCanBeGloballyEnabled()
+    {
+        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED=true');
+        $this->assertTrue(Configuration::get()->isAnalyticsEnabled());
     }
 }
