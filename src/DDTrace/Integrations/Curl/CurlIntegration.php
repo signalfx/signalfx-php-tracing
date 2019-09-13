@@ -65,9 +65,10 @@ class CurlIntegration extends Integration
             $sanitizedUrl = Urls::sanitize($info['url']);
             if ($globalConfig->isHttpClientSplitByDomain()) {
                 $span->setTag(Tag::SERVICE_NAME, Urls::hostnameForTag($sanitizedUrl));
-            } else {
-                $span->setTag(Tag::SERVICE_NAME, 'curl');
             }
+            $httpMethod = ArrayKVStore::getForResource($ch, "HTTP_METHOD", "GET");
+            $span->setTag(Tag::HTTP_METHOD, $httpMethod);
+            $span->setTag(Tag::COMPONENT, 'curl');
             $span->setTag(Tag::RESOURCE_NAME, $sanitizedUrl);
             $span->setTag(Tag::HTTP_URL, $sanitizedUrl);
             $span->setTag(Tag::HTTP_STATUS_CODE, $info['http_code']);
@@ -87,6 +88,33 @@ class CurlIntegration extends Integration
                 ArrayKVStore::putForResource($ch, Format::CURL_HTTP_HEADERS, $value);
             }
 
+            switch ($option) {
+                case CURLOPT_CUSTOMREQUEST:
+                    ArrayKVStore::putForResource($ch, "HTTP_METHOD", $value);
+                    ArrayKVStore::putForResource($ch, "CUSTOMREQUEST_SET", true);
+                    break;
+                case CURLOPT_PUT:
+                    if ($value && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                        ArrayKVStore::putForResource($ch, "HTTP_METHOD", "PUT");
+                    }
+                    break;
+                case CURLOPT_POST:
+                    if ($value && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                        ArrayKVStore::putForResource($ch, "HTTP_METHOD", "POST");
+                    }
+                    break;
+                case CURLOPT_HTTPGET:
+                    if ($value && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                        ArrayKVStore::putForResource($ch, "HTTP_METHOD", "GET");
+                    }
+                    break;
+                case CURLOPT_NOBODY:
+                    if ($value && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                        ArrayKVStore::putForResource($ch, "HTTP_METHOD", "HEAD");
+                        break;
+                    }
+            }
+
             return dd_trace_forward_call();
         });
 
@@ -100,6 +128,26 @@ class CurlIntegration extends Integration
                 ArrayKVStore::putForResource($ch, Format::CURL_HTTP_HEADERS, $options[CURLOPT_HTTPHEADER]);
             }
 
+            if (array_key_exists(CURLOPT_CUSTOMREQUEST, $options)) {
+                ArrayKVStore::putForResource($ch, "CUSTOMREQUEST_SET", true);
+                ArrayKVStore::putForResource($ch, "HTTP_METHOD", $options[CURLOPT_CUSTOMREQUEST]);
+            } elseif (array_key_exists(CURLOPT_PUT, $options)
+                    && $options[CURLOPT_PUT]
+                    && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                ArrayKVStore::putForResource($ch, "HTTP_METHOD", "PUT");
+            } elseif (array_key_exists(CURLOPT_POST, $options)
+                    && $options[CURLOPT_POST]
+                    && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                ArrayKVStore::putForResource($ch, "HTTP_METHOD", "POST");
+            } elseif (array_key_exists(CURLOPT_HTTPGET, $options)
+                    && $options[CURLOPT_HTTPGET]
+                    && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                ArrayKVStore::putForResource($ch, "HTTP_METHOD", "GET");
+            } elseif (array_key_exists(CURLOPT_NOBODY, $options)
+                    && $options[CURLOPT_NOBODY]
+                    && !(ArrayKVStore::getForResource($ch, "CUSTOMREQUEST_SET", false))) {
+                ArrayKVStore::putForResource($ch, "HTTP_METHOD", "HEAD");
+            }
             return dd_trace_forward_call();
         });
 
