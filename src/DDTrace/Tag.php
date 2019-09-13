@@ -12,6 +12,7 @@ class Tag
     const MANUAL_DROP = 'manual.drop';
     const PID = 'system.pid';
     const RESOURCE_NAME = 'resource.name';
+    const COMPONENT = 'component';
     const DB_STATEMENT = 'sql.query';
     const ERROR = 'error';
     const ERROR_MSG = 'error.msg'; // string representing the error message
