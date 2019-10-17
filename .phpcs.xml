@@ -6,6 +6,31 @@
 
     <rule ref="PSR12"/>
 
+    <rule ref="PSR2.Methods.FunctionCallSignature.Indent">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.ControlStructures.ControlStructureSpacing.CloseParenthesisLine">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.ControlStructures.ControlStructureSpacing.FirstExpressionLine">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Files.FileHeader.SpacingAfterBlock">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Files.FileHeader.SpacingInsideBlock">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Properties.ConstantVisibility.NotFound">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Traits.UseDeclaration.MultipleImport">
+        <severity>0</severity>
+    </rule>
+    <rule ref="PSR12.Traits.UseDeclaration.NoBlankLineAfterUse">
+        <severity>0</severity>
+    </rule>
+
     <rule ref="Generic.Commenting.Todo"/>
     <rule ref="Generic.Commenting.Fixme"/>
     <rule ref="Generic.Commenting.DocComment.MissingShort">
