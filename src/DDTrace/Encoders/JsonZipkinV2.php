@@ -69,8 +69,8 @@ final class JsonZipkinV2 implements Encoder
             '"start_micro":"-"',
             '"duration_micro":"-"',
         ], [
-            '"timestamp":' . $span['start'],
-            '"duration":' . $span['duration'],
+            '"timestamp":' . substr($span['start'], 0, -3),
+            '"duration":' . substr($span['duration'], 0, -3),
         ], $json);
     }
 
