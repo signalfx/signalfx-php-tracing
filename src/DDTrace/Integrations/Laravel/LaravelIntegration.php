@@ -68,7 +68,8 @@ class LaravelIntegration extends Integration
             $version = \Illuminate\Foundation\Application::VERSION;
             if (Versions::versionMatches("4.2", $version)) {
                 \DDTrace\Integrations\Laravel\V4\LaravelIntegration::load();
-            } elseif (Versions::versionMatches("5", $version)) {
+            } elseif (Versions::versionMatches("5", $version)
+                      || Versions::versionMatches("6", $version)) {
                 $loader = new LaravelIntegrationLoader();
                 $loader->load();
             }
