@@ -41,10 +41,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             [
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
-                        'laravel.request',
-                        'laravel_test_app',
-                        'web',
-                        'App\Http\Controllers\CommonSpecsController@simple simple_route'
+                        'App\Http\Controllers\CommonSpecsController@simple simple_route',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'laravel.route.name' => 'simple_route',
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@simple',
@@ -52,43 +52,47 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'laravel',
+                        'component' => 'laravel'
                     ]),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
-                        'laravel.request',
-                        'laravel_test_app',
-                        'web',
-                        'App\Http\Controllers\CommonSpecsController@simple_view unnamed_route'
+                        'App\Http\Controllers\CommonSpecsController@simple_view',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@simple_view',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
                         'integration.name' => 'laravel',
+                        'component' => 'laravel'
                     ])->withExistingTagsNames(['laravel.route.name']),
                     SpanAssertion::build(
                         'laravel.view',
-                        'laravel_test_app',
-                        'web',
-                        'laravel.view'
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'integration.name' => 'laravel',
+                        'component' => 'laravel'
                     ]),
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
-                        'laravel.request',
-                        'laravel_test_app',
-                        'web',
-                        'App\Http\Controllers\CommonSpecsController@error unnamed_route'
+                        'App\Http\Controllers\CommonSpecsController@error',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
-                        'laravel.route.name' => '',
+                        'laravel.route.name' => 'unnamed_route',
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@error',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error',
                         'http.status_code' => '500',
                         'integration.name' => 'laravel',
+                        'component' => 'laravel'
                     ])->setError(),
                     SpanAssertion::exists('laravel.view')
                 ],

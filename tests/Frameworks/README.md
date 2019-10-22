@@ -42,6 +42,12 @@ Link: https://laravel.com/docs/5.7/installation
 
     $ composer create-project --prefer-dist laravel/laravel Version_5_7 5.7.*
 
+### Laravel 6.0
+
+Link: https://laravel.com/docs/6.0/installation
+
+    $ composer create-project --prefer-dist laravel/laravel Version_6_0 6.0.*
+
 ## Lumen
 
 In order to generate the sample Lumen apps we used the default commands from the framework's 'Getting started' guides.

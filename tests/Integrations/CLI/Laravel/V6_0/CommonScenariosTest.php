@@ -1,6 +1,6 @@
 <?php
 
-namespace DDTrace\Tests\Integrations\CLI\Laravel\V5_8;
+namespace DDTrace\Tests\Integrations\CLI\Laravel\V6_0;
 
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Integrations\CLI\CLITestCase;
@@ -9,7 +9,7 @@ final class CommonScenariosTest extends CLITestCase
 {
     protected function getScriptLocation()
     {
-        return __DIR__ . '/../../../../Frameworks/Laravel/Version_5_8/artisan';
+        return __DIR__ . '/../../../../Frameworks/Laravel/Version_6_0/artisan';
     }
 
     protected static function getEnvs()

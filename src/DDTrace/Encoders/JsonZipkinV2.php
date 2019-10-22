@@ -109,7 +109,9 @@ final class JsonZipkinV2 implements Encoder
         }
 
         if (!isset($span['meta'][Tag::RESOURCE_NAME])) {
-            $arraySpan['tags'][Tag::RESOURCE_NAME] = $span['resource'];
+            if ($span['resource'] !== $arraySpan['name']) {
+                $arraySpan['tags'][Tag::RESOURCE_NAME] = $span['resource'];
+            }
         }
 
         if (isset($span['type'])) {
@@ -122,7 +124,7 @@ final class JsonZipkinV2 implements Encoder
                     $arraySpan['kind'] = "SERVER";
                     break;
             }
-            $arraySpan['tags'][Tag::SPAN_TYPE] = $span['type'];
+            // $arraySpan['tags'][Tag::SPAN_TYPE] = $span['type'];
         }
 
         if (isset($span['error']) && $span['error']) {

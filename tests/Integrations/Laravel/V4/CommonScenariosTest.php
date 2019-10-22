@@ -41,67 +41,92 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         return $this->buildDataProvider(
             [
                 'A simple GET request returning a string' => [
-                    SpanAssertion::build('laravel.request', 'laravel', 'web', 'HomeController@simple simple_route')
-                        ->withExactTags([
-                            'laravel.route.name' => 'simple_route',
-                            'laravel.route.action' => 'HomeController@simple',
-                            'http.method' => 'GET',
-                            'http.url' => 'http://localhost:9999/simple',
-                            'http.status_code' => '200',
-                            'some.key1' => 'value',
-                            'some.key2' => 'value2',
-                            'integration.name' => 'laravel',
-                        ]),
+                    SpanAssertion::build(
+                        'HomeController@simple simple_route',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
+                    )->withExactTags([
+                        'laravel.route.name' => 'simple_route',
+                        'laravel.route.action' => 'HomeController@simple',
+                        'http.method' => 'GET',
+                        'http.url' => 'http://localhost:9999/simple',
+                        'http.status_code' => '200',
+                        'some.key1' => 'value',
+                        'some.key2' => 'value2',
+                        'component' => 'laravel',
+                        'integration.name' => 'laravel',
+                    ]),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
-                    SpanAssertion::build('laravel.action', 'laravel', 'web', 'simple')
-                        ->withExactTags([
-                            'some.key1' => 'value',
-                            'some.key2' => 'value2',
-                            'integration.name' => 'laravel',
-                        ]),
+                    SpanAssertion::build(
+                        'laravel.action',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
+                    )->withExactTags([
+                        'some.key1' => 'value',
+                        'some.key2' => 'value2',
+                        'component' => 'laravel',
+                        'integration.name' => 'laravel',
+                    ]),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],
                 'A simple GET request with a view' => [
-                    SpanAssertion::exists('laravel.request'),
+                    SpanAssertion::exists('HomeController@simple_view'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.action'),
                     SpanAssertion::exists('laravel.event.handle'),
-                    SpanAssertion::build('laravel.view.render', 'laravel', 'web', 'simple_view')
-                        ->withExactTags([
-                            'some.key1' => 'value',
-                            'some.key2' => 'value2',
-                            'integration.name' => 'laravel',
-                        ]),
+                    SpanAssertion::build(
+                        'laravel.view.render',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
+                    )->withExactTags([
+                        'some.key1' => 'value',
+                        'some.key2' => 'value2',
+                        'component' => 'laravel',
+                        'integration.name' => 'laravel',
+                    ]),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],
                 'A GET request with an exception' => [
-                    SpanAssertion::build('laravel.request', 'laravel', 'web', 'HomeController@error error')
-                        ->withExactTags([
-                            'laravel.route.name' => 'error',
-                            'laravel.route.action' => 'HomeController@error',
-                            'http.method' => 'GET',
-                            'http.url' => 'http://localhost:9999/error',
-                            'http.status_code' => '500',
-                            'some.key1' => 'value',
-                            'some.key2' => 'value2',
-                            'integration.name' => 'laravel',
-                        ])->setError(),
+                    SpanAssertion::build(
+                        'HomeController@error error',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
+                    )->withExactTags([
+                        'laravel.route.name' => 'error',
+                        'laravel.route.action' => 'HomeController@error',
+                        'http.method' => 'GET',
+                        'http.url' => 'http://localhost:9999/error',
+                        'http.status_code' => '500',
+                        'some.key1' => 'value',
+                        'some.key2' => 'value2',
+                        'component' => 'laravel',
+                        'integration.name' => 'laravel',
+                    ])->setError(),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
                     SpanAssertion::exists('laravel.event.handle'),
-                    SpanAssertion::build('laravel.action', 'laravel', 'web', 'error')
-                        ->withExactTags([
-                            'some.key1' => 'value',
-                            'some.key2' => 'value2',
-                            'integration.name' => 'laravel',
-                        ])
-                        ->withExistingTagsNames(['error.stack'])
-                        ->setError('Exception', 'Controller error'),
+                    SpanAssertion::build(
+                        'laravel.action',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        SpanAssertion::NOT_TESTED
+                    )->withExactTags([
+                        'some.key1' => 'value',
+                        'some.key2' => 'value2',
+                        'component' => 'laravel',
+                        'integration.name' => 'laravel',
+                    ])
+                    ->withExistingTagsNames(['error.stack'])
+                    ->setError('Exception', 'Controller error'),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],
             ]

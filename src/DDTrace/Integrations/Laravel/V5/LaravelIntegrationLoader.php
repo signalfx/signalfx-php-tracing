@@ -36,11 +36,19 @@ class LaravelIntegrationLoader
             // Overwriting the default web integration
             $span->setIntegration(LaravelIntegration::getInstance());
             $span->setTraceAnalyticsCandidate();
-            $span->overwriteOperationName($route->getActionName() . ' ' . (Route::getFacadeRoot()->current()->uri() ?: 'unnamed_route'));
-            $span->setTag('laravel.route.name', Route::getFacadeRoot()->current()->uri());
+            // $span->overwriteOperationName($route->getActionName() . ' ' . (Route::getFacadeRoot()->current()->uri() ?: 'unnamed_route'));
+            // $span->setTag('laravel.route.name', Route::getFacadeRoot()->current()->uri());
+            $operationName = $route->getActionName();
+            $routeName = Route::currentRouteName();
+            if ($routeName) {
+                $operationName .= ' ' . $routeName;
+            }
+            $span->overwriteOperationName($operationName);
+            $span->setTag('laravel.route.name', Route::currentRouteName() ?: 'unnamed_route');
             $span->setTag('laravel.route.action', $route->getActionName());
             $span->setTag('http.url', $request->url());
             $span->setTag('http.method', $request->method());
+            $span->setTag(Tag::COMPONENT, 'laravel');
 
             return dd_trace_forward_call();
         });
@@ -71,9 +79,7 @@ class LaravelIntegrationLoader
             $span = GlobalTracer::get()->getRootScope()->getSpan();
             // Overwrite the default web integration
             $span->setIntegration(LaravelIntegration::getInstance());
-            $span->overwriteOperationName('laravel.artisan');
-            $span->setTag(
-                Tag::RESOURCE_NAME,
+            $span->overwriteOperationName(
                 !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan'
             );
             return dd_trace_forward_call();
@@ -98,7 +104,6 @@ class LaravelIntegrationLoader
         $this->rootScope = $tracer->getRootScope();
         $requestSpan = $this->rootScope->getSpan();
         $requestSpan->overwriteOperationName('laravel.request');
-        $requestSpan->setTag(Tag::SERVICE_NAME, $appName);
         $requestSpan->setTag(Tag::COMPONENT, 'laravel');
 
         // Trace middleware
@@ -133,9 +138,8 @@ class LaravelIntegrationLoader
                             'laravel.pipeline.pipe'
                         );
                         $span = $scope->getSpan();
+                        $span->overwriteOperationName(get_class($this) . '::' . $handlerMethod);
                         $span->setTag(Tag::COMPONENT, 'laravel');
-                        $span->setTag(Tag::RESOURCE_NAME, get_class($this) . '::' . $handlerMethod);
-                        $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
                         return include __DIR__ . '/../../../try_catch_finally.php';
                     });
                 }
@@ -156,8 +160,9 @@ class LaravelIntegrationLoader
                 LaravelIntegration::getInstance(),
                 'laravel.view'
             );
-            $scope->getSpan()->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
-            $scope->getSpan()->setTag(Tag::COMPONENT, 'laravel');
+            $span = $scope->getSpan();
+            $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+            $span->setTag(Tag::COMPONENT, 'laravel');
             return include __DIR__ . '/../../../try_catch_finally.php';
         });
 

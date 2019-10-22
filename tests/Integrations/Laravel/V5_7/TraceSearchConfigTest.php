@@ -35,10 +35,10 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'laravel.request',
-                    'Laravel',
-                    'web',
-                    'App\Http\Controllers\CommonSpecsController@simple simple_route'
+                    'App\Http\Controllers\CommonSpecsController@simple simple_route',
+                    'unnamed-php-service',
+                    SpanAssertion::NOT_TESTED,
+                    SpanAssertion::NOT_TESTED
                 )
                     ->withExactTags([
                         'laravel.route.name' => 'simple_route',
@@ -47,6 +47,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'laravel',
+                        'component' => 'laravel'
                     ])
                     ->withExactMetrics([
                         '_dd1.sr.eausr' => 0.3,

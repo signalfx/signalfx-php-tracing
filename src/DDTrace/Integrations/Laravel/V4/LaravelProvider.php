@@ -54,8 +54,7 @@ class LaravelProvider extends ServiceProvider
             // Overwriting the default web integration
             $requestSpan->setIntegration(\DDTrace\Integrations\Laravel\LaravelIntegration::getInstance());
             $requestSpan->setTraceAnalyticsCandidate();
-            $requestSpan->setTag(Tag::SERVICE_NAME, $appName);
-            $span->setTag(Tag::COMPONENT, 'laravel');
+            $requestSpan->setTag(Tag::COMPONENT, 'laravel');
 
             $response = dd_trace_forward_call();
             $requestSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
@@ -78,7 +77,13 @@ class LaravelProvider extends ServiceProvider
             list($route, $request) = func_get_args();
             $span = $self->rootScope->getSpan();
 
-            $span->setTag(Tag::RESOURCE_NAME, $route->getActionName() . ' ' . Route::currentRouteName());
+            $operationName = $route->getActionName();
+            $routeName = Route::currentRouteName();
+            if ($routeName) {
+                $operationName .= ' ' . $routeName;
+            }
+            $span->overwriteOperationName($operationName);
+
             $span->setTag('laravel.route.name', $route->getName());
             $span->setTag('laravel.route.action', $route->getActionName());
             $span->setTag(Tag::HTTP_METHOD, $request->method());
@@ -122,8 +127,9 @@ class LaravelProvider extends ServiceProvider
             $operation
         );
         $span = $scope->getSpan();
-        $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
-        $span->setTag(Tag::SERVICE_NAME, self::getAppName());
+        // $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+        // $span->setTag(Tag::SERVICE_NAME, self::getAppName());
+        $span->setTag(Tag::COMPONENT, 'laravel');
         $span->setTag(Tag::RESOURCE_NAME, $resource);
         $span->setTag(Tag::COMPONENT, 'laravel');
 

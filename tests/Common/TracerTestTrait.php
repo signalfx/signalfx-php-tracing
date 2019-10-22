@@ -163,14 +163,14 @@ trait TracerTestTrait
                     $rawSpan['id'],
                     isset($rawSpan['parentId']) ? $rawSpan['parentId'] : null
                 );
+                $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
                 $span = new Span(
                     $rawSpan['name'],
                     $spanContext,
-                    $rawSpan['tags']['component'],
-                    $rawSpan['tags'][Tag::RESOURCE_NAME],
+                    $rawSpan['localEndpoint']['serviceName'],
+                    $resource,
                     $rawSpan['timestamp']
                 );
-                unset($rawSpan['tags']['component']);
                 unset($rawSpan['tags'][Tag::RESOURCE_NAME]);
                 if (isset($rawSpan['tags'][Tag::SPAN_TYPE])) {
                     $rawSpan['type'] = $rawSpan['tags'][Tag::SPAN_TYPE];

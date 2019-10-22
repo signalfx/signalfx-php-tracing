@@ -27,6 +27,10 @@
             <file>tests/Integrations/Laravel/V5_8/CommonScenariosTest.php</file>
             <directory>tests/Integrations/CLI/Laravel/V5_8</directory>
         </testsuite>
+        <testsuite name="laravel-60-test">
+            <file>tests/Integrations/Laravel/V6_0/CommonScenariosTest.php</file>
+            <directory>tests/Integrations/CLI/Laravel/V6_0</directory>
+        </testsuite>
         <testsuite name="slim-312-test">
             <directory>tests/Integrations/Slim/V3_12</directory>
         </testsuite>
