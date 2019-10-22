@@ -55,6 +55,7 @@ class LaravelProvider extends ServiceProvider
             $requestSpan->setIntegration(\DDTrace\Integrations\Laravel\LaravelIntegration::getInstance());
             $requestSpan->setTraceAnalyticsCandidate();
             $requestSpan->setTag(Tag::SERVICE_NAME, $appName);
+            $span->setTag(Tag::COMPONENT, 'laravel');
 
             $response = dd_trace_forward_call();
             $requestSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
@@ -124,6 +125,7 @@ class LaravelProvider extends ServiceProvider
         $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
         $span->setTag(Tag::SERVICE_NAME, self::getAppName());
         $span->setTag(Tag::RESOURCE_NAME, $resource);
+        $span->setTag(Tag::COMPONENT, 'laravel');
 
         return $scope;
     }

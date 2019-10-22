@@ -36,11 +36,8 @@ class LaravelIntegrationLoader
             // Overwriting the default web integration
             $span->setIntegration(LaravelIntegration::getInstance());
             $span->setTraceAnalyticsCandidate();
-            $span->setTag(
-                Tag::RESOURCE_NAME,
-                $route->getActionName() . ' ' . (Route::currentRouteName() ?: 'unnamed_route')
-            );
-            $span->setTag('laravel.route.name', Route::currentRouteName());
+            $span->overwriteOperationName($route->getActionName() . ' ' . (Route::getFacadeRoot()->current()->uri() ?: 'unnamed_route'));
+            $span->setTag('laravel.route.name', Route::getFacadeRoot()->current()->uri());
             $span->setTag('laravel.route.action', $route->getActionName());
             $span->setTag('http.url', $request->url());
             $span->setTag('http.method', $request->method());
@@ -102,6 +99,7 @@ class LaravelIntegrationLoader
         $requestSpan = $this->rootScope->getSpan();
         $requestSpan->overwriteOperationName('laravel.request');
         $requestSpan->setTag(Tag::SERVICE_NAME, $appName);
+        $requestSpan->setTag(Tag::COMPONENT, 'laravel');
 
         // Trace middleware
         dd_trace('Illuminate\Pipeline\Pipeline', 'then', function () {
@@ -135,6 +133,7 @@ class LaravelIntegrationLoader
                             'laravel.pipeline.pipe'
                         );
                         $span = $scope->getSpan();
+                        $span->setTag(Tag::COMPONENT, 'laravel');
                         $span->setTag(Tag::RESOURCE_NAME, get_class($this) . '::' . $handlerMethod);
                         $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
                         return include __DIR__ . '/../../../try_catch_finally.php';
@@ -158,6 +157,7 @@ class LaravelIntegrationLoader
                 'laravel.view'
             );
             $scope->getSpan()->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+            $scope->getSpan()->setTag(Tag::COMPONENT, 'laravel');
             return include __DIR__ . '/../../../try_catch_finally.php';
         });
 
