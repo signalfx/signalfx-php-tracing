@@ -147,23 +147,24 @@ static PHP_MINFO_FUNCTION(ddtrace) {
     UNUSED(zend_module);
 
     php_info_print_box_start(0);
-    datadog_info_print("Datadog PHP tracer extension" TSRMLS_CC);
+    datadog_info_print("PHP tracer extension" TSRMLS_CC);
     if (!sapi_module.phpinfo_as_text) {
         datadog_info_print("<br><strong>For help, check out " TSRMLS_CC);
         datadog_info_print(
-            "<a href=\"https://docs.datadoghq.com/tracing/languages/php/\" "
+            "<a href=\"https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html\" "
             "style=\"background:transparent;\">the documentation</a>.</strong>" TSRMLS_CC);
     } else {
         datadog_info_print(
             "\nFor help, check out the documentation at "
-            "https://docs.datadoghq.com/tracing/languages/php/" TSRMLS_CC);
+            "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" TSRMLS_CC);
     }
     datadog_info_print(!sapi_module.phpinfo_as_text ? "<br><br>" : "\n" TSRMLS_CC);
     datadog_info_print("(c) Datadog 2019\n" TSRMLS_CC);
+    datadog_info_print("(c) SignalFx 2019\n" TSRMLS_CC);
     php_info_print_box_end();
 
     php_info_print_table_start();
-    php_info_print_table_row(2, "Datadog tracing support", DDTRACE_G(disable) ? "disabled" : "enabled");
+    php_info_print_table_row(2, "Tracing support", DDTRACE_G(disable) ? "disabled" : "enabled");
     php_info_print_table_row(2, "Version", PHP_DDTRACE_VERSION);
     php_info_print_table_end();
 

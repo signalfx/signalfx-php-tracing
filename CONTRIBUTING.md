@@ -10,7 +10,7 @@ The easiest way to get the development environment set up is to install [Docker]
 $ docker-compose up -d
 ```
 
-This will run the [preconfigured docker images](https://hub.docker.com/r/datadog/docker-library/) that we provide for the different PHP versions.
+This will run the [preconfigured docker images](https://hub.docker.com/r/datadog/docker-library/) that are provided for the different PHP versions.
 
 - PHP 5.6: `datadog/docker-library:ddtrace_php_5_6`
 - PHP 7.0: `datadog/docker-library:ddtrace_php_7_0`
@@ -49,11 +49,12 @@ You should see output similar to the following:
 ddtrace
 
 
-Datadog PHP tracer extension
+PHP tracer extension
 For help, check out the documentation at https://github.com/DataDog/dd-trace-php/blob/master/README.md#getting-started
 (c) Datadog 2018
+(c) SignalFx 2018
 
-Datadog tracing support => enabled
+Tracing support => enabled
 Version => 0.7.0-beta
 ```
 
