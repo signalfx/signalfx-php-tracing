@@ -33,6 +33,7 @@ class CakePHPIntegrationLoader
         $this->rootSpan->setTraceAnalyticsCandidate();
         $this->rootSpan->overwriteOperationName('cakephp.request');
         $this->rootSpan->setTag(Tag::SERVICE_NAME, CakePHPIntegration::getAppName());
+        $this->rootSpan->setTag(Tag::COMPONENT, 'cakephp');
 
         $loader = $this;
 
@@ -47,6 +48,7 @@ class CakePHPIntegrationLoader
             if (isset($request->params['plugin'])) {
                 $loader->rootSpan->setTag('cakephp.plugin', $request->params['plugin']);
             }
+            $loader->rootSpan->setTag(Tag::COMPONENT, 'cakephp');
             return dd_trace_forward_call();
         });
 
@@ -73,6 +75,7 @@ class CakePHPIntegrationLoader
             $file = $this->viewPath . '/' . $this->view . $this->ext;
             $scope->getSpan()->setTag(Tag::RESOURCE_NAME, $file);
             $scope->getSpan()->setTag('cakephp.view', $file);
+            $scope->getSpan()->setTag(Tag::COMPONENT, 'cakephp');
             return include __DIR__ . '/../../../try_catch_finally.php';
         });
 
@@ -87,6 +90,7 @@ class CakePHPIntegrationLoader
                 Tag::RESOURCE_NAME,
                 !empty($_SERVER['argv'][1]) ? 'cake_console ' . $_SERVER['argv'][1] : 'cake_console'
             );
+            $loader->rootSpan->setTag(Tag::COMPONENT, 'cakephp');
             return dd_trace_forward_call();
         });
 

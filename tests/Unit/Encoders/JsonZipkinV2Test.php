@@ -40,7 +40,7 @@ final class JsonZipkinV2Test extends BaseTestCase
 [{"traceId":"160e7072ff7bd5f1","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"160e7072ff7bd5f2",
 JSON
             .   <<<JSON
-"tags":{"component":"cli","resource.name":"test_name","span.type":"http"},"kind":"CLIENT",
+"tags":{"component":"cli"},"kind":"CLIENT",
 JSON
             .   <<<JSON
 "localEndpoint":{"serviceName":"unnamed-php-service"}}]

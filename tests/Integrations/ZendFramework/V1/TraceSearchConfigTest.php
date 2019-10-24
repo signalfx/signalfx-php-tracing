@@ -34,7 +34,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             $this,
             $traces,
             [
-                SpanAssertion::build('zf1.request', 'zf1', 'web', 'simple@index default')
+                SpanAssertion::build('zf1.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'simple@index default')
                     ->withExactTags([
                         'zf1.controller' => 'simple',
                         'zf1.action' => 'index',
@@ -43,6 +43,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'zendframework',
+                        'component' => 'zendframework',
                     ])
                     ->withExactMetrics([
                         '_dd1.sr.eausr' => 0.3,

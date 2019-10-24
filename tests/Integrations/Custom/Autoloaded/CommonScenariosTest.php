@@ -42,40 +42,43 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
                         'web.request',
-                        'web.request',
-                        'web',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'web',
+                        'component' => 'web.request',
                     ]),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
                         'web.request',
-                        'web.request',
-                        'web',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple_view'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/simple_view',
                         'http.status_code' => '200',
                         'integration.name' => 'web',
+                        'component' => 'web.request',
                     ]),
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
                         'web.request',
-                        'web.request',
-                        'web',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
                         'GET /error'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => '/error',
                         'http.status_code' => '500',
                         'integration.name' => 'web',
+                        'component' => 'web.request',
                     ])->setError(),
                 ],
             ]

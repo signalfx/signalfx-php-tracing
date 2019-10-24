@@ -36,8 +36,8 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             [
                 SpanAssertion::build(
                     'symfony.request',
-                    'symfony',
-                    'web',
+                    'unnamed-php-service',
+                    SpanAssertion::NOT_TESTED,
                     'simple'
                 )
                     ->withExactTags([
@@ -47,6 +47,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'symfony',
+                        'component' => 'symfony',
                     ])
                     ->withExactMetrics([
                         '_dd1.sr.eausr' => 0.3,

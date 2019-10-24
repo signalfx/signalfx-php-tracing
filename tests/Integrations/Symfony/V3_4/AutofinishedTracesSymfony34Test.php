@@ -29,8 +29,8 @@ final class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
         $this->assertSpans($traces, [
             SpanAssertion::build(
                 'symfony.request',
-                'symfony',
-                'web',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
                 'terminated_by_exit'
             )
                 ->withExactTags([
@@ -40,6 +40,7 @@ final class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
                     'http.url' => 'http://localhost:9999/terminated_by_exit',
                     'http.status_code' => '200',
                     'integration.name' => 'symfony',
+                    'component' => 'symfony',
                 ]),
             SpanAssertion::exists('symfony.kernel.handle'),
             SpanAssertion::exists('symfony.kernel.request'),

@@ -56,6 +56,7 @@ class SymfonyBundle extends Bundle
         $symfonyRequestSpan = $symfonyRequestScope->getSpan();
         $symfonyRequestSpan->setTag(Tag::SERVICE_NAME, $appName);
         $symfonyRequestSpan->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+        $symfonyRequestSpan->setTag(Tag::COMPONENT, 'symfony');
         $symfonyRequestSpan->overwriteOperationName('symfony.request');
         // Overwriting the default web integration
         $symfonyRequestSpan->setIntegration(SymfonyIntegration::getInstance());
@@ -167,6 +168,7 @@ class SymfonyBundle extends Bundle
             $span->setTag(Tag::SERVICE_NAME, $appName);
             $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
             $span->setTag(Tag::RESOURCE_NAME, get_class($this) . ' ' . $args[0]);
+            $span->setTag(Tag::COMPONENT, 'symfony');
             return include __DIR__ . '/../../../try_catch_finally.php';
         };
 

@@ -26,14 +26,15 @@ final class RouteNameTest extends WebFrameworkTestCase
         $this->assertExpectedSpans($this, $traces, [
             SpanAssertion::build(
                 'web.request',
-                'web.request',
-                'web',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
                 'AppBundle\Controller\DefaultController testingRouteNameAction'
             )->withExactTags([
                 'http.method' => 'GET',
                 'http.url' => '/',
                 'http.status_code' => '200',
                 'integration.name' => 'symfony',
+                'component' => 'web.request',
             ]),
         ]);
     }

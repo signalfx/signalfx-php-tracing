@@ -124,7 +124,6 @@ final class JsonZipkinV2 implements Encoder
                     $arraySpan['kind'] = "SERVER";
                     break;
             }
-            // $arraySpan['tags'][Tag::SPAN_TYPE] = $span['type'];
         }
 
         if (isset($span['error']) && $span['error']) {

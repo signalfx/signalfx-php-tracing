@@ -27,10 +27,11 @@ final class CommonScenariosTest extends CLITestCase
             SpanAssertion::build(
                 'run',
                 'console_test_app',
-                'cli',
-                'run'
+                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags([
                 'integration.name' => 'web',
+                'component' => 'console_test_app',
             ])
         ]);
     }
