@@ -127,8 +127,6 @@ class LaravelProvider extends ServiceProvider
             $operation
         );
         $span = $scope->getSpan();
-        // $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
-        // $span->setTag(Tag::SERVICE_NAME, self::getAppName());
         $span->setTag(Tag::COMPONENT, 'laravel');
         $span->setTag(Tag::RESOURCE_NAME, $resource);
         $span->setTag(Tag::COMPONENT, 'laravel');

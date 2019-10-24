@@ -36,7 +36,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'unnamed-php-service',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple'
                     )
                         ->withExactTags([
@@ -59,7 +59,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'unnamed-php-service',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple_view'
                     )
                         ->withExactTags([
@@ -77,7 +77,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.templating.render',
                         'unnamed-php-service',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'Symfony\Bundle\TwigBundle\TwigEngine twig_template.html.twig'
                     )
                         ->withExactTags([
@@ -92,7 +92,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'unnamed-php-service',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'error'
                     )
                         ->withExactTags([

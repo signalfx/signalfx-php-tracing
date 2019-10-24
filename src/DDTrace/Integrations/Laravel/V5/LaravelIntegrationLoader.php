@@ -36,8 +36,6 @@ class LaravelIntegrationLoader
             // Overwriting the default web integration
             $span->setIntegration(LaravelIntegration::getInstance());
             $span->setTraceAnalyticsCandidate();
-            // $span->overwriteOperationName($route->getActionName() . ' ' . (Route::getFacadeRoot()->current()->uri() ?: 'unnamed_route'));
-            // $span->setTag('laravel.route.name', Route::getFacadeRoot()->current()->uri());
             $operationName = $route->getActionName();
             $routeName = Route::currentRouteName();
             if ($routeName) {

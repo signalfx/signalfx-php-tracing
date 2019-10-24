@@ -43,7 +43,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET SimpleController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'simple',
@@ -59,7 +59,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET SimpleViewController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'simple_view',
@@ -73,7 +73,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.view',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'SimpleView/index.ctp'
                     )->withExactTags([
                         'cakephp.view' => 'SimpleView/index.ctp',
@@ -85,7 +85,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET ErrorController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'error',
@@ -102,7 +102,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.view',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'Errors/index.ctp'
                     )->withExactTags([
                         'cakephp.view' => 'Errors/index.ctp',
