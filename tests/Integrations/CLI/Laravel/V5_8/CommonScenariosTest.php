@@ -25,12 +25,13 @@ final class CommonScenariosTest extends CLITestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
-                'laravel.artisan',
-                'artisan_test_app',
-                'cli',
-                'artisan'
+                'artisan',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags([
                 'integration.name' => 'laravel',
+                'component' => 'laravel'
             ])
         ]);
     }
@@ -41,12 +42,13 @@ final class CommonScenariosTest extends CLITestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
-                'laravel.artisan',
-                'artisan_test_app',
-                'cli',
-                'artisan route:list'
+                'artisan route:list',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags([
                 'integration.name' => 'laravel',
+                'component' => 'laravel'
             ])
         ]);
     }
@@ -57,12 +59,13 @@ final class CommonScenariosTest extends CLITestCase
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
-                'laravel.artisan',
-                'artisan_test_app',
-                'cli',
-                'artisan foo:error'
+                'artisan foo:error',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags([
                 'integration.name' => 'laravel',
+                'component' => 'laravel'
             ])->withExistingTagsNames([
                 'error.msg',
                 'error.stack'

@@ -36,9 +36,9 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             [
                 SpanAssertion::build(
                     'lumen.request',
-                    'lumen',
-                    'web',
-                    'App\Http\Controllers\ExampleController@simple simple_route'
+                    'unnamed-php-service',
+                    SpanAssertion::NOT_TESTED,
+                    'GET simple_route'
                 )
                     ->withExactTags([
                         'lumen.route.name' => 'simple_route',
@@ -47,6 +47,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'lumen',
+                        'component' => 'lumen',
                     ])
                     ->withExactMetrics([
                         '_dd1.sr.eausr' => 0.3,

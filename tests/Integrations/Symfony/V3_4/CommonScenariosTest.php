@@ -43,7 +43,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_34',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple'
                     )
                         ->withExactTags([
@@ -53,6 +53,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.url' => 'http://localhost:9999/simple',
                             'http.status_code' => '200',
                             'integration.name' => 'symfony',
+                            'component' => 'symfony',
                         ]),
                     SpanAssertion::exists('symfony.kernel.handle'),
                     SpanAssertion::exists('symfony.kernel.request'),
@@ -66,7 +67,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_34',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple_view'
                     )
                         ->withExactTags([
@@ -76,6 +77,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.url' => 'http://localhost:9999/simple_view',
                             'http.status_code' => '200',
                             'integration.name' => 'symfony',
+                            'component' => 'symfony',
                         ]),
                     SpanAssertion::exists('symfony.kernel.handle'),
                     SpanAssertion::exists('symfony.kernel.request'),
@@ -84,11 +86,12 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.templating.render',
                         'test_symfony_34',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'Twig\Environment twig_template.html.twig'
                     )
                         ->withExactTags([
                             'integration.name' => 'symfony',
+                            'component' => 'symfony',
                         ]),
                     SpanAssertion::exists('symfony.kernel.response'),
                     SpanAssertion::exists('symfony.kernel.finish_request'),
@@ -98,7 +101,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_34',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'error'
                     )
                         ->withExactTags([
@@ -108,6 +111,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.url' => 'http://localhost:9999/error',
                             'http.status_code' => '500',
                             'integration.name' => 'symfony',
+                            'component' => 'symfony',
                         ])
                         ->setError('Exception', 'An exception occurred')
                         ->withExistingTagsNames(['error.stack']),

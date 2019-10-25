@@ -59,6 +59,7 @@ class SymfonyBundle extends Bundle
         $symfonyRequestSpan->setIntegration(SymfonyIntegration::getInstance());
         $symfonyRequestSpan->setTraceAnalyticsCandidate();
         $symfonyRequestSpan->setTag(Tag::SERVICE_NAME, $appName);
+        $symfonyRequestSpan->setTag(Tag::COMPONENT, 'symfony');
         $request = null;
 
         // public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
@@ -174,6 +175,7 @@ class SymfonyBundle extends Bundle
             $span->setTag(Tag::SERVICE_NAME, $appName);
             $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
             $span->setTag(Tag::RESOURCE_NAME, get_class($this) . ' ' . $args[0]);
+            $span->setTag(Tag::COMPONENT, 'symfony');
             return include __DIR__ . '/../../../try_catch_finally.php';
         };
 

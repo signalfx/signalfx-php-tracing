@@ -27,10 +27,11 @@ final class CommonScenariosTest extends CLITestCase
             SpanAssertion::build(
                 'cakephp.console',
                 'cake_console_test_app',
-                'cli',
+                SpanAssertion::NOT_TESTED,
                 'cake_console'
             )->withExactTags([
                 'integration.name' => 'cakephp',
+                'component' => 'cakephp',
             ])
         ]);
     }
@@ -43,10 +44,11 @@ final class CommonScenariosTest extends CLITestCase
             SpanAssertion::build(
                 'cakephp.console',
                 'cake_console_test_app',
-                'cli',
+                SpanAssertion::NOT_TESTED,
                 'cake_console command_list'
             )->withExactTags([
                 'integration.name' => 'cakephp',
+                'component' => 'cakephp',
             ])
         ]);
     }

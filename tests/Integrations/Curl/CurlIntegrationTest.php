@@ -85,12 +85,17 @@ final class CurlIntegrationTest extends IntegrationTestCase
         });
 
         $this->assertSpans($traces, [
-            SpanAssertion::build('curl_exec', 'curl', 'http', 'http://httpbin_integration/status/200')
-                ->withExactTags([
-                    'http.url' => self::URL . '/status/200',
-                    'http.status_code' => '200',
-                    'http.method' => 'GET',
-                ]),
+            SpanAssertion::build(
+                'curl_exec',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'http://httpbin_integration/status/200'
+            )->withExactTags([
+                'http.url' => self::URL . '/status/200',
+                'http.status_code' => '200',
+                'http.method' => 'GET',
+                'component' => 'curl',
+            ]),
         ]);
     }
 

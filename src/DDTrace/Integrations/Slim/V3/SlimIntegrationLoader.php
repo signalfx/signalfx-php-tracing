@@ -26,6 +26,7 @@ class SlimIntegrationLoader
         $this->rootSpan->setTraceAnalyticsCandidate();
         $this->rootSpan->overwriteOperationName('slim.request');
         $this->rootSpan->setTag(Tag::SERVICE_NAME, SlimIntegration::getAppName());
+        $this->rootSpan->setTag(Tag::COMPONENT, 'slim');
 
         $loader = $this;
 
@@ -82,6 +83,7 @@ class SlimIntegrationLoader
             $scope->getSpan()->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
             $scope->getSpan()->setTag(Tag::RESOURCE_NAME, $template);
             $scope->getSpan()->setTag('slim.view', $template);
+            $scope->getSpan()->setTag(Tag::COMPONENT, 'slim');
             return include __DIR__ . '/../../../try_catch_finally.php';
         });
 

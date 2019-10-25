@@ -29,6 +29,7 @@ final class LumenIntegrationLoader
         dd_trace('Laravel\Lumen\Application', 'prepareRequest', function (Request $request) use ($span) {
             $span->setTag(Tag::HTTP_URL, $request->getUri());
             $span->setTag(Tag::HTTP_METHOD, $request->getMethod());
+            $span->setTag(Tag::COMPONENT, 'lumen');
             return dd_trace_forward_call();
         });
 
@@ -60,7 +61,9 @@ final class LumenIntegrationLoader
                 LumenIntegration::getInstance(),
                 'lumen.view'
             );
-            $scope->getSpan()->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+            $span = $scope->getSpan();
+            $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+            $span->setTag(Tag::COMPONENT, 'lumen');
             return include __DIR__ . '/../../../try_catch_finally.php';
         });
 
@@ -94,6 +97,7 @@ final class LumenIntegrationLoader
                     $span = $scope->getSpan();
                     $span->setTag(Tag::RESOURCE_NAME, get_class($this) . '::handle');
                     $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+                    $span->setTag(Tag::COMPONENT, 'lumen');
                     return include __DIR__ . '/../../../try_catch_finally.php';
                 });
             }

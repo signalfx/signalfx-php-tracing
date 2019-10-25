@@ -36,14 +36,15 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             [
                 SpanAssertion::build(
                     'web.request',
-                    'web.request',
-                    'web',
-                    'web.request'
+                    'unnamed-php-service',
+                    SpanAssertion::NOT_TESTED,
+                    'GET /simple'
                 )->withExactTags([
                     'http.method' => 'GET',
                     'http.url' => '/simple',
                     'http.status_code' => '200',
                     'integration.name' => 'web',
+                    'component' => 'web.request',
                 ])->withExactMetrics([
                     '_dd1.sr.eausr' => 0.3,
                     '_sampling_priority_v1' => 1,

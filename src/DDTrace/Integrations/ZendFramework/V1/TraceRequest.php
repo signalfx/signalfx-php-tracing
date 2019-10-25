@@ -39,6 +39,7 @@ class TraceRequest extends Zend_Controller_Plugin_Abstract
             $request->getHttpHost() .
             $request->getRequestUri()
         );
+        $span->setTag(Tag::COMPONENT, 'zendframework');
     }
 
     /**

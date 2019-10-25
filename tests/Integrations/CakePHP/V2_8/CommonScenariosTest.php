@@ -43,7 +43,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET SimpleController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'simple',
@@ -52,13 +52,14 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'integration.name' => 'cakephp',
+                        'component' => 'cakephp',
                     ]),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET SimpleViewController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'simple_view',
@@ -67,22 +68,24 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
                         'integration.name' => 'cakephp',
+                        'component' => 'cakephp',
                     ]),
                     SpanAssertion::build(
                         'cakephp.view',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'SimpleView/index.ctp'
                     )->withExactTags([
                         'cakephp.view' => 'SimpleView/index.ctp',
                         'integration.name' => 'cakephp',
+                        'component' => 'cakephp',
                     ]),
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
                         'cakephp.request',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET ErrorController@index'
                     )->withExactTags([
                         'cakephp.route.controller' => 'error',
@@ -92,17 +95,19 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         // CakePHP doesn't appear to set the proper error code
                         'http.status_code' => '200',
                         'integration.name' => 'cakephp',
+                        'component' => 'cakephp',
                     ])->withExistingTagsNames([
                         'error.stack'
                     ])->setError(null, 'Foo error'),
                     SpanAssertion::build(
                         'cakephp.view',
                         'cakephp_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'Errors/index.ctp'
                     )->withExactTags([
                         'cakephp.view' => 'Errors/index.ctp',
                         'integration.name' => 'cakephp',
+                        'component' => 'cakephp',
                     ]),
                 ],
             ]
