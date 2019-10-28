@@ -269,7 +269,12 @@ class PDOIntegration extends Integration
                 return dd_trace_forward_call();
             }
 
-            $operationName = explode(" ", $this->queryString)[0];
+            $pos = strpos($this->queryString, " ");
+            if ($pos and $pos > 0) {
+                $operationName = substr($this->queryString, 0, $pos);
+            } else {
+                $operationName = 'PDOStatement.execute';
+            }
             $scope = $tracer->startIntegrationScopeAndSpan(
                 PDOIntegration::getInstance(),
                 $operationName
