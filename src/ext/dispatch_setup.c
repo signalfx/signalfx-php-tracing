@@ -12,7 +12,7 @@
 #include "debug.h"
 #include "dispatch.h"
 #include "dispatch_compat.h"
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 user_opcode_handler_t ddtrace_old_fcall_handler;
 user_opcode_handler_t ddtrace_old_icall_handler;
@@ -33,37 +33,38 @@ static inline void dispatch_table_dtor(void *zv) {
 #endif
 
 void ddtrace_dispatch_init(TSRMLS_D) {
-    if (!DDTRACE_G(class_lookup)) {
-        ALLOC_HASHTABLE(DDTRACE_G(class_lookup));
-        zend_hash_init(DDTRACE_G(class_lookup), 8, NULL, (dtor_func_t)dispatch_table_dtor, 0);
+    if (!SIGNALFX_TRACING_G(class_lookup)) {
+        ALLOC_HASHTABLE(SIGNALFX_TRACING_G(class_lookup));
+        zend_hash_init(SIGNALFX_TRACING_G(class_lookup), 8, NULL, (dtor_func_t)dispatch_table_dtor, 0);
     }
 
-    if (!DDTRACE_G(function_lookup)) {
-        ALLOC_HASHTABLE(DDTRACE_G(function_lookup));
-        zend_hash_init(DDTRACE_G(function_lookup), 8, NULL, (dtor_func_t)ddtrace_class_lookup_release_compat, 0);
+    if (!SIGNALFX_TRACING_G(function_lookup)) {
+        ALLOC_HASHTABLE(SIGNALFX_TRACING_G(function_lookup));
+        zend_hash_init(SIGNALFX_TRACING_G(function_lookup), 8, NULL, (dtor_func_t)ddtrace_class_lookup_release_compat,
+                       0);
     }
 }
 
 void ddtrace_dispatch_destroy(TSRMLS_D) {
-    if (DDTRACE_G(class_lookup)) {
-        zend_hash_destroy(DDTRACE_G(class_lookup));
-        FREE_HASHTABLE(DDTRACE_G(class_lookup));
-        DDTRACE_G(class_lookup) = NULL;
+    if (SIGNALFX_TRACING_G(class_lookup)) {
+        zend_hash_destroy(SIGNALFX_TRACING_G(class_lookup));
+        FREE_HASHTABLE(SIGNALFX_TRACING_G(class_lookup));
+        SIGNALFX_TRACING_G(class_lookup) = NULL;
     }
 
-    if (DDTRACE_G(function_lookup)) {
-        zend_hash_destroy(DDTRACE_G(function_lookup));
-        FREE_HASHTABLE(DDTRACE_G(function_lookup));
-        DDTRACE_G(function_lookup) = NULL;
+    if (SIGNALFX_TRACING_G(function_lookup)) {
+        zend_hash_destroy(SIGNALFX_TRACING_G(function_lookup));
+        FREE_HASHTABLE(SIGNALFX_TRACING_G(function_lookup));
+        SIGNALFX_TRACING_G(function_lookup) = NULL;
     }
 }
 
 void ddtrace_dispatch_reset(TSRMLS_D) {
-    if (DDTRACE_G(class_lookup)) {
-        zend_hash_clean(DDTRACE_G(class_lookup));
+    if (SIGNALFX_TRACING_G(class_lookup)) {
+        zend_hash_clean(SIGNALFX_TRACING_G(class_lookup));
     }
-    if (DDTRACE_G(function_lookup)) {
-        zend_hash_clean(DDTRACE_G(function_lookup));
+    if (SIGNALFX_TRACING_G(function_lookup)) {
+        zend_hash_clean(SIGNALFX_TRACING_G(function_lookup));
     }
 }
 
@@ -76,33 +77,33 @@ void ddtrace_dispatch_inject(TSRMLS_D) {
  * opcode instead of ZEND_DO_UCALL for user defined functions
  */
 #if PHP_VERSION_ID >= 70000
-    DDTRACE_G(ddtrace_old_icall_handler) = zend_get_user_opcode_handler(ZEND_DO_ICALL);
+    SIGNALFX_TRACING_G(ddtrace_old_icall_handler) = zend_get_user_opcode_handler(ZEND_DO_ICALL);
     zend_set_user_opcode_handler(ZEND_DO_ICALL, ddtrace_wrap_fcall);
 
-    DDTRACE_G(ddtrace_old_ucall_handler) = zend_get_user_opcode_handler(ZEND_DO_UCALL);
+    SIGNALFX_TRACING_G(ddtrace_old_ucall_handler) = zend_get_user_opcode_handler(ZEND_DO_UCALL);
     zend_set_user_opcode_handler(ZEND_DO_UCALL, ddtrace_wrap_fcall);
 #endif
-    DDTRACE_G(ddtrace_old_fcall_handler) = zend_get_user_opcode_handler(ZEND_DO_FCALL);
+    SIGNALFX_TRACING_G(ddtrace_old_fcall_handler) = zend_get_user_opcode_handler(ZEND_DO_FCALL);
     zend_set_user_opcode_handler(ZEND_DO_FCALL, ddtrace_wrap_fcall);
 
-    DDTRACE_G(ddtrace_old_fcall_by_name_handler) = zend_get_user_opcode_handler(ZEND_DO_FCALL_BY_NAME);
+    SIGNALFX_TRACING_G(ddtrace_old_fcall_by_name_handler) = zend_get_user_opcode_handler(ZEND_DO_FCALL_BY_NAME);
     zend_set_user_opcode_handler(ZEND_DO_FCALL_BY_NAME, ddtrace_wrap_fcall);
 }
 
 zend_bool ddtrace_trace(zval *class_name, zval *function_name, zval *callable TSRMLS_DC) {
     HashTable *overridable_lookup = NULL;
-    if (class_name && DDTRACE_G(class_lookup)) {
+    if (class_name && SIGNALFX_TRACING_G(class_lookup)) {
 #if PHP_VERSION_ID < 70000
         overridable_lookup =
-            zend_hash_str_find_ptr(DDTRACE_G(class_lookup), Z_STRVAL_P(class_name), Z_STRLEN_P(class_name));
+            zend_hash_str_find_ptr(SIGNALFX_TRACING_G(class_lookup), Z_STRVAL_P(class_name), Z_STRLEN_P(class_name));
 #else
-        overridable_lookup = zend_hash_find_ptr(DDTRACE_G(class_lookup), Z_STR_P(class_name));
+        overridable_lookup = zend_hash_find_ptr(SIGNALFX_TRACING_G(class_lookup), Z_STR_P(class_name));
 #endif
         if (!overridable_lookup) {
             overridable_lookup = ddtrace_new_class_lookup(class_name TSRMLS_CC);
         }
     } else {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_function *function = NULL;
             if (ddtrace_find_function(EG(function_table), function_name, &function) != SUCCESS) {
                 zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
@@ -113,7 +114,7 @@ zend_bool ddtrace_trace(zval *class_name, zval *function_name, zval *callable TS
             return 0;
         }
 
-        overridable_lookup = DDTRACE_G(function_lookup);
+        overridable_lookup = SIGNALFX_TRACING_G(function_lookup);
     }
 
     if (!overridable_lookup) {

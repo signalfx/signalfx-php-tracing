@@ -6,8 +6,8 @@ EXTENSION_CFG_DIR=${EXTENSION_BASE_DIR}/etc
 EXTENSION_LOGS_DIR=${EXTENSION_BASE_DIR}/log
 EXTENSION_SRC_DIR=${EXTENSION_BASE_DIR}/dd-trace-sources
 EXTENSION_AUTO_INSTRUMENTATION_FILE=${EXTENSION_SRC_DIR}/bridge/dd_wrap_autoloader.php
-INI_FILE_NAME='ddtrace.ini'
-CUSTOM_INI_FILE_NAME='ddtrace-custom.ini'
+INI_FILE_NAME='signalfx-tracing.ini'
+CUSTOM_INI_FILE_NAME='signalfx-tracing-custom.ini'
 
 PATH="${PATH}:/usr/local/bin"
 
@@ -95,7 +95,7 @@ function install_conf_d_files() {
 }
 
 function fail_print_and_exit() {
-    println 'Failed enabling ddtrace extension'
+    println 'Failed enabling signalfx_tracing extension'
     println
     println "The extension has been installed but couldn't be enabled"
     println "Try adding the extension manually to your PHP - php.ini - configuration file"
@@ -113,7 +113,7 @@ function fail_print_and_exit() {
 }
 
 function verify_installation() {
-    ENABLED_VERSION="$(php -r "echo phpversion('ddtrace');")"
+    ENABLED_VERSION="$(php -r "echo phpversion('signalfx_tracing');")"
 
     if [[ -n ${ENABLED_VERSION} ]]; then
         println "Extension ${ENABLED_VERSION} enabled successfully"
@@ -126,7 +126,7 @@ mkdir -p $EXTENSION_DIR
 mkdir -p $EXTENSION_CFG_DIR
 mkdir -p $EXTENSION_LOGS_DIR
 
-println 'Installing PHP tracing extension (ddtrace)'
+println 'Installing SignalFx Tracing for PHP extension (signalfx_tracing)'
 println
 println 'Logging php -i to a file'
 println
@@ -143,10 +143,10 @@ if [[ -n $PHP_THREAD_SAFETY ]]; then
     VERSION_SUFFIX="-zts"
 fi
 
-EXTENSION_NAME="ddtrace-${PHP_VERSION}${VERSION_SUFFIX}.so"
+EXTENSION_NAME="signalfx-tracing-${PHP_VERSION}${VERSION_SUFFIX}.so"
 EXTENSION_FILE_PATH="${EXTENSION_DIR}/${EXTENSION_NAME}"
 INI_FILE_CONTENTS=$(cat <<EOF
-[datadog]
+[signalfx-tracing]
 extension=${EXTENSION_FILE_PATH}
 ddtrace.request_init_hook=${EXTENSION_AUTO_INSTRUMENTATION_FILE}
 EOF

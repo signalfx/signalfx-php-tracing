@@ -31,9 +31,9 @@ class AutoInstrumentationTest extends BaseTestCase
             // file we should pick the tracer from the installed bundle
             ['composer_without_ddtrace_dependency', $currentTracerVersion, true],
 
-            // We want to make sure that the version declared in composer.json is picked up instead of the installed
-            // version.
-            ['composer_with_ddtrace_dependency', '0.11.0-beta', true],
+            // // We want to make sure that the version declared in composer.json is picked up instead of the installed
+            // // version.
+            // ['composer_with_ddtrace_dependency', '0.11.0-beta', true],
 
             // Symfony 3.3 has a loader Symfony\Component\Config\Resource\ClassExistenceResource which registers a
             // private method as the actual class loader. Because of https://github.com/DataDog/dd-trace-php/issues/224

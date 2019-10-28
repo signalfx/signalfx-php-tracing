@@ -52,7 +52,7 @@
 #include <stdarg.h>
 #endif
 
-// Ignore warnings that we convert to errors for ddtrace
+// Ignore warnings that we convert to errors for signalfx_tracing
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 

@@ -29,17 +29,17 @@
 #include "request_hooks.h"
 #include "serializer.h"
 
-ZEND_DECLARE_MODULE_GLOBALS(ddtrace)
+ZEND_DECLARE_MODULE_GLOBALS(signalfx_tracing)
 
 PHP_INI_BEGIN()
-STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_ddtrace_globals,
-                    ddtrace_globals)
+STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_signalfx_tracing_globals,
+                    signalfx_tracing_globals)
 STD_PHP_INI_ENTRY("ddtrace.internal_blacklisted_modules_list", "ionCube Loader,", PHP_INI_SYSTEM, OnUpdateString,
-                  internal_blacklisted_modules_list, zend_ddtrace_globals, ddtrace_globals)
+                  internal_blacklisted_modules_list, zend_signalfx_tracing_globals, signalfx_tracing_globals)
 STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "", PHP_INI_SYSTEM, OnUpdateString, request_init_hook,
-                  zend_ddtrace_globals, ddtrace_globals)
-STD_PHP_INI_BOOLEAN("ddtrace.strict_mode", "0", PHP_INI_SYSTEM, OnUpdateBool, strict_mode, zend_ddtrace_globals,
-                    ddtrace_globals)
+                  zend_signalfx_tracing_globals, signalfx_tracing_globals)
+STD_PHP_INI_BOOLEAN("ddtrace.strict_mode", "0", PHP_INI_SYSTEM, OnUpdateBool, strict_mode,
+                    zend_signalfx_tracing_globals, signalfx_tracing_globals)
 PHP_INI_END()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_serialize_msgpack, 0, 0, 1)
@@ -54,15 +54,17 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_env_config, 0, 0, 1)
 ZEND_ARG_INFO(0, env_name)
 ZEND_END_ARG_INFO()
 
-static void php_ddtrace_init_globals(zend_ddtrace_globals *ng) { memset(ng, 0, sizeof(zend_ddtrace_globals)); }
+static void php_ddtrace_init_globals(zend_signalfx_tracing_globals *ng) {
+    memset(ng, 0, sizeof(zend_signalfx_tracing_globals));
+}
 
-static PHP_MINIT_FUNCTION(ddtrace) {
+static PHP_MINIT_FUNCTION(signalfx_tracing) {
     UNUSED(type);
     REGISTER_STRING_CONSTANT("DD_TRACE_VERSION", PHP_DDTRACE_VERSION, CONST_CS | CONST_PERSISTENT);
-    ZEND_INIT_MODULE_GLOBALS(ddtrace, php_ddtrace_init_globals, NULL);
+    ZEND_INIT_MODULE_GLOBALS(signalfx_tracing, php_ddtrace_init_globals, NULL);
     REGISTER_INI_ENTRIES();
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         return SUCCESS;
     }
     // config initialization needs to be at the top
@@ -78,12 +80,12 @@ static PHP_MINIT_FUNCTION(ddtrace) {
     return SUCCESS;
 }
 
-static PHP_MSHUTDOWN_FUNCTION(ddtrace) {
+static PHP_MSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     UNREGISTER_INI_ENTRIES();
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         return SUCCESS;
     }
 
@@ -97,41 +99,41 @@ static PHP_MSHUTDOWN_FUNCTION(ddtrace) {
     return SUCCESS;
 }
 
-static PHP_RINIT_FUNCTION(ddtrace) {
+static PHP_RINIT_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
 #if defined(ZTS) && PHP_VERSION_ID >= 70000
     ZEND_TSRMLS_CACHE_UPDATE();
 #endif
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         return SUCCESS;
     }
 
     ddtrace_dispatch_init(TSRMLS_C);
-    DDTRACE_G(disable_in_current_request) = 0;
+    SIGNALFX_TRACING_G(disable_in_current_request) = 0;
 
-    if (DDTRACE_G(internal_blacklisted_modules_list) && !dd_no_blacklisted_modules(TSRMLS_C)) {
+    if (SIGNALFX_TRACING_G(internal_blacklisted_modules_list) && !dd_no_blacklisted_modules(TSRMLS_C)) {
         return SUCCESS;
     }
 
     dd_trace_seed_prng(TSRMLS_C);
     ddtrace_coms_on_pid_change();
 
-    if (DDTRACE_G(request_init_hook)) {
-        DD_PRINTF("%s", DDTRACE_G(request_init_hook));
-        dd_execute_php_file(DDTRACE_G(request_init_hook) TSRMLS_CC);
+    if (SIGNALFX_TRACING_G(request_init_hook)) {
+        DD_PRINTF("%s", SIGNALFX_TRACING_G(request_init_hook));
+        dd_execute_php_file(SIGNALFX_TRACING_G(request_init_hook) TSRMLS_CC);
     }
 
-    DDTRACE_G(traces_group_id) = ddtrace_coms_next_group_id();
+    SIGNALFX_TRACING_G(traces_group_id) = ddtrace_coms_next_group_id();
 
     return SUCCESS;
 }
 
-static PHP_RSHUTDOWN_FUNCTION(ddtrace) {
+static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         return SUCCESS;
     }
 
@@ -143,11 +145,11 @@ static PHP_RSHUTDOWN_FUNCTION(ddtrace) {
 
 static int datadog_info_print(const char *str TSRMLS_DC) { return php_output_write(str, strlen(str) TSRMLS_CC); }
 
-static PHP_MINFO_FUNCTION(ddtrace) {
+static PHP_MINFO_FUNCTION(signalfx_tracing) {
     UNUSED(zend_module);
 
     php_info_print_box_start(0);
-    datadog_info_print("PHP tracer extension" TSRMLS_CC);
+    datadog_info_print("SignalFx Tracing for PHP extension" TSRMLS_CC);
     if (!sapi_module.phpinfo_as_text) {
         datadog_info_print("<br><strong>For help, check out " TSRMLS_CC);
         datadog_info_print(
@@ -159,12 +161,12 @@ static PHP_MINFO_FUNCTION(ddtrace) {
             "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" TSRMLS_CC);
     }
     datadog_info_print(!sapi_module.phpinfo_as_text ? "<br><br>" : "\n" TSRMLS_CC);
-    datadog_info_print("(c) Datadog 2019\n" TSRMLS_CC);
     datadog_info_print("(c) SignalFx 2019\n" TSRMLS_CC);
+    datadog_info_print("(c) Datadog 2019\n" TSRMLS_CC);
     php_info_print_box_end();
 
     php_info_print_table_start();
-    php_info_print_table_row(2, "Tracing support", DDTRACE_G(disable) ? "disabled" : "enabled");
+    php_info_print_table_row(2, "SignalFx Tracing for PHP", SIGNALFX_TRACING_G(disable) ? "disabled" : "enabled");
     php_info_print_table_row(2, "Version", PHP_DDTRACE_VERSION);
     php_info_print_table_end();
 
@@ -177,7 +179,7 @@ static PHP_FUNCTION(dd_trace) {
     zval *class_name = NULL;
     zval *callable = NULL;
 
-    if (DDTRACE_G(disable) || DDTRACE_G(disable_in_current_request)) {
+    if (SIGNALFX_TRACING_G(disable) || SIGNALFX_TRACING_G(disable_in_current_request)) {
         RETURN_BOOL(0);
     }
 
@@ -185,7 +187,7 @@ static PHP_FUNCTION(dd_trace) {
                                  &callable) != SUCCESS &&
         zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "zz", &function, &callable) !=
             SUCCESS) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(
                 spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                 "unexpected parameter combination, expected (class, function, closure) or (function, closure)");
@@ -204,7 +206,7 @@ static PHP_FUNCTION(dd_trace) {
         }
         ddtrace_zval_ptr_dtor(function);
 
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                     "function/method name parameter must be a string");
         }
@@ -212,7 +214,7 @@ static PHP_FUNCTION(dd_trace) {
         RETURN_BOOL(0);
     }
 
-    if (class_name && DDTRACE_G(strict_mode) && Z_TYPE_P(class_name) == IS_STRING) {
+    if (class_name && SIGNALFX_TRACING_G(strict_mode) && Z_TYPE_P(class_name) == IS_STRING) {
         zend_class_entry *class = ddtrace_target_class_entry(class_name, function TSRMLS_CC);
 
         if (!class) {
@@ -234,7 +236,7 @@ static PHP_FUNCTION(dd_trace_forward_call) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         RETURN_BOOL(0);
     }
 
@@ -251,7 +253,7 @@ static PHP_FUNCTION(dd_trace_env_config) {
     zval *env_name = NULL;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &env_name) != SUCCESS) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                     "unexpected parameter. the environment variable name must be provided");
         }
@@ -270,7 +272,7 @@ static PHP_FUNCTION(dd_untrace) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    if (DDTRACE_G(disable) && DDTRACE_G(disable_in_current_request)) {
+    if (SIGNALFX_TRACING_G(disable) && SIGNALFX_TRACING_G(disable_in_current_request)) {
         RETURN_BOOL(0);
     }
 
@@ -278,7 +280,7 @@ static PHP_FUNCTION(dd_untrace) {
 
     // Remove the traced function from the global lookup
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &function) != SUCCESS) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                     "unexpected parameter. the function name must be provided");
         }
@@ -291,11 +293,11 @@ static PHP_FUNCTION(dd_untrace) {
     }
 
     DD_PRINTF("Untracing function: %s", Z_STRVAL_P(function));
-    if (DDTRACE_G(function_lookup)) {
+    if (SIGNALFX_TRACING_G(function_lookup)) {
 #if PHP_VERSION_ID < 70000
-        zend_hash_del(DDTRACE_G(function_lookup), Z_STRVAL_P(function), Z_STRLEN_P(function));
+        zend_hash_del(SIGNALFX_TRACING_G(function_lookup), Z_STRVAL_P(function), Z_STRLEN_P(function));
 #else
-        zend_hash_del(DDTRACE_G(function_lookup), Z_STR_P(function));
+        zend_hash_del(SIGNALFX_TRACING_G(function_lookup), Z_STR_P(function));
 #endif
     }
 
@@ -306,7 +308,7 @@ static PHP_FUNCTION(dd_trace_disable_in_request) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    DDTRACE_G(disable_in_current_request) = 1;
+    SIGNALFX_TRACING_G(disable_in_current_request) = 1;
 
     RETURN_BOOL(1);
 }
@@ -315,7 +317,7 @@ static PHP_FUNCTION(dd_trace_reset) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         RETURN_BOOL(0);
     }
 
@@ -328,14 +330,14 @@ static PHP_FUNCTION(dd_trace_serialize_msgpack) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         RETURN_BOOL(0);
     }
 
     zval *trace_array;
 
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "a", &trace_array) == FAILURE) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "Expected an array");
         }
         RETURN_BOOL(0);
@@ -351,7 +353,7 @@ static PHP_FUNCTION(dd_trace_noop) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     PHP7_UNUSED(execute_data);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         RETURN_BOOL(0);
     }
 
@@ -427,13 +429,13 @@ static PHP_FUNCTION(dd_tracer_circuit_breaker_info) {
 static PHP_FUNCTION(dd_trace_buffer_span) {
     PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht TSRMLS_CC);
 
-    if (DDTRACE_G(disable)) {
+    if (SIGNALFX_TRACING_G(disable)) {
         RETURN_BOOL(0);
     }
     zval *trace_array = NULL;
 
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "a", &trace_array) == FAILURE) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "Expected group id and an array");
         }
         RETURN_BOOL(0);
@@ -442,7 +444,7 @@ static PHP_FUNCTION(dd_trace_buffer_span) {
     char *data;
     size_t size;
     if (ddtrace_serialize_simple_array_into_c_string(trace_array, &data, &size TSRMLS_CC)) {
-        RETVAL_BOOL(ddtrace_coms_buffer_data(DDTRACE_G(traces_group_id), data, size));
+        RETVAL_BOOL(ddtrace_coms_buffer_data(SIGNALFX_TRACING_G(traces_group_id), data, size));
 
         free(data);
         return;
@@ -468,7 +470,7 @@ static PHP_FUNCTION(dd_trace_internal_fn) {
 
     zval *function_val = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z*", &function_val, &params, &params_count) != SUCCESS) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                     "unexpected parameter. the function name must be provided");
         }
@@ -476,7 +478,7 @@ static PHP_FUNCTION(dd_trace_internal_fn) {
     }
 
     if (!function_val || Z_TYPE_P(function_val) != IS_STRING) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                     "unexpected parameter. the function name must be provided");
         }
@@ -559,7 +561,7 @@ static PHP_FUNCTION(dd_trace_generate_id) {
 #endif
 }
 
-static const zend_function_entry ddtrace_functions[] = {
+static const zend_function_entry signalfx_tracing_functions[] = {
     PHP_FE(dd_trace, NULL) PHP_FE(dd_trace_forward_call, NULL) PHP_FE(dd_trace_reset, NULL) PHP_FE(dd_trace_noop, NULL)
         PHP_FE(dd_untrace, NULL) PHP_FE(dd_trace_disable_in_request, NULL) PHP_FE(dd_trace_dd_get_memory_limit, NULL)
             PHP_FE(dd_trace_check_memory_under_limit, NULL) PHP_FE(
@@ -570,13 +572,19 @@ static const zend_function_entry ddtrace_functions[] = {
                         PHP_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack)
                             PHP_FE(dd_trace_generate_id, NULL) ZEND_FE_END};
 
-zend_module_entry ddtrace_module_entry = {STANDARD_MODULE_HEADER,    PHP_DDTRACE_EXTNAME,    ddtrace_functions,
-                                          PHP_MINIT(ddtrace),        PHP_MSHUTDOWN(ddtrace), PHP_RINIT(ddtrace),
-                                          PHP_RSHUTDOWN(ddtrace),    PHP_MINFO(ddtrace),     PHP_DDTRACE_VERSION,
-                                          STANDARD_MODULE_PROPERTIES};
+zend_module_entry signalfx_tracing_module_entry = {STANDARD_MODULE_HEADER,
+                                                   PHP_DDTRACE_EXTNAME,
+                                                   signalfx_tracing_functions,
+                                                   PHP_MINIT(signalfx_tracing),
+                                                   PHP_MSHUTDOWN(signalfx_tracing),
+                                                   PHP_RINIT(signalfx_tracing),
+                                                   PHP_RSHUTDOWN(signalfx_tracing),
+                                                   PHP_MINFO(signalfx_tracing),
+                                                   PHP_DDTRACE_VERSION,
+                                                   STANDARD_MODULE_PROPERTIES};
 
-#ifdef COMPILE_DL_DDTRACE
-ZEND_GET_MODULE(ddtrace)
+#ifdef COMPILE_DL_SIGNALFX_TRACING
+ZEND_GET_MODULE(signalfx_tracing)
 #if defined(ZTS) && PHP_VERSION_ID >= 70000
 ZEND_TSRMLS_CACHE_DEFINE();
 #endif

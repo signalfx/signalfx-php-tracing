@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
-    <name>signalfx_tracing</name>
+    <name>signalfx-tracing</name>
     <channel>pecl.php.net</channel>
     <summary>APM and distributed tracing for PHP</summary>
     <description>The SignalFx PHP Tracer brings APM and distributed tracing to PHP.</description>
@@ -178,7 +178,7 @@
             </extension>
         </required>
     </dependencies>
-    <providesextension>ddtrace</providesextension>
+    <providesextension>signalfx_tracing</providesextension>
     <extsrcrelease>
         <configureoption name="enable-ddtrace-debug" default="no" prompt="Enable internal debugging in ddtrace" />
     </extsrcrelease>

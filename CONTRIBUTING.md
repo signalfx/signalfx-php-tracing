@@ -40,22 +40,22 @@ $ composer install-ext
 You can check that the extension was installed properly.
 
 ```bash
-$ php --ri=ddtrace
+$ php --ri=signalfx_tracing
 ```
 
 You should see output similar to the following:
 
 ```
-ddtrace
+signalfx_tracing
 
 
 PHP tracer extension
-For help, check out the documentation at https://github.com/DataDog/dd-trace-php/blob/master/README.md#getting-started
-(c) Datadog 2018
-(c) SignalFx 2018
+For help, check out the documentation at https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html
+(c) SignalFx 2019
+(c) Datadog 2019
 
-Tracing support => enabled
-Version => 0.7.0-beta
+SignalFx Tracing for PHP => enabled
+Version => 0.30.0-beta-sfx0
 ```
 
 When you're done with development, you can stop and remove the containers with the following:

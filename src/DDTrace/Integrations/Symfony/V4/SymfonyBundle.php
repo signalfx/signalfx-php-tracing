@@ -43,8 +43,8 @@ class SymfonyBundle extends Bundle
             return;
         }
 
-        if (!extension_loaded('ddtrace')) {
-            trigger_error('ddtrace extension required to load Symfony integration.', E_USER_WARNING);
+        if (!extension_loaded('signalfx_tracing')) {
+            trigger_error('signalfx_tracing extension required to load Symfony integration.', E_USER_WARNING);
             return;
         }
 

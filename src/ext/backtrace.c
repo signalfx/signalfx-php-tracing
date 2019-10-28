@@ -13,7 +13,7 @@
 #include "ddtrace.h"
 #include "logging.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 struct _backtrace_data_t {
     BOOL_T handler_already_run;

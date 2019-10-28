@@ -23,7 +23,7 @@
 #define RETURN_VALUE_USED(opline) (!((opline)->result_type & EXT_TYPE_UNUSED))
 #endif
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 #if PHP_VERSION_ID < 70000
 #undef EX
@@ -63,9 +63,9 @@ static ddtrace_dispatch_t *find_dispatch(const zend_class_entry *class, ddtrace_
     size_t class_name_length = 0;
     class_name = class->name;
     class_name_length = class->name_length;
-    class_lookup = zend_hash_str_find_ptr(DDTRACE_G(class_lookup), class_name, class_name_length);
+    class_lookup = zend_hash_str_find_ptr(SIGNALFX_TRACING_G(class_lookup), class_name, class_name_length);
 #else
-    class_lookup = zend_hash_find_ptr(DDTRACE_G(class_lookup), class->name);
+    class_lookup = zend_hash_find_ptr(SIGNALFX_TRACING_G(class_lookup), class->name);
 #endif
 
     ddtrace_dispatch_t *dispatch = NULL;
@@ -108,7 +108,7 @@ static void execute_fcall(ddtrace_dispatch_t *dispatch, zval *this, zend_execute
     char *error = NULL;
     zval closure;
     INIT_ZVAL(closure);
-    zend_function *current_fbc = DDTRACE_G(original_context).fbc;
+    zend_function *current_fbc = SIGNALFX_TRACING_G(original_context).fbc;
     zend_class_entry *executed_method_class = NULL;
     if (this) {
         executed_method_class = Z_OBJCE_P(this);
@@ -135,7 +135,7 @@ static void execute_fcall(ddtrace_dispatch_t *dispatch, zval *this, zend_execute
                         executed_method_class, executed_method_class, this TSRMLS_CC);
 #endif
     if (zend_fcall_info_init(&closure, 0, &fci, &fcc, NULL, &error TSRMLS_CC) != SUCCESS) {
-        if (DDTRACE_G(strict_mode)) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
             const char *scope_name, *function_name;
 #if PHP_VERSION_ID < 70000
             scope_name = (func->common.scope) ? func->common.scope->name : NULL;
@@ -166,23 +166,23 @@ static void execute_fcall(ddtrace_dispatch_t *dispatch, zval *this, zend_execute
 
 #if PHP_VERSION_ID >= 70000
     zend_class_entry *orig_scope = fcc.function_handler->common.scope;
-    fcc.function_handler->common.scope = DDTRACE_G(original_context).calling_fbc->common.scope;
-    fcc.calling_scope = DDTRACE_G(original_context).calling_fbc->common.scope;
+    fcc.function_handler->common.scope = SIGNALFX_TRACING_G(original_context).calling_fbc->common.scope;
+    fcc.calling_scope = SIGNALFX_TRACING_G(original_context).calling_fbc->common.scope;
 #endif
 
-    zend_execute_data *prev_original_execute_data = DDTRACE_G(original_context).execute_data;
-    DDTRACE_G(original_context).execute_data = execute_data;
+    zend_execute_data *prev_original_execute_data = SIGNALFX_TRACING_G(original_context).execute_data;
+    SIGNALFX_TRACING_G(original_context).execute_data = execute_data;
 #if PHP_VERSION_ID < 70000
-    zval *prev_original_function_name = DDTRACE_G(original_context).function_name;
-    DDTRACE_G(original_context).function_name = (*EG(opline_ptr))->op1.zv;
+    zval *prev_original_function_name = SIGNALFX_TRACING_G(original_context).function_name;
+    SIGNALFX_TRACING_G(original_context).function_name = (*EG(opline_ptr))->op1.zv;
 #endif
 
     zend_call_function(&fci, &fcc TSRMLS_CC);
 
 #if PHP_VERSION_ID < 70000
-    DDTRACE_G(original_context).function_name = prev_original_function_name;
+    SIGNALFX_TRACING_G(original_context).function_name = prev_original_function_name;
 #endif
-    DDTRACE_G(original_context).execute_data = prev_original_execute_data;
+    SIGNALFX_TRACING_G(original_context).execute_data = prev_original_execute_data;
 
 #if PHP_VERSION_ID >= 70000
     fcc.function_handler->common.scope = orig_scope;
@@ -209,7 +209,7 @@ _exit_cleanup:
         }
 #endif
     }
-    DDTRACE_G(original_context).fbc = current_fbc;
+    SIGNALFX_TRACING_G(original_context).fbc = current_fbc;
     Z_DELREF(closure);
 }
 
@@ -218,10 +218,10 @@ static int is_anonymous_closure(zend_function *fbc, ddtrace_lookup_data_t *looku
         return 0;
     }
 
-    /* This checks for a "{closure}" prefix, not a complete string. PHP adds
-     * null characters to the closure name to separate different parts, which
-     * is why this works at all. */
-    /* todo: why do we do this check at all? */
+/* This checks for a "{closure}" prefix, not a complete string. PHP adds
+ * null characters to the closure name to separate different parts, which
+ * is why this works at all. */
+/* todo: why do we do this check at all? */
 #if PHP_VERSION_ID < 70000
     if (lookup->function_name_length == 0) {
         lookup->function_name_length = strlen(lookup->function_name);
@@ -259,14 +259,14 @@ static zend_always_inline zend_bool wrap_and_run(zend_execute_data *execute_data
         class = Z_OBJCE_P(this);
     }
 
-    if (!this && (DDTRACE_G(original_context).fbc->common.fn_flags & ZEND_ACC_STATIC) != 0) {
-        class = DDTRACE_G(original_context).fbc->common.scope;
+    if (!this && (SIGNALFX_TRACING_G(original_context).fbc->common.fn_flags & ZEND_ACC_STATIC) != 0) {
+        class = SIGNALFX_TRACING_G(original_context).fbc->common.scope;
     }
 
     if (class) {
         dispatch = find_dispatch(class, lookup_data TSRMLS_CC);
     } else {
-        dispatch = lookup_dispatch(DDTRACE_G(function_lookup), lookup_data);
+        dispatch = lookup_dispatch(SIGNALFX_TRACING_G(function_lookup), lookup_data);
     }
 
     if (dispatch && !dispatch->busy) {
@@ -324,7 +324,7 @@ static zend_always_inline zend_bool wrap_and_run(zend_execute_data *execute_data
             }
 
             ret->var.fcall_returned_reference =
-                (DDTRACE_G(original_context).fbc->common.fn_flags & ZEND_ACC_RETURN_REFERENCE) != 0;
+                (SIGNALFX_TRACING_G(original_context).fbc->common.fn_flags & ZEND_ACC_RETURN_REFERENCE) != 0;
             return_value = ret->var.ptr_ptr;
         }
 
@@ -460,12 +460,12 @@ static int update_opcode_leave(zend_execute_data *execute_data TSRMLS_DC) {
 int default_dispatch(zend_execute_data *execute_data TSRMLS_DC) {
     DD_PRINTF("calling default dispatch");
     if (EX(opline)->opcode == ZEND_DO_FCALL_BY_NAME) {
-        if (DDTRACE_G(ddtrace_old_fcall_by_name_handler)) {
-            return DDTRACE_G(ddtrace_old_fcall_by_name_handler)(execute_data TSRMLS_CC);
+        if (SIGNALFX_TRACING_G(ddtrace_old_fcall_by_name_handler)) {
+            return SIGNALFX_TRACING_G(ddtrace_old_fcall_by_name_handler)(execute_data TSRMLS_CC);
         }
     } else {
-        if (DDTRACE_G(ddtrace_old_fcall_handler)) {
-            return DDTRACE_G(ddtrace_old_fcall_handler)(execute_data TSRMLS_CC);
+        if (SIGNALFX_TRACING_G(ddtrace_old_fcall_handler)) {
+            return SIGNALFX_TRACING_G(ddtrace_old_fcall_handler)(execute_data TSRMLS_CC);
         }
     }
 
@@ -474,8 +474,8 @@ int default_dispatch(zend_execute_data *execute_data TSRMLS_DC) {
 
 int ddtrace_wrap_fcall(zend_execute_data *execute_data TSRMLS_DC) {
     DD_PRINTF("OPCODE: %s", zend_get_opcode_name(EX(opline)->opcode));
-    if (DDTRACE_G(disable) || DDTRACE_G(disable_in_current_request) || DDTRACE_G(class_lookup) == NULL ||
-        DDTRACE_G(function_lookup) == NULL) {
+    if (SIGNALFX_TRACING_G(disable) || SIGNALFX_TRACING_G(disable_in_current_request) ||
+        SIGNALFX_TRACING_G(class_lookup) == NULL || SIGNALFX_TRACING_G(function_lookup) == NULL) {
         return default_dispatch(execute_data TSRMLS_CC);
     }
 
@@ -485,38 +485,38 @@ int ddtrace_wrap_fcall(zend_execute_data *execute_data TSRMLS_DC) {
     if (!is_function_wrappable(execute_data, current_fbc, &lookup_data)) {
         return default_dispatch(execute_data TSRMLS_CC);
     }
-    zend_function *previous_fbc = DDTRACE_G(original_context).fbc;
-    DDTRACE_G(original_context).fbc = current_fbc;
-    zend_function *previous_calling_fbc = DDTRACE_G(original_context).calling_fbc;
+    zend_function *previous_fbc = SIGNALFX_TRACING_G(original_context).fbc;
+    SIGNALFX_TRACING_G(original_context).fbc = current_fbc;
+    zend_function *previous_calling_fbc = SIGNALFX_TRACING_G(original_context).calling_fbc;
 #if PHP_VERSION_ID < 70000
-    DDTRACE_G(original_context).calling_fbc =
+    SIGNALFX_TRACING_G(original_context).calling_fbc =
         execute_data->function_state.function && execute_data->function_state.function->common.scope
             ? execute_data->function_state.function
             : current_fbc;
 #else
-    DDTRACE_G(original_context).calling_fbc = current_fbc->common.scope ? current_fbc : execute_data->func;
+    SIGNALFX_TRACING_G(original_context).calling_fbc = current_fbc->common.scope ? current_fbc : execute_data->func;
 #endif
     zval *this = ddtrace_this(execute_data);
 #if PHP_VERSION_ID < 70000
-    zval *previous_this = DDTRACE_G(original_context).this;
-    DDTRACE_G(original_context).this = this;
+    zval *previous_this = SIGNALFX_TRACING_G(original_context).this;
+    SIGNALFX_TRACING_G(original_context).this = this;
 #else
-    zend_object *previous_this = DDTRACE_G(original_context).this;
-    DDTRACE_G(original_context).this = this ? Z_OBJ_P(this) : NULL;
+    zend_object *previous_this = SIGNALFX_TRACING_G(original_context).this;
+    SIGNALFX_TRACING_G(original_context).this = this ? Z_OBJ_P(this) : NULL;
 #endif
-    zend_class_entry *previous_calling_ce = DDTRACE_G(original_context).calling_ce;
+    zend_class_entry *previous_calling_ce = SIGNALFX_TRACING_G(original_context).calling_ce;
 #if PHP_VERSION_ID < 70000
-    DDTRACE_G(original_context).calling_ce = DDTRACE_G(original_context).calling_fbc->common.scope;
+    SIGNALFX_TRACING_G(original_context).calling_ce = SIGNALFX_TRACING_G(original_context).calling_fbc->common.scope;
 #else
-    DDTRACE_G(original_context).calling_ce = Z_OBJ(execute_data->This) ? Z_OBJ(execute_data->This)->ce : NULL;
+    SIGNALFX_TRACING_G(original_context).calling_ce = Z_OBJ(execute_data->This) ? Z_OBJ(execute_data->This)->ce : NULL;
 #endif
 
     zend_bool wrapped = wrap_and_run(execute_data, &lookup_data TSRMLS_CC);
 
-    DDTRACE_G(original_context).calling_ce = previous_calling_ce;
-    DDTRACE_G(original_context).this = previous_this;
-    DDTRACE_G(original_context).calling_fbc = previous_calling_fbc;
-    DDTRACE_G(original_context).fbc = previous_fbc;
+    SIGNALFX_TRACING_G(original_context).calling_ce = previous_calling_ce;
+    SIGNALFX_TRACING_G(original_context).this = previous_this;
+    SIGNALFX_TRACING_G(original_context).calling_fbc = previous_calling_fbc;
+    SIGNALFX_TRACING_G(original_context).fbc = previous_fbc;
     if (wrapped) {
         return update_opcode_leave(execute_data TSRMLS_CC);
     } else {

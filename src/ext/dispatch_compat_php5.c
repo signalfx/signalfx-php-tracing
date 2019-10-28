@@ -10,7 +10,7 @@
 #include "dispatch.h"
 #include "dispatch_compat.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 #undef EX  // php7 style EX
 #define EX(x) ((execute_data)->x)
@@ -130,7 +130,7 @@ HashTable *ddtrace_new_class_lookup(zval *class_name TSRMLS_DC) {
     ALLOC_HASHTABLE(class_lookup);
     zend_hash_init(class_lookup, 8, NULL, ddtrace_class_lookup_release_compat, 0);
 
-    zend_hash_update(DDTRACE_G(class_lookup), Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), &class_lookup,
+    zend_hash_update(SIGNALFX_TRACING_G(class_lookup), Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), &class_lookup,
                      sizeof(HashTable *), NULL);
     return class_lookup;
 }
@@ -177,7 +177,7 @@ void ddtrace_forward_call(zend_execute_data *execute_data, zval *return_value TS
     zend_fcall_info fci;
     zend_fcall_info_cache fcc;
 
-    if (!DDTRACE_G(original_context).execute_data || !EX(prev_execute_data)) {
+    if (!SIGNALFX_TRACING_G(original_context).execute_data || !EX(prev_execute_data)) {
         zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC,
                                 "Cannot use dd_trace_forward_call() outside of a tracing closure");
         return;
@@ -197,15 +197,16 @@ void ddtrace_forward_call(zend_execute_data *execute_data, zval *return_value TS
     }
 
     fcc.initialized = 1;
-    fcc.function_handler = DDTRACE_G(original_context).fbc;
-    fcc.object_ptr = DDTRACE_G(original_context).this;
-    fcc.calling_scope = DDTRACE_G(original_context).calling_ce;
-    fcc.called_scope = fcc.object_ptr ? Z_OBJCE_P(fcc.object_ptr) : DDTRACE_G(original_context).fbc->common.scope;
+    fcc.function_handler = SIGNALFX_TRACING_G(original_context).fbc;
+    fcc.object_ptr = SIGNALFX_TRACING_G(original_context).this;
+    fcc.calling_scope = SIGNALFX_TRACING_G(original_context).calling_ce;
+    fcc.called_scope =
+        fcc.object_ptr ? Z_OBJCE_P(fcc.object_ptr) : SIGNALFX_TRACING_G(original_context).fbc->common.scope;
 
     fci.size = sizeof(fci);
     fci.function_table = EG(function_table);
     fci.object_ptr = fcc.object_ptr;
-    fci.function_name = DDTRACE_G(original_context).function_name;
+    fci.function_name = SIGNALFX_TRACING_G(original_context).function_name;
     fci.retval_ptr_ptr = &retval_ptr;
     fci.param_count = 0;
     fci.params = NULL;

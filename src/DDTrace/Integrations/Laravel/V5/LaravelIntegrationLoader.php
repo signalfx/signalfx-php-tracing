@@ -179,8 +179,8 @@ class LaravelIntegrationLoader
         if (!Configuration::get()->isIntegrationEnabled(LaravelIntegration::NAME)) {
             return false;
         }
-        if (!extension_loaded('ddtrace')) {
-            trigger_error('ddtrace extension required to load Laravel integration.', E_USER_WARNING);
+        if (!extension_loaded('signalfx_tracing')) {
+            trigger_error('signalfx_tracing extension required to load Laravel integration.', E_USER_WARNING);
             return false;
         }
 

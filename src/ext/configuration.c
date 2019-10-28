@@ -33,9 +33,9 @@ void ddtrace_reload_config(COMPAT_CTX_D) {
 }
 
 void ddtrace_initialize_config(COMPAT_CTX_D) {
-    // read all values to memoize them
+// read all values to memoize them
 
-    // CHAR returns a copy of a value that we need to free
+// CHAR returns a copy of a value that we need to free
 #define CHAR(getter_name, env_name, default, ...)                                      \
     do {                                                                               \
         pthread_mutex_lock(&ddtrace_memoized_configuration.mutex);                     \
@@ -67,9 +67,9 @@ void ddtrace_initialize_config(COMPAT_CTX_D) {
 }
 
 void ddtrace_config_shutdown(void) {
-    // read all values to memoize them
+// read all values to memoize them
 
-    // CHAR returns a copy of a value that we need to free
+// CHAR returns a copy of a value that we need to free
 #define CHAR(getter_name, env_name, default, ...)                      \
     do {                                                               \
         pthread_mutex_lock(&ddtrace_memoized_configuration.mutex);     \
