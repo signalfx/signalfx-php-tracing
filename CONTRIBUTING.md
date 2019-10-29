@@ -10,7 +10,7 @@ The easiest way to get the development environment set up is to install [Docker]
 $ docker-compose up -d
 ```
 
-This will run the [preconfigured docker images](https://hub.docker.com/r/datadog/docker-library/) that we provide for the different PHP versions.
+This will run the [preconfigured docker images](https://hub.docker.com/r/datadog/docker-library/) that are provided for the different PHP versions.
 
 - PHP 5.6: `datadog/docker-library:ddtrace_php_5_6`
 - PHP 7.0: `datadog/docker-library:ddtrace_php_7_0`
@@ -40,21 +40,22 @@ $ composer install-ext
 You can check that the extension was installed properly.
 
 ```bash
-$ php --ri=ddtrace
+$ php --ri=signalfx_tracing
 ```
 
 You should see output similar to the following:
 
 ```
-ddtrace
+signalfx_tracing
 
 
-Datadog PHP tracer extension
-For help, check out the documentation at https://github.com/DataDog/dd-trace-php/blob/master/README.md#getting-started
-(c) Datadog 2018
+PHP tracer extension
+For help, check out the documentation at https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html
+(c) SignalFx 2019
+(c) Datadog 2019
 
-Datadog tracing support => enabled
-Version => 0.7.0-beta
+SignalFx Tracing for PHP => enabled
+Version => 0.30.0-beta-sfx0
 ```
 
 When you're done with development, you can stop and remove the containers with the following:

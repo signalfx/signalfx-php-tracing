@@ -7,7 +7,7 @@
 #include "ddtrace.h"
 #include "mpack/mpack.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static int msgpack_write_zval(mpack_writer_t *writer, zval *trace TSRMLS_DC);
 
@@ -117,7 +117,7 @@ static int msgpack_write_zval(mpack_writer_t *writer, zval *trace TSRMLS_DC) /* 
             break;
 #endif
         default:
-            if (DDTRACE_G(strict_mode)) {
+            if (SIGNALFX_TRACING_G(strict_mode)) {
                 zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
                                         "Serialize values must be of type array, string, int, float, bool or null");
             }

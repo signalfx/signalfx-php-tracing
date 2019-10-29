@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 BUILD_SUFFIX := extension
 BUILD_DIR := tmp/build_$(BUILD_SUFFIX)
-SO_FILE := $(BUILD_DIR)/modules/ddtrace.so
+SO_FILE := $(BUILD_DIR)/modules/signalfx_tracing.so
 WALL_FLAGS := -Wall -Wextra
 CFLAGS := -O2 $(WALL_FLAGS)
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -9,7 +9,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 VERSION:=$(shell cat src/DDTrace/version.php | grep return | awk '{print $$2}' | cut -d\' -f2)
 VERSION_WITHOUT_SUFFIX:=$(shell cat src/DDTrace/version.php | grep return | awk '{print $$2}' | cut -d\' -f2 | cut -d- -f1)
 
-INI_FILE := /usr/local/etc/php/conf.d/ddtrace.ini
+INI_FILE := /usr/local/etc/php/conf.d/signalfx-tracing.ini
 
 C_FILES := $(shell find src/ext -name '*.c' -o -name '*.h' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
 TEST_FILES := $(shell find tests/ext -name '*.php*' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
@@ -39,7 +39,7 @@ install: $(SO_FILE)
 	$(Q) $(SUDO) $(MAKE) -C $(BUILD_DIR) install
 
 $(INI_FILE):
-	$(Q) echo "extension=ddtrace.so" | $(SUDO) tee -a $@
+	$(Q) echo "extension=signalfx_tracing.so" | $(SUDO) tee -a $@
 
 install_ini: $(INI_FILE)
 
@@ -110,11 +110,11 @@ clang_format_fix:
 
 EXT_DIR:=/opt/signalfx-php-tracing
 PACKAGE_NAME:=signalfx-tracing
-FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m support@signalfx.com --license "BSD 3-Clause License" --version $(VERSION) \
-	--provides $(PACKAGE_NAME) --vendor DataDog  --url "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" --no-depends
+FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m info@signalfx.com --license "BSD 3-Clause License" --version $(VERSION) \
+	--provides $(PACKAGE_NAME) --vendor SignalFx  --url "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" --no-depends
 FPM_DIR_OPTS=--directories $(EXT_DIR)/etc --config-files $(EXT_DIR)/etc -s dir
 FPM_FILES=extensions/=$(EXT_DIR)/extensions \
-	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/ddtrace.ini.example=$(EXT_DIR)/etc/ \
+	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/signalfx-tracing.ini.example=$(EXT_DIR)/etc/ \
 	docs=$(EXT_DIR)/docs README.md=$(EXT_DIR)/docs/README.md \
 	src=$(EXT_DIR)/dd-trace-sources \
 	bridge=$(EXT_DIR)/dd-trace-sources

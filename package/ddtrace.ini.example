@@ -1,2 +1,0 @@
-[ddtrace]
-extension=/opt/signalfx-php-tracing/extensions/ddtrace-11111.so

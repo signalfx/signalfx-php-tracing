@@ -368,7 +368,7 @@ jobs:
         type: string
       resource_class:
         type: string
-        default: medium
+        default: xlarge
     resource_class: << parameters.resource_class >>
     executor:
       name: with_integrations
@@ -426,10 +426,10 @@ jobs:
           set -xe
           curl -q -o hyperfine.tgz -L https://github.com/sharkdp/hyperfine/releases/download/v1.6.0/hyperfine-v1.6.0-x86_64-unknown-linux-musl.tar.gz
           tar xf hyperfine.tgz --strip-component=1
-          php -m | grep ddtrace
-          sudo rm /usr/local/etc/php/conf.d/ddtrace.ini
-          php -m | grep ddtrace || true
-          ./hyperfine -s basic 'php -m' 'php -m -dextension=ddtrace.so' --min-runs 10000 --export-markdown hyperfine.md
+          php -m | grep signalfx_tracing
+          sudo rm /usr/local/etc/php/conf.d/signalfx-tracing.ini
+          php -m | grep signalfx_tracing || true
+          ./hyperfine -s basic 'php -m' 'php -m -dextension=signalfx_tracing.so' --min-runs 10000 --export-markdown hyperfine.md
       - store_artifacts: { path: 'hyperfine.md', destination: /hyperfine.md }
 
   verify_package:
@@ -471,14 +471,14 @@ jobs:
           command: make all CFLAGS="-std=gnu11 -O2 -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>" ECHO_ARG="-e"
       - run:
           name: Copy extension basic .so
-          command: cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>.so
+          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx-tracing-<< parameters.so_suffix >>.so
       - run:
           shell: /bin/bash -eo pipefail -l
           name: Build extension debug .so
           command: make clean all CFLAGS="-std=gnu11 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>" ECHO_ARG="-e"
       - run:
           name: Copy extension basic .so
-          command: cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>-debug.so
+          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx-tracing-<< parameters.so_suffix >>-debug.so
       - persist_to_workspace:
           root: '.'
           paths: ['./extensions']
@@ -778,21 +778,18 @@ workflows:
       - integration_tests:
           requires: [ 'Code Checkout' ]
           name: "PHP 71 Web integration tests"
-          resource_class: xlarge
           integration_testsuite: "test-web-71"
           docker_image: "datadog/docker-library:ddtrace_alpine_php-7.1-debug"
           lib_curl_command: sudo apk update ; sudo apk add curl-dev
       - integration_tests:
           requires: [ 'Code Checkout' ]
           name: "PHP 72 Web integration tests"
-          resource_class: xlarge
           integration_testsuite: "test-web-72"
           docker_image: "datadog/docker-library:ddtrace_php_7_2"
           lib_curl_command: sudo apt update ; sudo apt-get -y install libcurl4-nss-dev
       - integration_tests:
           requires: [ 'Code Checkout' ]
           name: "PHP 73 Web integration tests"
-          resource_class: xlarge
           integration_testsuite: "test-web-73"
           docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
           lib_curl_command: sudo apk update ; sudo apk add curl-dev

@@ -47,7 +47,7 @@ function check_agent_connectivity()
 }
 
 header('Content-Type: text/plain');
-echo 'DataDog trace extension verification' . PHP_EOL . PHP_EOL;
+echo 'Trace extension verification' . PHP_EOL . PHP_EOL;
 echo 'Checks:' . PHP_EOL;
 echo "- ddtrace extension installed\t\t" . result(extension_loaded('ddtrace') || extension_loaded('dd_trace'));
 echo "- ddtrace extension version \t\t\t" . (phpversion('ddtrace') ?: '[N/A]') . PHP_EOL;

@@ -10,7 +10,7 @@
 #include "env_config.h"
 #include "logging.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 #define DELIMETER ','
 static int find_exact_match(const char *haystack, const char *needle) {
@@ -36,7 +36,7 @@ static int find_exact_match(const char *haystack, const char *needle) {
 int dd_no_blacklisted_modules(TSRMLS_D) {
     int no_blacklisted_modules = 1;
 
-    char *blacklist = DDTRACE_G(internal_blacklisted_modules_list);
+    char *blacklist = SIGNALFX_TRACING_G(internal_blacklisted_modules_list);
     zend_module_entry *module;
 
     if (blacklist == NULL) {

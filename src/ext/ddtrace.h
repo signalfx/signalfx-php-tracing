@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "version.h"
-extern zend_module_entry ddtrace_module_entry;
+extern zend_module_entry signalfx_tracing_module_entry;
 
 typedef struct _ddtrace_original_context {
     zend_function *fbc;
@@ -18,7 +18,7 @@ typedef struct _ddtrace_original_context {
 #endif
 } ddtrace_original_context;
 
-ZEND_BEGIN_MODULE_GLOBALS(ddtrace)
+ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
 zend_bool disable;
 zend_bool disable_in_current_request;
 char *request_init_hook;
@@ -35,15 +35,15 @@ user_opcode_handler_t ddtrace_old_fcall_handler;
 user_opcode_handler_t ddtrace_old_icall_handler;
 user_opcode_handler_t ddtrace_old_ucall_handler;
 user_opcode_handler_t ddtrace_old_fcall_by_name_handler;
-ZEND_END_MODULE_GLOBALS(ddtrace)
+ZEND_END_MODULE_GLOBALS(signalfx_tracing)
 
 #ifdef ZTS
-#define DDTRACE_G(v) TSRMG(ddtrace_globals_id, zend_ddtrace_globals *, v)
+#define SIGNALFX_TRACING_G(v) TSRMG(signalfx_tracing_globals_id, zend_signalfx_tracing_globals *, v)
 #else
-#define DDTRACE_G(v) (ddtrace_globals.v)
+#define SIGNALFX_TRACING_G(v) (signalfx_tracing_globals.v)
 #endif
 
-#define PHP_DDTRACE_EXTNAME "ddtrace"
+#define PHP_DDTRACE_EXTNAME "signalfx_tracing"
 #ifndef PHP_DDTRACE_VERSION
 #define PHP_DDTRACE_VERSION "0.0.0-unknown"
 #endif
