@@ -32,6 +32,9 @@ final class SpanIntegrationChecker
             '/symfony.*/' => 'DDTrace\Integrations\Symfony\SymfonyIntegration',
             '/web.*/' => 'DDTrace\Integrations\Web\WebIntegration',
             '/zf.*/' => 'DDTrace\Integrations\ZendFramework\ZendFrameworkIntegration',
+            // DB integrations. Currently: PDO
+            '/SELECT/' => 'DDTrace\Integrations\PDO\PDOIntegration',
+            '/WRONG/' => 'DDTrace\Integrations\PDO\PDOIntegration',
         ];
     }
 

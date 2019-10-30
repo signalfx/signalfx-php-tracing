@@ -13,7 +13,10 @@ class Tag
     const PID = 'system.pid';
     const RESOURCE_NAME = 'resource.name';
     const COMPONENT = 'component';
-    const DB_STATEMENT = 'sql.query';
+    const DB_STATEMENT = 'db.statement';
+    const DB_TYPE = 'db.type';
+    const DB_INSTANCE = 'db.instance';
+    const DB_USER = 'db.user';
     const ERROR = 'error';
     const ERROR_MSG = 'error.msg'; // string representing the error message
     const ERROR_TYPE = 'error.type'; // string representing the type of the error
