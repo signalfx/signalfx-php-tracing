@@ -24,7 +24,9 @@ class RequiredDepsAutoloader
         // If it is not Datadog, let's exit soon
         $len = strlen($dataDogNamespaceRoot);
         if (strncmp($dataDogNamespaceRoot, $class, $len) !== 0) {
-            return;
+            if (strncmp('SignalFx\\', $class, strlen('SignalFx\\')) !== 0) {
+                return;
+            }
         }
 
         self::$skipLoader = true; // avoid hard to debug errors if dd_require_all requires dependencies in wrong order

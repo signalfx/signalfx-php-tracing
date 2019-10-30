@@ -9,8 +9,13 @@ namespace DDTrace\Bridge;
  */
 function dd_tracing_enabled()
 {
+    $value = trim(strtolower(getenv('SIGNALFX_TRACING_ENABLED')));
+    if ($value === '0' || $value === 'false') {
+        return false;
+    }
+
     if ('cli' === PHP_SAPI) {
-        $cliEnabled = getenv('DD_TRACE_CLI_ENABLED');
+        $cliEnabled = getenv('SIGNALFX_TRACING_CLI_ENABLED');
         if (false === $cliEnabled) {
             return false;
         }
@@ -18,18 +23,7 @@ function dd_tracing_enabled()
         return 'true' === $cliEnabled || '1' === $cliEnabled;
     }
 
-    $value = getenv('SIGNALFX_TRACE_ENABLED');
-    if (false === $value) {
-        // Not setting the env means we default to enabled.
-        return true;
-    }
-
-    $value = trim(strtolower($value));
-    if ($value === '0' || $value === 'false') {
-        return false;
-    } else {
-        return true;
-    }
+    return true;
 }
 
 /**

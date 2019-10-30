@@ -58,6 +58,8 @@ require __DIR__ . '/../src/DDTrace/Propagators/B3CurlHeadersMap.php';
 require __DIR__ . '/../src/DDTrace/Http/Urls.php';
 require __DIR__ . '/../src/DDTrace/Http/Request.php';
 require __DIR__ . '/../src/DDTrace/ScopeManager.php';
+require __DIR__ . '/../src/SignalFx/GlobalTracer.php';
+require __DIR__ . '/../src/SignalFx/Tracing.php';
 
 // Integrations:
 require __DIR__ . '/../src/DDTrace/Integrations/AbstractIntegrationConfiguration.php';

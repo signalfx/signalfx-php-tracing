@@ -64,7 +64,7 @@ final class Bootstrap
     /**
      * Replace the OT tracer with a wrapper containing the datadog tracer.
      */
-    private static function registerOpenTracing()
+    public static function registerOpenTracing()
     {
         dd_trace('OpenTracing\GlobalTracer', 'get', function () {
             $original = \OpenTracing\GlobalTracer::get();

@@ -27,7 +27,7 @@ abstract class CLITestCase extends IntegrationTestCase
     protected static function getEnvs()
     {
         return [
-            'DD_TRACE_CLI_ENABLED' => 'true',
+            'SIGNALFX_TRACING_CLI_ENABLED' => 'true',
             'SIGNALFX_ENDPOINT_HOST' => 'request_replayer',
             'SIGNALFX_ENDPOINT_PORT' => '80',
             'SIGNALFX_ENDPOINT_PATH' => '/',
