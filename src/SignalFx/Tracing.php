@@ -3,7 +3,7 @@
 namespace SignalFx;
 
 use DDTrace\Bootstrap;
-
+use SignalFx\GlobalTracer;
 /**
  * Tracing helpers
  */
@@ -23,6 +23,6 @@ final class Tracing
     public static function createTracer()
     {
         Bootstrap::tracerOnce();
-        return Bootstrap::registerOpenTracing();
+        return GlobalTracer::get();
     }
 }

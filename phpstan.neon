@@ -8,3 +8,4 @@ parameters:
 		# Temporarily disabling as it uses \OpenTracing\GlobalTracer.php
 		- src/DDTrace/GlobalTracer.php
 		- src/SignalFx/Tracing.php
+		- src/SignalFx/GlobalTracer.php
