@@ -7,3 +7,4 @@ parameters:
 		- src/dd-doctor.php
 		# Temporarily disabling as it uses \OpenTracing\GlobalTracer.php
 		- src/DDTrace/GlobalTracer.php
+		- src/SignalFx/Tracing.php

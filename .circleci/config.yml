@@ -338,7 +338,7 @@ jobs:
               )
             fi
             cd /usr/src/php
-            export DD_TRACE_CLI_ENABLED=true
+            export SIGNALFX_TRACING_CLI_ENABLED=true
             export REPORT_EXIT_STATUS=1
             export TEST_PHP_JUNIT=/tmp/artifacts/tests/php-tests.xml
             mkdir -p /tmp/artifacts/tests

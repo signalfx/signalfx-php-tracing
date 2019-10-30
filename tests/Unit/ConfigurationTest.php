@@ -32,7 +32,7 @@ final class ConfigurationTest extends BaseTestCase
         putenv('SIGNALFX_TRACE_APP_NAME');
         putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
         putenv('SIGNALFX_TRACE_DEBUG');
-        putenv('SIGNALFX_TRACE_ENABLED');
+        putenv('SIGNALFX_TRACING_ENABLED');
         putenv('ddtrace_app_name');
     }
 
@@ -43,7 +43,7 @@ final class ConfigurationTest extends BaseTestCase
 
     public function testTracerDisabled()
     {
-        putenv('SIGNALFX_TRACE_ENABLED=false');
+        putenv('SIGNALFX_TRACING_ENABLED=false');
         $this->assertFalse(Configuration::get()->isEnabled());
     }
 
@@ -96,7 +96,7 @@ final class ConfigurationTest extends BaseTestCase
     public function testIntegrationsDisabledIfGlobalDisabled()
     {
         putenv('SIGNALFX_INTEGRATIONS_DISABLED=one');
-        putenv('SIGNALFX_TRACE_ENABLED=false');
+        putenv('SIGNALFX_TRACING_ENABLED=false');
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('one'));
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('two'));
     }

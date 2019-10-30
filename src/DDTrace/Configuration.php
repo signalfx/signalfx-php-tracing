@@ -19,7 +19,7 @@ class Configuration extends AbstractConfiguration
      */
     public function isEnabled()
     {
-        return $this->boolValue('trace.enabled', true);
+        return $this->boolValue('tracing.enabled', true);
     }
 
     /**
