@@ -11,4 +11,4 @@ ARG php_version
 RUN apt-get -y install php${php_version}
 
 RUN dpkg -i /packages/*.deb
-RUN php -m | grep ddtrace
+RUN php -m | grep signalfx_tracing

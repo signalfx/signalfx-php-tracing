@@ -17,7 +17,7 @@ RUN yum install -y vim valgrind
 ADD build/packages /packages
 RUN rpm -ivh /packages/*.rpm
 
-RUN php -m | grep ddtrace
+RUN php -m | grep signalfx_tracing
 
 CMD ["bash"]
 
