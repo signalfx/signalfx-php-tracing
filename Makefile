@@ -117,7 +117,8 @@ FPM_FILES=extensions/=$(EXT_DIR)/extensions \
 	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/signalfx-tracing.ini.example=$(EXT_DIR)/etc/ \
 	docs=$(EXT_DIR)/docs README.md=$(EXT_DIR)/docs/README.md \
 	src=$(EXT_DIR)/dd-trace-sources \
-	bridge=$(EXT_DIR)/dd-trace-sources
+	bridge=$(EXT_DIR)/dd-trace-sources \
+	LICENSE=$(EXT_DIR)
 FPM_OPTS=$(FPM_INFO_OPTS) $(FPM_DIR_OPTS) --after-install=package/post-install.sh --depends="php > 7"
 
 PACKAGES_BUILD_DIR:=build/packages
