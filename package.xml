@@ -1,21 +1,29 @@
 <?xml version="1.0"?>
 <package packagerversion="1.9.4" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
-    <name>signalfx-tracing</name>
+    <name>signalfx_tracing</name>
     <channel>pecl.php.net</channel>
     <summary>APM and distributed tracing for PHP</summary>
-    <description>The SignalFx PHP Tracer brings APM and distributed tracing to PHP.</description>
-    <date>2019-08-15</date>
+    <description>The SignalFx Tracing Library for PHP</description>
+    <lead>
+      <name>SignalFx</name>
+      <user>signalfx</user>
+      <email>signalfx-oss@splunk.com</email>
+      <active>yes</active>
+    </lead>
+    <date>2019-11-01</date>
     <version>
-        <release>0.30.0-sfx0</release>
-        <api>0.30.0-sfx0</api>
+        <release>0.30.2.0</release>
+        <api>0.30.2.0</api>
     </version>
     <stability>
-        <release>stable</release>
-        <api>stable</api>
+        <release>beta</release>
+        <api>beta</api>
     </stability>
     <license uri="https://github.com/signalfx/signalfx-php-tracing/blob/master/LICENSE">BSD 3-Clause</license>
     <notes>
         Initial SignalFx beta release
+        ### Fixed
+        - Ensure the request init hook is bound by the `open_basedir` INI directive #579
     </notes>
     <contents>
         <dir name="/">
@@ -60,6 +68,7 @@
                     <file name="random.h" role="src" />
                     <file name="request_hooks.c" role="src" />
                     <file name="request_hooks.h" role="src" />
+                    <file name="sandbox.h" role="src" />
                     <file name="serializer.c" role="src" />
                     <file name="serializer.h" role="src" />
                     <file name="version.h" role="src" />
@@ -108,6 +117,7 @@
                     <file name="dd_trace_forward_call_with_inheritance.phpt" role="test" />
                     <file name="dd_trace_forward_call_with_private_callback.phpt" role="test" />
                     <file name="dd_trace_generate_id.phpt" role="test" />
+                    <file name="desctructor_called_when_this_gets_out_of_scope.phpt" role="test" />
                     <file name="enable_throw_exception_if_overridable_doesnt_exist.phpt" role="test" />
                     <file name="from_php_7_3_test_user_streams_consumed_bug.phpt" role="test" />
                     <file name="from_php_7_3_bug61728.phpt" role="test" />
