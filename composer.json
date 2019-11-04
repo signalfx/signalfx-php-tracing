@@ -3,7 +3,6 @@
     "type": "library",
     "description": "PHP APM Client",
     "keywords": [
-        "datadog",
         "signalfx",
         "php",
         "tracing"
