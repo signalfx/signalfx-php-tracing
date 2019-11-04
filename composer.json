@@ -1,7 +1,7 @@
 {
     "name": "signalfx/signalfx-tracing",
     "type": "library",
-    "description": "PHP APM Client",
+    "description": "SignalFx Tracing Library for PHP",
     "keywords": [
         "signalfx",
         "php",
@@ -10,17 +10,13 @@
     "license": "BSD-3-Clause",
     "authors": [
         {
-            "name": "José Carlos Chávez",
-            "email": "jcchavezs@gmail.com"
+            "name": "SignalFx",
+            "email": "signalfx-oss@splunk.com",
+            "role": "Developer"
         },
         {
             "name": "DataDog",
             "email": "dev@datadoghq.com",
-            "role": "Developer"
-        },
-        {
-            "name": "SignalFx",
-            "email": "signalfx-oss@splunk.com",
             "role": "Developer"
         }
     ],
