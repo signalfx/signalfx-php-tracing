@@ -14,10 +14,10 @@ final class B3TextMapTest extends Framework\TestCase
 {
     const BAGGAGE_ITEM_KEY = 'test_key';
     const BAGGAGE_ITEM_VALUE = 'test_value';
-    const TRACE_ID = '1589331357723252209';
-    const TRACE_ID_HEX = '160e7072ff7bd5f1';
-    const SPAN_ID = '1589331357723252210';
-    const SPAN_ID_HEX = '160e7072ff7bd5f2';
+    const TRACE_ID = '18446744073709551615';
+    const TRACE_ID_HEX = 'ffffffffffffffff';
+    const SPAN_ID = '18446744073709551614';
+    const SPAN_ID_HEX = 'fffffffffffffffe';
     const PARENT_SPAN_ID = '1589331357723252211';
     const PARENT_SPAN_ID_HEX = '160e7072ff7bd5f3';
 
@@ -78,6 +78,7 @@ final class B3TextMapTest extends Framework\TestCase
         ];
         $textMapPropagator = new B3TextMap($this->tracer);
         $context = $textMapPropagator->extract($carrier);
+        $sc = new SpanContext( self::TRACE_ID, self::SPAN_ID, null, [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]);
         $this->assertTrue(
             $context->isEqual(new SpanContext(
                 self::TRACE_ID,

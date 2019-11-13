@@ -492,10 +492,10 @@ int ddtrace_wrap_fcall(zend_execute_data *execute_data TSRMLS_DC) {
     SIGNALFX_TRACING_G(original_context).fbc = current_fbc;
     zend_function *previous_calling_fbc = SIGNALFX_TRACING_G(original_context).calling_fbc;
 #if PHP_VERSION_ID < 70000
-    SIGNALFX_TRACING_G(original_context).calling_fbc =
-        execute_data->function_state.function && execute_data->function_state.function->common.scope
-            ? execute_data->function_state.function
-            : current_fbc;
+    SIGNALFX_TRACING_G(original_context)
+        .calling_fbc = execute_data->function_state.function && execute_data->function_state.function->common.scope
+                           ? execute_data->function_state.function
+                           : current_fbc;
 #else
     SIGNALFX_TRACING_G(original_context).calling_fbc = current_fbc->common.scope ? current_fbc : execute_data->func;
 #endif

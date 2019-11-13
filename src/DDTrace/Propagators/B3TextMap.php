@@ -68,11 +68,11 @@ final class B3TextMap implements Propagator
 
         foreach ($carrier as $key => $value) {
             if ($key === B3_TRACE_ID_HEADER) {
-                $traceId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $traceId = (string)dd_trace_hex_dec($this->extractStringOrFirstArrayElement($value));
             } elseif ($key === B3_SPAN_ID_HEADER) {
-                $spanId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $spanId = (string)dd_trace_hex_dec($this->extractStringOrFirstArrayElement($value));
             } elseif ($key === B3_PARENT_SPAN_ID_HEADER) {
-                $parentSpanId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $parentSpanId = (string)dd_trace_hex_dec($this->extractStringOrFirstArrayElement($value));
             } elseif ($key === B3_SAMPLED_HEADER) {
                 $sampled = $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_FLAGS_HEADER) {

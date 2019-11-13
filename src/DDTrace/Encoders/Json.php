@@ -15,7 +15,19 @@ final class Json implements Encoder
      */
     public function encodeTraces(Tracer $tracer)
     {
-        $json = json_encode($tracer->getTracesAsArray());
+        $traces = $tracer->getTracesAsArray();
+        // Internal ids are strings, and schema requires ints
+        $to_cast = ['trace_id', 'span_id', 'parent_id'];
+        foreach($traces as $t_key => $trace) {
+            foreach($trace as $s_key => $span) {
+                foreach ($to_cast as $item){
+                    if (isset($span[$item])) {
+                        $traces[$t_key][$s_key][$item] = (int) $span[$item];
+                    }
+                }
+            }
+        }
+        $json = json_encode($traces);
         if (false === $json) {
             self::logDebug('Failed to json-encode trace: ' . json_last_error_msg());
             return '[[]]';

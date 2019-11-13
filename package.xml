@@ -73,6 +73,8 @@
                     <file name="serializer.h" role="src" />
                     <file name="version.h" role="src" />
                     <file name="compatibility.h" role="src" />
+                    <file name="hex_utils.c" role="src" />
+                    <file name="hex_utils.h" role="src" />
                     <dir name="mpack">
                         <file name="AUTHORS.md" role="doc" />
                         <file name="CHANGELOG.md" role="doc" />

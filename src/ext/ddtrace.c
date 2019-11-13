@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "dispatch.h"
 #include "dispatch_compat.h"
+#include "hex_utils.h"
 #include "memory_limit.h"
 #include "random.h"
 #include "request_hooks.h"
@@ -560,6 +561,94 @@ static PHP_FUNCTION(dd_trace_generate_id) {
 #endif
 }
 
+/* {{{ proto string dd_trace_dec_hex(dec_string) */
+static PHP_FUNCTION(dd_trace_dec_hex) {
+    PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht TSRMLS_CC);
+    PHP7_UNUSED(execute_data);
+    zval *dec = NULL;
+
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &dec) != SUCCESS) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
+            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
+                                    "unexpected parameter combination, expected (dec).");
+        }
+#if PHP_VERSION_ID >= 70000
+        RETURN_STRING("0");
+#else
+        RETURN_STRING("0", 1);
+#endif
+    }
+    if (!dec || Z_TYPE_P(dec) != IS_STRING) {
+        ddtrace_zval_ptr_dtor(dec);
+        if (SIGNALFX_TRACING_G(strict_mode)) {
+            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "dec parameter must be a string");
+        }
+#if PHP_VERSION_ID >= 70000
+        RETURN_STRING("0");
+#else
+        RETURN_STRING("0", 1);
+#endif
+    }
+    char *dec_arg = Z_STRVAL_P(dec);
+    DD_PRINTF("Dec: %s", dec_arg);
+
+#if PHP_VERSION_ID >= 70200
+    RETURN_STR(dd_trace_dec_hex(dec_arg));
+#else
+    char buf[18];
+    dd_trace_dec_hex(dec_arg, buf);
+#if PHP_VERSION_ID >= 70000
+    RETURN_STRING(buf);
+#else
+    RETURN_STRING(buf, 1);
+#endif
+#endif
+}
+
+/* {{{ proto string dd_trace_hex_dec(hex_string) */
+static PHP_FUNCTION(dd_trace_hex_dec) {
+    PHP5_UNUSED(return_value_used, this_ptr, return_value_ptr, ht TSRMLS_CC);
+    PHP7_UNUSED(execute_data);
+    zval *hex = NULL;
+
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &hex) != SUCCESS) {
+        if (SIGNALFX_TRACING_G(strict_mode)) {
+            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC,
+                                    "unexpected parameter combination, expected (hex).");
+        }
+#if PHP_VERSION_ID >= 70000
+        RETURN_STRING("0");
+#else
+        RETURN_STRING("0", 1);
+#endif
+    }
+
+    if (!hex || Z_TYPE_P(hex) != IS_STRING) {
+        ddtrace_zval_ptr_dtor(hex);
+        if (SIGNALFX_TRACING_G(strict_mode)) {
+            zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "hex parameter must be a string");
+        }
+#if PHP_VERSION_ID >= 70000
+        RETURN_STRING("0");
+#else
+        RETURN_STRING("0", 1);
+#endif
+    }
+    char *hex_arg = Z_STRVAL_P(hex);
+
+#if PHP_VERSION_ID >= 70200
+    RETURN_STR(dd_trace_hex_dec(hex_arg));
+#else
+    char buf[23];
+    dd_trace_hex_dec(hex_arg, buf);
+#if PHP_VERSION_ID >= 70000
+    RETURN_STRING(buf);
+#else
+    RETURN_STRING(buf, 1);
+#endif
+#endif
+}
+
 static const zend_function_entry signalfx_tracing_functions[] = {
     PHP_FE(dd_trace, NULL) PHP_FE(dd_trace_forward_call, NULL) PHP_FE(dd_trace_reset, NULL) PHP_FE(dd_trace_noop, NULL)
         PHP_FE(dd_untrace, NULL) PHP_FE(dd_trace_disable_in_request, NULL) PHP_FE(dd_trace_dd_get_memory_limit, NULL)
@@ -569,7 +658,8 @@ static const zend_function_entry signalfx_tracing_functions[] = {
                     dd_trace_env_config, arginfo_dd_trace_env_config) PHP_FE(dd_trace_coms_trigger_writer_flush, NULL)
                     PHP_FE(dd_trace_buffer_span, arginfo_dd_trace_buffer_span) PHP_FE(dd_trace_internal_fn, NULL)
                         PHP_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack)
-                            PHP_FE(dd_trace_generate_id, NULL) ZEND_FE_END};
+                            PHP_FE(dd_trace_generate_id, NULL) PHP_FE(dd_trace_dec_hex, NULL)
+                                PHP_FE(dd_trace_hex_dec, NULL) ZEND_FE_END};
 
 zend_module_entry signalfx_tracing_module_entry = {STANDARD_MODULE_HEADER,
                                                    PHP_DDTRACE_EXTNAME,
