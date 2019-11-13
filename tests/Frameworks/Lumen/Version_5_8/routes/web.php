@@ -27,3 +27,9 @@ $router->get('simple_view', [
 $router->get('error', [
     'uses' => 'ExampleController@error',
 ]);
+
+$router->group(['prefix' => 'api/v1'], function () use ($router) {
+    $router->get('user/{id}', [
+        'uses' => 'ExampleController@query'
+    ]);
+});

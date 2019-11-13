@@ -61,7 +61,8 @@ final class LumenIntegration extends Integration
             if (0 === strpos($this->version(), 'Lumen (5.1')) {
                 return dd_trace_forward_call();
             }
-            if (0 === strpos($this->version(), 'Lumen (5.')) {
+            if (0 === strpos($this->version(), 'Lumen (5.')
+                || (0 === strpos($this->version(), 'Lumen (6.'))) {
                 $loader = new LumenIntegrationLoader();
                 $loader->load();
             }

@@ -35,10 +35,10 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'lumen.request',
+                    'simple_route',
                     'unnamed-php-service',
                     SpanAssertion::NOT_TESTED,
-                    'GET simple_route'
+                    SpanAssertion::NOT_TESTED
                 )
                     ->withExactTags([
                         'lumen.route.name' => 'simple_route',
