@@ -1,6 +1,6 @@
 <?php
 
-namespace DDTrace\Tests\Integrations\Lumen\V5_8;
+namespace DDTrace\Tests\Integrations\Lumen\V6_0;
 
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
@@ -10,7 +10,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
-        return __DIR__ . '/../../../Frameworks/Lumen/Version_5_8/public/index.php';
+        return __DIR__ . '/../../../Frameworks/Lumen/Version_6_0/public/index.php';
     }
 
     protected static function getEnvs()

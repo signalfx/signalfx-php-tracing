@@ -21,6 +21,7 @@ final class LumenIntegrationLoader
         $span = GlobalTracer::get()->getRootScope()->getSpan();
         $span->overwriteOperationName('lumen.request');
         $span->setTag(Tag::SERVICE_NAME, $this->getAppName());
+        $span->setTag(Tag::COMPONENT, 'lumen');
         $span->setIntegration(LumenIntegration::getInstance());
         $span->setTraceAnalyticsCandidate();
 
@@ -45,7 +46,7 @@ final class LumenIntegrationLoader
                 $resourceName = $this->currentRoute[1]['as'];
             }
             if (null !== $resourceName) {
-                $span->setTag(Tag::RESOURCE_NAME, $span->getTag(Tag::HTTP_METHOD) . ' ' . $resourceName);
+                $span->overwriteOperationName($resourceName);
             }
             return $response;
         });
@@ -95,7 +96,7 @@ final class LumenIntegrationLoader
                         'lumen.pipeline.pipe'
                     );
                     $span = $scope->getSpan();
-                    $span->setTag(Tag::RESOURCE_NAME, get_class($this) . '::handle');
+                    $span->overwriteOperationName(get_class($this) . '::handle');
                     $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
                     $span->setTag(Tag::COMPONENT, 'lumen');
                     return include __DIR__ . '/../../../try_catch_finally.php';

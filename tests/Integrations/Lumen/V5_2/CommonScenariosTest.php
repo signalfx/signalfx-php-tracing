@@ -4,6 +4,7 @@ namespace DDTrace\Tests\Integrations\Lumen\V5_2;
 
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
+use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 
 final class CommonScenariosTest extends WebFrameworkTestCase
@@ -41,10 +42,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             [
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
-                        'lumen.request',
+                        'simple_route',
                         'lumen_test_app',
                         SpanAssertion::NOT_TESTED,
-                        'GET simple_route'
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'lumen.route.name' => 'simple_route',
                         'lumen.route.action' => 'App\Http\Controllers\ExampleController@simple',
@@ -57,10 +58,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
-                        'lumen.request',
+                        'App\Http\Controllers\ExampleController@simpleView',
                         'lumen_test_app',
                         SpanAssertion::NOT_TESTED,
-                        'GET App\Http\Controllers\ExampleController@simpleView'
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'lumen.route.action' => 'App\Http\Controllers\ExampleController@simpleView',
                         'http.method' => 'GET',
@@ -81,10 +82,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
-                        'lumen.request',
+                        'App\Http\Controllers\ExampleController@error',
                         'lumen_test_app',
                         SpanAssertion::NOT_TESTED,
-                        'GET App\Http\Controllers\ExampleController@error'
+                        SpanAssertion::NOT_TESTED
                     )->withExactTags([
                         'lumen.route.action' => 'App\Http\Controllers\ExampleController@error',
                         'http.method' => 'GET',
@@ -94,6 +95,33 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'component' => 'lumen',
                     ])->setError(),
                 ],
+            ]
+        );
+    }
+
+    public function testQuery()
+    {
+        $traces = $this->tracesFromWebRequest(function () {
+            $this->call(GetSpec::create('A GET request with a query parameter', '/api/v1/user/3'));
+        });
+
+        $this->assertExpectedSpans(
+            $this,
+            $traces,
+            [
+                SpanAssertion::build(
+                    'App\Http\Controllers\ExampleController@query',
+                    'lumen_test_app',
+                    SpanAssertion::NOT_TESTED,
+                    SpanAssertion::NOT_TESTED
+                )->withExactTags([
+                    'lumen.route.action' => 'App\Http\Controllers\ExampleController@query',
+                    'http.method' => 'GET',
+                    'http.url' => 'http://localhost:9999/api/v1/user/3',
+                    'http.status_code' => '200',
+                    'integration.name' => 'lumen',
+                    'component' => 'lumen',
+                ]),
             ]
         );
     }

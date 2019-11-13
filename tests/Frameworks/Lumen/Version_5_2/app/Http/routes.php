@@ -27,3 +27,7 @@ $app->get('simple_view', [
 $app->get('error', [
     'uses' => 'ExampleController@error',
 ]);
+
+$app->get('api/v1/user/{id}', [
+        'uses' => 'ExampleController@query'
+]);

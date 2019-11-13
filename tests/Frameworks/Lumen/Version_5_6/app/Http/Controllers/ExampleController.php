@@ -28,4 +28,8 @@ class ExampleController extends Controller
     {
         throw new \Exception('Controller error');
     }
+
+    public function query() {
+        return 'test';
+    }
 }
