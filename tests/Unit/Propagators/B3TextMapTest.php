@@ -40,8 +40,8 @@ final class B3TextMapTest extends Framework\TestCase
         $textMapPropagator = new B3TextMap($this->tracer);
         $textMapPropagator->inject($context, $carrier);
         $this->assertEquals([
-            'x-b3-traceid' => HexConversion::idToHex($context->getTraceId()),
-            'x-b3-spanid' => HexConversion::idToHex($context->getSpanId()),
+            'x-b3-traceid' => $context->getTraceId(),
+            'x-b3-spanid' => $context->getSpanId(),
             'x-b3-sampled' => '0',
             'baggage-' . self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE,
         ], $carrier);
@@ -78,11 +78,16 @@ final class B3TextMapTest extends Framework\TestCase
         ];
         $textMapPropagator = new B3TextMap($this->tracer);
         $context = $textMapPropagator->extract($carrier);
-        $sc = new SpanContext( self::TRACE_ID, self::SPAN_ID, null, [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]);
+        $sc = new SpanContext(
+            HexConversion::idToHex(self::TRACE_ID),
+            HexConversion::idToHex(self::SPAN_ID),
+                                null,
+            [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]
+            );
         $this->assertTrue(
             $context->isEqual(new SpanContext(
-                self::TRACE_ID,
-                self::SPAN_ID,
+                HexConversion::idToHex(self::TRACE_ID),
+                HexConversion::idToHex(self::SPAN_ID),
                 null,
                 [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]
             ))

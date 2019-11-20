@@ -6,7 +6,6 @@ use DDTrace\Propagator;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Contracts\SpanContext;
 use DDTrace\Contracts\Tracer;
-use DDTrace\Util\HexConversion;
 
 const B3_TRACE_ID_HEADER = "x-b3-traceid";
 const B3_SPAN_ID_HEADER = "x-b3-spanid";
@@ -59,10 +58,10 @@ final class B3CurlHeadersMap implements Propagator
             }
         }
 
-        $carrier[] = B3_TRACE_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getTraceId());
-        $carrier[] = B3_SPAN_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getSpanId());
+        $carrier[] = B3_TRACE_ID_HEADER . ': ' . $spanContext->getTraceId();
+        $carrier[] = B3_SPAN_ID_HEADER . ': ' . $spanContext->getSpanId();
         if ($spanContext->getParentId() !== null) {
-            $carrier[] = B3_PARENT_SPAN_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getParentId());
+            $carrier[] = B3_PARENT_SPAN_ID_HEADER . ': ' . $spanContext->getParentId();
         }
 
         $prioritySampling = $this->tracer->getPrioritySampling();

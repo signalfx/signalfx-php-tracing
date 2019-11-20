@@ -55,6 +55,14 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_env_config, 0, 0, 1)
 ZEND_ARG_INFO(0, env_name)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_dec_hex, 0, 0, 1)
+ZEND_ARG_INFO(0, dec_string)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_hex_dec, 0, 0, 1)
+ZEND_ARG_INFO(0, hex_string)
+ZEND_END_ARG_INFO()
+
 static void php_ddtrace_init_globals(zend_signalfx_tracing_globals *ng) {
     memset(ng, 0, sizeof(zend_signalfx_tracing_globals));
 }
@@ -658,8 +666,8 @@ static const zend_function_entry signalfx_tracing_functions[] = {
                     dd_trace_env_config, arginfo_dd_trace_env_config) PHP_FE(dd_trace_coms_trigger_writer_flush, NULL)
                     PHP_FE(dd_trace_buffer_span, arginfo_dd_trace_buffer_span) PHP_FE(dd_trace_internal_fn, NULL)
                         PHP_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack)
-                            PHP_FE(dd_trace_generate_id, NULL) PHP_FE(dd_trace_dec_hex, NULL)
-                                PHP_FE(dd_trace_hex_dec, NULL) ZEND_FE_END};
+                            PHP_FE(dd_trace_generate_id, NULL) PHP_FE(dd_trace_dec_hex, arginfo_dd_trace_dec_hex)
+                                PHP_FE(dd_trace_hex_dec, arginfo_dd_trace_hex_dec) ZEND_FE_END};
 
 zend_module_entry signalfx_tracing_module_entry = {STANDARD_MODULE_HEADER,
                                                    PHP_DDTRACE_EXTNAME,

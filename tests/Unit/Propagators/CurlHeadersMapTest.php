@@ -7,6 +7,7 @@ use DDTrace\SpanContext;
 use DDTrace\Tests\DebugTransport;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
+use DDTrace\Util\HexConversion;
 use PHPUnit\Framework;
 
 final class CurlHeadersMapTest extends Framework\TestCase
@@ -39,8 +40,8 @@ final class CurlHeadersMapTest extends Framework\TestCase
         (new CurlHeadersMap($this->tracer))->inject($context, $carrier);
 
         $this->assertEquals([
-            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
-            'x-datadog-parent-id: ' . $context->getSpanId(),
+            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
+            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -59,8 +60,8 @@ final class CurlHeadersMapTest extends Framework\TestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
-            'x-datadog-parent-id: ' . $context->getSpanId(),
+            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
+            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -82,8 +83,8 @@ final class CurlHeadersMapTest extends Framework\TestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
-            'x-datadog-parent-id: ' . $context->getSpanId(),
+            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
+            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }

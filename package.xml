@@ -167,6 +167,8 @@
                     <file name="very_nested_functions.phpt" role="test" />
                     <file name="with_params_function_hook.phpt" role="test" />
                     <file name="with_params_method_hook.phpt" role="test" />
+                    <file name="dd_trace_dec_hex.phpt" role="test" />
+                    <file name="dd_trace_hex_dec.phpt" role="test" />
                 </dir>
             </dir>
             <file name="CHANGELOG.md" role="doc" />

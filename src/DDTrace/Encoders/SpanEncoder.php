@@ -68,7 +68,6 @@ final class SpanEncoder
             $arraySpan['meta']['integration.name'] = $span->integration->getName();
         }
 
-
         return $arraySpan;
     }
 
