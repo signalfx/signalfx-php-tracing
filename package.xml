@@ -73,6 +73,8 @@
                     <file name="serializer.h" role="src" />
                     <file name="version.h" role="src" />
                     <file name="compatibility.h" role="src" />
+                    <file name="hex_utils.c" role="src" />
+                    <file name="hex_utils.h" role="src" />
                     <dir name="mpack">
                         <file name="AUTHORS.md" role="doc" />
                         <file name="CHANGELOG.md" role="doc" />
@@ -165,6 +167,8 @@
                     <file name="very_nested_functions.phpt" role="test" />
                     <file name="with_params_function_hook.phpt" role="test" />
                     <file name="with_params_method_hook.phpt" role="test" />
+                    <file name="dd_trace_dec_hex.phpt" role="test" />
+                    <file name="dd_trace_hex_dec.phpt" role="test" />
                 </dir>
             </dir>
             <file name="CHANGELOG.md" role="doc" />

@@ -8,6 +8,7 @@ use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Util\HexConversion;
 
 final class ConfigurableSamplerTest extends BaseTestCase
 {
@@ -29,7 +30,7 @@ final class ConfigurableSamplerTest extends BaseTestCase
         $output = 0;
 
         for ($i = 0; $i < self::REPETITIONS; $i++) {
-            $context = new SpanContext('', dd_trace_generate_id());
+            $context = new SpanContext('', HexConversion::idToHex(dd_trace_generate_id()));
             $output += $sampler->getPrioritySampling(new Span('', $context, '', ''));
         }
 

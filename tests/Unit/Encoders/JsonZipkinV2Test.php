@@ -11,6 +11,7 @@ use DDTrace\Tests\Unit\BaseTestCase;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Type;
+use DDTrace\Util\HexConversion;
 use Prophecy\Argument;
 
 final class JsonZipkinV2Test extends BaseTestCase
@@ -46,7 +47,10 @@ JSON
 "localEndpoint":{"serviceName":"unnamed-php-service"}}]
 JSON;
 
-        $context = new SpanContext('1589331357723252209', '1589331357723252210');
+        $context = new SpanContext(
+            HexConversion::idToHex('1589331357723252209'),
+            HexConversion::idToHex('1589331357723252210')
+        );
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
 

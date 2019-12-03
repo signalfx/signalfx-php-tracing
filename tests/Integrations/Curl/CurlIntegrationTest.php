@@ -313,12 +313,12 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         // trace is: some_operation
         $this->assertSame(
-            HexConversion::idToHex($traces[0][0]['span_id']),
+            $traces[0][0]['span_id'],
             $found['headers']['X-B3-Traceid']
         );
         // parent is: curl_exec
         $this->assertSame(
-            HexConversion::idToHex($traces[0][1]['span_id']),
+            $traces[0][1]['span_id'],
             $found['headers']['X-B3-Spanid']
         );
         // existing headers are honored
@@ -384,9 +384,9 @@ final class CurlIntegrationTest extends IntegrationTestCase
         $this->assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
-        $this->assertSame(HexConversion::idToHex($traces[0][0]['trace_id']), $found['headers']['X-B3-Traceid']);
+        $this->assertSame($traces[0][0]['trace_id'], $found['headers']['X-B3-Traceid']);
         // parent is: custom
-        $this->assertSame(HexConversion::idToHex($traces[0][0]['span_id']), $found['headers']['X-B3-Spanid']);
+        $this->assertSame($traces[0][0]['span_id'], $found['headers']['X-B3-Spanid']);
     }
 
     public function testTracerRunningAtLimitedCapacityCurlWorksWithoutARootSpan()

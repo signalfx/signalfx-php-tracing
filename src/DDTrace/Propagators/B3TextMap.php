@@ -7,7 +7,6 @@ use DDTrace\Contracts\SpanContext as SpanContextInterface;
 use DDTrace\Contracts\Tracer;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\SpanContext;
-use DDTrace\Util\HexConversion;
 
 
 /*
@@ -34,10 +33,10 @@ final class B3TextMap implements Propagator
      */
     public function inject(SpanContextInterface $spanContext, &$carrier)
     {
-        $carrier[B3_TRACE_ID_HEADER] = HexConversion::idToHex($spanContext->getTraceId());
-        $carrier[B3_SPAN_ID_HEADER] = HexConversion::idToHex($spanContext->getSpanId());
+        $carrier[B3_TRACE_ID_HEADER] = $spanContext->getTraceId();
+        $carrier[B3_SPAN_ID_HEADER] = $spanContext->getSpanId();
         if ($spanContext->getParentId() !== null) {
-            $carrier[B3_PARENT_SPAN_ID_HEADER] = HexConversion::idToHex($spanContext->getParentId());
+            $carrier[B3_PARENT_SPAN_ID_HEADER] = $spanContext->getParentId();
         }
 
         foreach ($spanContext as $key => $value) {
@@ -68,11 +67,11 @@ final class B3TextMap implements Propagator
 
         foreach ($carrier as $key => $value) {
             if ($key === B3_TRACE_ID_HEADER) {
-                $traceId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $traceId = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_SPAN_ID_HEADER) {
-                $spanId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $spanId = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_PARENT_SPAN_ID_HEADER) {
-                $parentSpanId = (string)hexdec($this->extractStringOrFirstArrayElement($value));
+                $parentSpanId = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_SAMPLED_HEADER) {
                 $sampled = $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_FLAGS_HEADER) {

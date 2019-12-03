@@ -5,6 +5,7 @@ namespace DDTrace;
 use ArrayIterator;
 use DDTrace\Contracts\SpanContext as SpanContextInterface;
 use DDTrace\Data\SpanContext as SpanContextData;
+use DDTrace\Util\HexConversion;
 
 final class SpanContext extends SpanContextData
 {
@@ -26,7 +27,7 @@ final class SpanContext extends SpanContextData
     {
         $instance = new self(
             $parentContext->getTraceId(),
-            dd_trace_generate_id(),
+            HexConversion::idToHex(dd_trace_generate_id()),
             $parentContext->getSpanId(),
             $parentContext->getAllBaggageItems(),
             false
@@ -38,7 +39,7 @@ final class SpanContext extends SpanContextData
 
     public static function createAsRoot(array $baggageItems = [])
     {
-        $nextId = dd_trace_generate_id();
+        $nextId = HexConversion::idToHex(dd_trace_generate_id());
 
         return new self(
             $nextId,

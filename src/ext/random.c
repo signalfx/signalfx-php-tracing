@@ -15,10 +15,7 @@ void dd_trace_seed_prng(TSRMLS_D) {
     }
 }
 
-static long long generate_id() {
-    // We shift one bit to get 63-bit
-    return (long long)(genrand64_int64() >> 1);
-}
+static unsigned long long generate_id() { return genrand64_int64(); }
 
 #if PHP_VERSION_ID >= 70200
 // zend_strpprintf() wasn't exposed until PHP 7.2

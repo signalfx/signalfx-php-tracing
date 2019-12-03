@@ -6,7 +6,6 @@ use DDTrace\Configuration;
 use DDTrace\Integrations\IntegrationsLoader;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Tracer;
-use DDTrace\Util\HexConversion;
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Request;
 use GuzzleHttp\Ring\Client\MockHandler;
@@ -134,19 +133,19 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
 
         // trace is: some_operation
         $this->assertSame(
-            HexConversion::idToHex($traces[0][0]['trace_id']),
+            $traces[0][0]['trace_id'],
             $found['headers']['X-B3-Traceid']
         );
         // parent is: curl_exec, used under the hood
         if (Versions::phpVersionMatches('5.4')) {
             // in 5.4 curl_exec is not included in the trace due to being run through `call_func_array`
             $this->assertSame(
-                HexConversion::idToHex($traces[0][1]['span_id']),
+                $traces[0][1]['span_id'],
                 $found['headers']['X-B3-Spanid']
             );
         } else {
             $this->assertSame(
-                HexConversion::idToHex($traces[0][2]['span_id']),
+                $traces[0][2]['span_id'],
                 $found['headers']['X-B3-Spanid']
             );
         }
@@ -214,8 +213,8 @@ final class GuzzleIntegrationTest extends IntegrationTestCase
         $this->assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
-        $this->assertSame(HexConversion::idToHex($traces[0][0]['span_id']), $found['headers']['X-B3-Spanid']);
-        $this->assertSame(HexConversion::idToHex($traces[0][0]['trace_id']), $found['headers']['X-B3-Traceid']);
+        $this->assertSame($traces[0][0]['span_id'], $found['headers']['X-B3-Spanid']);
+        $this->assertSame($traces[0][0]['trace_id'], $found['headers']['X-B3-Traceid']);
 
         // existing headers are honored
         $this->assertSame('preserved_value', $found['headers']['Honored']);
