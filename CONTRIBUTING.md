@@ -55,7 +55,7 @@ For help, check out the documentation at https://docs.signalfx.com/en/latest/apm
 (c) Datadog 2019
 
 SignalFx Tracing for PHP => enabled
-Version => 0.30.0-beta-sfx0
+Version => 0.30.2-beta-sfx1
 ```
 
 When you're done with development, you can stop and remove the containers with the following:
