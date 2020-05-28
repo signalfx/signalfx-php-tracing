@@ -59,21 +59,21 @@ package manager. After you install the PHP extension, your application sends
 trace data to the endpoint URL you specify.
 
 1. Download the [latest release](https://github.com/signalfx/signalfx-php-tracing/releases/latest)
-   of the SignalFx Tracing Library for PHP.
+    of the SignalFx Tracing Library for PHP.
 2. Install with PHP extension with your system's package manager:
-   ```bash
-   # Using dpkg:
-   $ dpkg -i signalfx-tracing.deb
+    ```bash
+    # Using dpkg:
+    $ dpkg -i signalfx-tracing.deb
 
-   # Using rpm:
-   $ rpm -ivh signalfx-tracing.rpm
+    # Using rpm:
+    $ rpm -ivh signalfx-tracing.rpm
 
-   # Using apk:
-   $ apk add signalfx-tracing.apk --allow-untrusted
+    # Using apk:
+    $ apk add signalfx-tracing.apk --allow-untrusted
 
-   # Directly from the release bundle:
-   $ tar -xf signalfx-tracing.tar.gz -C / && /opt/signalfx-php-tracing/bin/post-install.sh
-   ```
+    # Directly from the release bundle:
+    $ tar -xf signalfx-tracing.tar.gz -C / && /opt/signalfx-php-tracing/bin/post-install.sh
+    ```
 
 ### Use OpenTracing for custom instrumentation
 
