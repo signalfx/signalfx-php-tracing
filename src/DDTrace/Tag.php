@@ -18,9 +18,10 @@ class Tag
     const DB_INSTANCE = 'db.instance';
     const DB_USER = 'db.user';
     const ERROR = 'error';
-    const ERROR_MSG = 'error.msg'; // string representing the error message
-    const ERROR_TYPE = 'error.type'; // string representing the type of the error
-    const ERROR_STACK = 'error.stack'; // human readable version of the stack
+    const ERROR_MSG = 'sfx.error.message'; // string representing the error message
+    const ERROR_KIND = 'sfx.error.kind'; // short string representing the type of the error
+    const ERROR_STACK = 'sfx.error.stack'; // human readable version of the stack
+    const ERROR_TYPE = ERROR_KIND;
     const HTTP_METHOD = 'http.method';
     const HTTP_STATUS_CODE = 'http.status_code';
     const HTTP_URL = 'http.url';

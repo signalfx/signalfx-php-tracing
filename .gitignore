@@ -1,3 +1,4 @@
+local/
 **/vendor/
 tmp/build_extension/
 composer.lock
