@@ -60,9 +60,9 @@ final class MysqliTest extends IntegrationTestCase
             SpanAssertion::build('mysqli_connect', 'mysqli', 'sql', 'mysqli_connect')
                 ->setError()
                 ->withExistingTagsNames([
-                    'error.msg',
-                    'error.type',
-                    'error.stack',
+                    'sfx.error.message',
+                    'sfx.error.kind',
+                    'sfx.error.stack',
                 ]),
         ]);
     }
@@ -224,9 +224,9 @@ final class MysqliTest extends IntegrationTestCase
             SpanAssertion::build('mysqli.__construct', 'mysqli', 'sql', 'mysqli.__construct')
                 ->setError()
                 ->withExistingTagsNames([
-                    'error.msg',
-                    'error.type',
-                    'error.stack',
+                    'sfx.error.message',
+                    'sfx.error.kind',
+                    'sfx.error.stack',
                 ]),
         ]);
     }

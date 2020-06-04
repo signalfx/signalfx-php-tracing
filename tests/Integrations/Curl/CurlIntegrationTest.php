@@ -231,7 +231,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'component' => 'curl',
                     'http.method' => 'GET',
                 ])
-                ->withExistingTagsNames(['error.msg'])
+                ->withExistingTagsNames(['sfx.error.message'])
                 ->setError('curl error'),
         ]);
     }
@@ -255,7 +255,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'component' => 'curl',
                     'http.method' => 'GET',
                 ])
-                ->withExistingTagsNames(['error.msg'])
+                ->withExistingTagsNames(['sfx.error.message'])
                 ->setError('curl error'),
         ]);
     }

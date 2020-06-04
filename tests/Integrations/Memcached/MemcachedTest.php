@@ -84,7 +84,7 @@ final class MemcachedTest extends IntegrationTestCase
                     'memcached.query' => 'append ' . Obfuscation::toObfuscatedString('key'),
                     'memcached.command' => 'append',
                 ]))
-                ->withExistingTagsNames(['system.pid', 'error.msg', 'error.type', 'error.stack']),
+                ->withExistingTagsNames(['system.pid', 'sfx.error.message', 'sfx.error.kind', 'sfx.error.stack']),
         ]);
     }
 
@@ -121,7 +121,7 @@ final class MemcachedTest extends IntegrationTestCase
                     'memcached.command' => 'appendByKey',
                     'memcached.server_key' => 'my_server',
                 ]))
-                ->withExistingTagsNames(['system.pid', 'error.msg', 'error.type', 'error.stack']),
+                ->withExistingTagsNames(['system.pid', 'sfx.error.message', 'sfx.error.kind', 'sfx.error.stack']),
         ]);
     }
 

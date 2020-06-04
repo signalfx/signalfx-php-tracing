@@ -97,7 +97,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'integration.name' => 'cakephp',
                         'component' => 'cakephp',
                     ])->withExistingTagsNames([
-                        'error.stack'
+                        'sfx.error.stack'
                     ])->setError(null, 'Foo error'),
                     SpanAssertion::build(
                         'cakephp.view',

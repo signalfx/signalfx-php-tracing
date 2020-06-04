@@ -82,7 +82,7 @@ final class SpanTest extends Framework\TestCase
 
         $this->assertTrue($span->hasError());
         $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-        $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
+        $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
     }
 
     public function testSpanTagWithErrorBoolProperlyMarksError()
@@ -143,7 +143,7 @@ final class SpanTest extends Framework\TestCase
 
             $this->assertTrue($span->hasError());
             $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-            $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
+            $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
         }
     }
 
@@ -173,7 +173,7 @@ final class SpanTest extends Framework\TestCase
         $this->assertTrue($span->hasError());
         $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
         $this->assertNotEmpty($span->getTag(Tag::ERROR_STACK));
-        $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
+        $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
     }
 
     public function testSpanErrorRemainsImmutableAfterFinishing()

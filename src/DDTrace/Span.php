@@ -177,8 +177,8 @@ final class Span extends SpanData
 
             if ($key === Tag::HTTP_STATUS_CODE && $value >= 500) {
                 $this->hasError = true;
-                if (!isset($this->tags[Tag::ERROR_TYPE])) {
-                    $this->tags[Tag::ERROR_TYPE] = 'Internal Server Error';
+                if (!isset($this->tags[Tag::ERROR_KIND])) {
+                    $this->tags[Tag::ERROR_KIND] = 'Internal Server Error';
                 }
             }
 
@@ -285,7 +285,7 @@ final class Span extends SpanData
 
     /**
      * @param string $message
-     * @param string $type
+     * @param string $kind
      */
     public function setRawError($message, $kind)
     {

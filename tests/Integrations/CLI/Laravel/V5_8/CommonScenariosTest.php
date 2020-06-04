@@ -67,8 +67,8 @@ final class CommonScenariosTest extends CLITestCase
                 'integration.name' => 'laravel',
                 'component' => 'laravel'
             ])->withExistingTagsNames([
-                'error.msg',
-                'error.stack'
+                'sfx.error.message',
+                'sfx.error.stack'
             ])->setError()
         ]);
     }

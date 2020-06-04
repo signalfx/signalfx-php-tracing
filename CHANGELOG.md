@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file - [read more
 
 ## [Unreleased]
 
+- Migrated to SignalFx error attributes from OpenTracing
+
 ## [0.30.1]
 ### Fixed
 - releasing This object as soon as it stops being used #536

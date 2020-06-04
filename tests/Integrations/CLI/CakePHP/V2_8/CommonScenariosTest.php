@@ -71,8 +71,8 @@ final class CommonScenariosTest extends CLITestCase
             )->withExactTags([
                 'integration.name' => 'cakephp',
             ])->withExistingTagsNames([
-                'error.msg',
-                'error.stack'
+                'sfx.error.message',
+                'sfx.error.stack'
             ])->setError()
         ]);
     }

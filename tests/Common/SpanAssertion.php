@@ -88,20 +88,20 @@ final class SpanAssertion
     }
 
     /**
-     * @param string|null $errorType The expected error.type
-     * @param string|null $errorMessage The expected error.msg
+     * @param string|null $errorType The expected sfx.error.kind
+     * @param string|null $errorMessage The expected sfx.error.message
      * @return $this
      */
     public function setError($errorType = null, $errorMessage = null)
     {
         $this->hasError = true;
-        if (isset($this->exactTags[Tag::ERROR_TYPE])) {
+        if (isset($this->exactTags[Tag::ERROR_KIND])) {
             return $this;
         }
         if (null !== $errorType) {
-            $this->exactTags[Tag::ERROR_TYPE] = $errorType;
+            $this->exactTags[Tag::ERROR_KIND] = $errorType;
         } else {
-            $this->existingTags[] = Tag::ERROR_TYPE;
+            $this->existingTags[] = Tag::ERROR_KIND;
         }
         if (null !== $errorMessage) {
             $this->exactTags[Tag::ERROR_MSG] = $errorMessage;
