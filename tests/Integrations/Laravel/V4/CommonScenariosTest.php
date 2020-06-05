@@ -125,7 +125,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'component' => 'laravel',
                         'integration.name' => 'laravel',
                     ])
-                    ->withExistingTagsNames(['error.stack'])
+                    ->withExistingTagsNames(['sfx.error.stack'])
                     ->setError('Exception', 'Controller error'),
                     SpanAssertion::exists('laravel.event.handle'),
                 ],

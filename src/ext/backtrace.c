@@ -62,7 +62,7 @@ void ddtrace_install_backtrace_handler() {
         backtrace_globals.handler_installed = TRUE;
     }
 }
-#else   // defined(__GLIBC__) || defined(__APPLE__)
+#else  // defined(__GLIBC__) || defined(__APPLE__)
 void ddtrace_install_backtrace_handler() {
     // NOOP
 }

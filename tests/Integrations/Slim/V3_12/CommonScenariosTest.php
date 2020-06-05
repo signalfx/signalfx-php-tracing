@@ -93,7 +93,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'integration.name' => 'slim',
                         'component' => 'slim',
                     ])->withExistingTagsNames([
-                        'error.stack'
+                        'sfx.error.stack'
                     ])->setError(null, 'Foo error'),
                 ],
             ]

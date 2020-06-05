@@ -57,7 +57,7 @@ final class SpanTest extends TestCase
 
         $this->assertTrue($span->unwrapped()->hasError());
         $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-        $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_TYPE), 'Exception');
+        $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_KIND), 'Exception');
     }
 
     public function testSpanTagWithErrorBoolProperlyMarksError()
@@ -109,7 +109,7 @@ final class SpanTest extends TestCase
 
             $this->assertTrue($span->unwrapped()->hasError());
             $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-            $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_TYPE), 'Exception');
+            $this->assertEquals($span->unwrapped()->getTag(Tag::ERROR_KIND), 'Exception');
         }
     }
 

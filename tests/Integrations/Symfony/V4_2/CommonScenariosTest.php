@@ -115,7 +115,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'component' => 'symfony',
                         ])
                         ->setError('Exception', 'An exception occurred')
-                        ->withExistingTagsNames(['error.stack']),
+                        ->withExistingTagsNames(['sfx.error.stack']),
                     SpanAssertion::exists('symfony.kernel.handle'),
                     SpanAssertion::exists('symfony.kernel.request'),
                     SpanAssertion::exists('symfony.kernel.controller'),
