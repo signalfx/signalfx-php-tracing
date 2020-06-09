@@ -47,6 +47,7 @@ Configure the tracer and instrumentation with these environment variables:
 | `SIGNALFX_TRACING_CLI_ENABLED` | Whether to enable automatic tracer creation and instrumentation for `cli` SAPI. | `false` |
 | `SIGNALFX_TRACE_DEBUG` | Whether to enable debug-level logging. | `false` |
 | `SIGNALFX_DISTRIBUTED_TRACING` | Whether to enable B3 context propagation for applicable client and server libraries. | `true` |
+| `SIGNALFX_RECORDED_VALUE_MAX_LENGTH` | Maximum length an attribute value can have. Values longer than this are truncated. | `1200` |
 
 Because auto-instrumentation is applied during initialization, all configuration
 environment variables MUST be set by launch time. Anything set via `putenv()`
