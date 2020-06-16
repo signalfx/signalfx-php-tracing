@@ -10,7 +10,7 @@
       <email>signalfx-oss@splunk.com</email>
       <active>yes</active>
     </lead>
-    <date>2019-11-01</date>
+    <date>2020-06-16</date>
     <version>
         <release>0.30.2.0</release>
         <api>0.30.2.0</api>

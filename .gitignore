@@ -2,6 +2,7 @@ local/
 **/vendor/
 tmp/build_extension/
 composer.lock
+.gem/
 .bash_history
 .scenarios.lock/
 .vscode/
