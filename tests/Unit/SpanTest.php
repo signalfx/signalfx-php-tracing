@@ -6,6 +6,7 @@ use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
 use DDTrace\Sampling\PrioritySampling;
+use DDTrace\Configuration;
 use DDTrace\GlobalTracer;
 use DDTrace\Tracer;
 use Exception;
@@ -102,6 +103,24 @@ final class SpanTest extends Framework\TestCase
         $span->setTag('foo', new \stdClass());
 
         $this->assertNull($span->getTag('foo'));
+    }
+
+    public function testSpanTagMaxSize()
+    {
+
+        $span = $this->createSpan();
+        $value = "tag value";
+        $span->setTag("t1", $value);
+        $this->assertEquals($span->getTag("t1"), "tag value");
+
+        Configuration::clear();
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=3');
+        $span = $this->createSpan();
+        $value = "tag value";
+        $span->setTag("t1", $value);
+        $this->assertEquals($span->getTag("t1"), "tag");
+        Configuration::clear();
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
     }
 
     public function testLogWithErrorBoolProperlyMarksError()

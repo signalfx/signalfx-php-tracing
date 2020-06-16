@@ -76,6 +76,19 @@ class Configuration extends AbstractConfiguration
         return (int)$this->floatValue('spans.limit', 1000);
     }
 
+    /**
+     * Maximum size span attribute values can have. Attribute values larger than this size
+     * are truncated to fit the rule.
+     *
+     * -1 means no limit
+     *
+     * @return int
+     */
+    public function getMaxAttributeLength()
+    {
+        return (int)$this->floatValue('recorded.value.max.length', 1200);
+    }
+
 
     /**
      * Whether or not also unfinished spans should be finished (and thus sent) when tracer is flushed.

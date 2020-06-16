@@ -29,6 +29,8 @@ final class Span extends SpanData
         Tag::MANUAL_DROP => true,
     ];
 
+    private $maxAttributeLength;
+
     /**
      * Span constructor.
      * @param string $operationName
@@ -49,6 +51,7 @@ final class Span extends SpanData
         $this->service = (string)$service;
         $this->resource = (string)$resource;
         $this->startTime = $startTime ?: Time::now();
+        $this->maxAttributeLength = Configuration::get()->getMaxAttributeLength();
     }
 
     /**
@@ -188,7 +191,11 @@ final class Span extends SpanData
             }
         }
 
-        $this->tags[$key] = (string)$value;
+        $strValue = (string)$value;
+        if ($this->maxAttributeLength > 0) {
+            $strValue = mb_substr($strValue, 0, $this->maxAttributeLength);
+        }
+        $this->tags[$key] = $strValue;
     }
 
     /**

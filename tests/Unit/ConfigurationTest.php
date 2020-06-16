@@ -33,6 +33,7 @@ final class ConfigurationTest extends BaseTestCase
         putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
         putenv('SIGNALFX_TRACE_DEBUG');
         putenv('SIGNALFX_TRACING_ENABLED');
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
         putenv('ddtrace_app_name');
     }
 
@@ -160,5 +161,18 @@ final class ConfigurationTest extends BaseTestCase
     {
         putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED=true');
         $this->assertTrue(Configuration::get()->isAnalyticsEnabled());
+    }
+
+    public function testRecordedValueMaxLength()
+    {
+        $this->assertSame(1200, Configuration::get()->getMaxAttributeLength());
+
+        Configuration::clear();
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=strval');
+        $this->assertSame(1200, Configuration::get()->getMaxAttributeLength());
+
+        Configuration::clear();
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=10');
+        $this->assertSame(10, Configuration::get()->getMaxAttributeLength());
     }
 }
