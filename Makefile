@@ -110,12 +110,11 @@ clang_format_fix:
 
 EXT_DIR:=/opt/signalfx-php-tracing
 PACKAGE_NAME:=signalfx-tracing
-FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m info@signalfx.com --license "BSD 3-Clause License" --version $(VERSION) \
+FPM_INFO_OPTS=-a native -n $(PACKAGE_NAME) -m signalfx-oss@splunk.com --license "BSD 3-Clause License" --version $(VERSION) \
 	--provides $(PACKAGE_NAME) --vendor SignalFx  --url "https://docs.signalfx.com/en/latest/apm/apm-instrument/apm-php.html" --no-depends
 FPM_DIR_OPTS=--directories $(EXT_DIR)/etc --config-files $(EXT_DIR)/etc -s dir
 FPM_FILES=extensions/=$(EXT_DIR)/extensions \
 	package/post-install.sh=$(EXT_DIR)/bin/post-install.sh package/signalfx-tracing.ini.example=$(EXT_DIR)/etc/ \
-	docs=$(EXT_DIR)/docs README.md=$(EXT_DIR)/docs/README.md \
 	src=$(EXT_DIR)/dd-trace-sources \
 	bridge=$(EXT_DIR)/dd-trace-sources \
 	LICENSE=$(EXT_DIR)
