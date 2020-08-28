@@ -93,4 +93,29 @@ final class B3TextMapTest extends Framework\TestCase
             ))
         );
     }
+
+    public function testExtractSpanContextFromMultiValueCarrierSuccess()
+    {
+        $carrier = [
+            'x-b3-traceid' => join(",", array("traceid-value", self::TRACE_ID_HEX)),
+            'x-b3-spanid' => join(";", array("spanid-value", self::SPAN_ID_HEX)),
+            'baggage-' . self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE,
+        ];
+        $textMapPropagator = new B3TextMap($this->tracer);
+        $context = $textMapPropagator->extract($carrier);
+        $sc = new SpanContext(
+            HexConversion::idToHex(self::TRACE_ID),
+            HexConversion::idToHex(self::SPAN_ID),
+                                null,
+            [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]
+            );
+        $this->assertTrue(
+            $context->isEqual(new SpanContext(
+                HexConversion::idToHex(self::TRACE_ID),
+                HexConversion::idToHex(self::SPAN_ID),
+                null,
+                [self::BAGGAGE_ITEM_KEY => self::BAGGAGE_ITEM_VALUE]
+            ))
+        );
+    }
 }

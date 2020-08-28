@@ -75,6 +75,7 @@ final class TextMap implements Propagator
      * E.g. in both the cases that follow, this method would return 'application/json':
      *   1) as array of values: ['content-type' => ['application/json']]
      *   2) as string value: ['content-type' => 'application/json']
+     *   3) as the last part of string from a comma or semicolor separated string
      *
      * @param array|string $value
      * @return string|null
@@ -84,7 +85,10 @@ final class TextMap implements Propagator
         if (is_array($value) && count($value) > 0) {
             return $value[0];
         } elseif (is_string($value)) {
-            return $value;
+            $split = explode(",", $value);
+            $value = end($split);
+            $split = explode(";", $value);
+            return end($split);
         }
         return null;
     }
