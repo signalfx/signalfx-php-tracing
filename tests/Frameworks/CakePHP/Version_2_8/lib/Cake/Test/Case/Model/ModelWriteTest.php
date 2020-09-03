@@ -411,21 +411,21 @@ class ModelWriteTest extends BaseModelTest {
 	}
 
 /**
- * test that save() resets whitelist on failed save
+ * test that save() resets allowlist on failed save
  *
  * @return void
  */
-	public function testSaveFieldListResetsWhitelistOnFailedSave() {
+	public function testSaveFieldListResetsAllowlistOnFailedSave() {
 		$this->loadFixtures('Bidding');
 		$model = new Bidding();
-		$whitelist = array('title');
-		$model->whitelist = $whitelist;
+		$allowlist = array('title');
+		$model->allowlist = $allowlist;
 		$result = $model->save(
 			array(),
 			array('fieldList' => array('body'))
 		);
 		$this->assertFalse($result);
-		$this->assertEquals($whitelist, $model->whitelist);
+		$this->assertEquals($allowlist, $model->allowlist);
 	}
 
 /**
@@ -457,16 +457,16 @@ class ModelWriteTest extends BaseModelTest {
 	}
 
 /**
- * Test save() resets the whitelist after afterSave
+ * Test save() resets the allowlist after afterSave
  *
  * @return void
  */
-	public function testSaveResetWhitelistOnSuccess() {
+	public function testSaveResetallowlistOnSuccess() {
 		$this->loadFixtures('Post');
 
-		$callback = array($this, 'callbackForWhitelistReset');
+		$callback = array($this, 'callbackForallowlistReset');
 		$model = ClassRegistry::init('Post');
-		$model->whitelist = array('author_id', 'title', 'body');
+		$model->allowlist = array('author_id', 'title', 'body');
 		$model->getEventManager()->attach($callback, 'Model.afterSave');
 		$data = array(
 			'title' => 'New post',
@@ -478,14 +478,14 @@ class ModelWriteTest extends BaseModelTest {
 	}
 
 /**
- * Callback for testing whitelist in afterSave
+ * Callback for testing allowlist in afterSave
  *
  * @param Model $model The model having save called.
  * @return void
  */
-	public function callbackForWhitelistReset($event) {
+	public function callbackForallowlistReset($event) {
 		$expected = array('author_id', 'title', 'body', 'updated', 'created');
-		$this->assertEquals($expected, $event->subject()->whitelist);
+		$this->assertEquals($expected, $event->subject()->allowlist);
 	}
 
 /**
@@ -7409,8 +7409,8 @@ class ModelWriteTest extends BaseModelTest {
 		$this->assertEquals('', $result[1]['Article']['title']);
 		$this->assertEquals(2, count($result[1]['Comment']));
 
-		$TestModel->whitelist = array('id');
-		$TestModel->Comment->whitelist = array('user_id');
+		$TestModel->allowlist = array('id');
+		$TestModel->Comment->allowlist = array('user_id');
 		$TestModel->saveAll($data);
 		$result = $TestModel->find('all');
 
@@ -7455,11 +7455,11 @@ class ModelWriteTest extends BaseModelTest {
 	}
 
 /**
- * testSaveAllFieldListHasOneAddFkToWhitelist method
+ * testSaveAllFieldListHasOneAddFkToAllowlist method
  *
  * @return void
  */
-	public function testSaveAllFieldListHasOneAddFkToWhitelist() {
+	public function testSaveAllFieldListHasOneAddFkToAllowlist() {
 		$this->loadFixtures('ArticleFeatured', 'Featured');
 		$Article = new ArticleFeatured();
 		$Article->belongsTo = $Article->hasMany = array();

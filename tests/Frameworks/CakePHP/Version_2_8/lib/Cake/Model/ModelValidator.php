@@ -248,7 +248,7 @@ class ModelValidator implements ArrayAccess, IteratorAggregate, Countable {
 			return $model->validationErrors;
 		}
 
-		$fieldList = $model->whitelist;
+		$fieldList = $model->allowlist;
 		if (empty($fieldList) && !empty($options['fieldList'])) {
 			if (!empty($options['fieldList'][$model->alias]) && is_array($options['fieldList'][$model->alias])) {
 				$fieldList = $options['fieldList'][$model->alias];

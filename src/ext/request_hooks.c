@@ -34,14 +34,14 @@ static int find_exact_match(const char *haystack, const char *needle) {
     return found;
 }
 
-int dd_no_blacklisted_modules(TSRMLS_D) {
-    int no_blacklisted_modules = 1;
+int dd_no_denylisted_modules(TSRMLS_D) {
+    int no_denylisted_modules = 1;
 
-    char *blacklist = SIGNALFX_TRACING_G(internal_blacklisted_modules_list);
+    char *denylist = SIGNALFX_TRACING_G(internal_denylisted_modules_list);
     zend_module_entry *module;
 
-    if (blacklist == NULL) {
-        return no_blacklisted_modules;
+    if (denylist == NULL) {
+        return no_denylisted_modules;
     }
 
 #if PHP_VERSION_ID < 70000
@@ -49,24 +49,24 @@ int dd_no_blacklisted_modules(TSRMLS_D) {
     zend_hash_internal_pointer_reset_ex(&module_registry, &pos);
 
     while (zend_hash_get_current_data_ex(&module_registry, (void *)&module, &pos) != FAILURE) {
-        if (module && module->name && find_exact_match(blacklist, module->name)) {
-            ddtrace_log_errf("Found blacklisted module: %s, disabling conflicting functionality", module->name);
-            no_blacklisted_modules = 0;
+        if (module && module->name && find_exact_match(denylist, module->name)) {
+            ddtrace_log_errf("Found denylisted module: %s, disabling conflicting functionality", module->name);
+            no_denylisted_modules = 0;
             break;
         }
         zend_hash_move_forward_ex(&module_registry, &pos);
     }
 #else
     ZEND_HASH_FOREACH_PTR(&module_registry, module) {
-        if (module && module->name && find_exact_match(blacklist, module->name)) {
-            ddtrace_log_errf("Found blacklisted module: %s, disabling conflicting functionality", module->name);
-            no_blacklisted_modules = 0;
+        if (module && module->name && find_exact_match(denylist, module->name)) {
+            ddtrace_log_errf("Found denylisted module: %s, disabling conflicting functionality", module->name);
+            no_denylisted_modules = 0;
             break;
         }
     }
     ZEND_HASH_FOREACH_END();
 #endif
-    return no_blacklisted_modules;
+    return no_denylisted_modules;
 }
 
 #if PHP_VERSION_ID < 70000

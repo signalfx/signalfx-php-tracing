@@ -460,13 +460,13 @@ class CakeResponse {
 		if (in_array($this->_status, array(304, 204))) {
 			return;
 		}
-		$whitelist = array(
+		$allowlist = array(
 			'application/javascript', 'application/json', 'application/xml', 'application/rss+xml'
 		);
 
 		$charset = false;
 		if ($this->_charset &&
-			(strpos($this->_contentType, 'text/') === 0 || in_array($this->_contentType, $whitelist))
+			(strpos($this->_contentType, 'text/') === 0 || in_array($this->_contentType, $allowlist))
 		) {
 			$charset = true;
 		}
@@ -1261,7 +1261,7 @@ class CakeResponse {
  * ### Any URI
  * e.g `cors($request, '*');`
  *
- * ### Whitelist of URIs
+ * ### allowlist of URIs
  * e.g `cors($request, array('http://www.cakephp.org', '*.google.com', 'https://myproject.github.io'));`
  *
  * @param CakeRequest $request Request object

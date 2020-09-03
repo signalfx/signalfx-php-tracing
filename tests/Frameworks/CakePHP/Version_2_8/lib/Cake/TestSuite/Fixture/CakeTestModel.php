@@ -46,7 +46,7 @@ class CakeTestModel extends Model {
  *
  * @param array $data Data to save
  * @param bool|array $validate Validate or options.
- * @param array $fieldList Whitelist of fields
+ * @param array $fieldList allowlist of fields
  * @return mixed
  */
 	public function save($data = null, $validate = true, $fieldList = array()) {

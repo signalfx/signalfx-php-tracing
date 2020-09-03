@@ -35,8 +35,8 @@ ZEND_DECLARE_MODULE_GLOBALS(signalfx_tracing)
 PHP_INI_BEGIN()
 STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_signalfx_tracing_globals,
                     signalfx_tracing_globals)
-STD_PHP_INI_ENTRY("ddtrace.internal_blacklisted_modules_list", "ionCube Loader,", PHP_INI_SYSTEM, OnUpdateString,
-                  internal_blacklisted_modules_list, zend_signalfx_tracing_globals, signalfx_tracing_globals)
+STD_PHP_INI_ENTRY("ddtrace.internal_denylisted_modules_list", "ionCube Loader,", PHP_INI_SYSTEM, OnUpdateString,
+                  internal_denylisted_modules_list, zend_signalfx_tracing_globals, signalfx_tracing_globals)
 STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "", PHP_INI_SYSTEM, OnUpdateString, request_init_hook,
                   zend_signalfx_tracing_globals, signalfx_tracing_globals)
 STD_PHP_INI_BOOLEAN("ddtrace.strict_mode", "0", PHP_INI_SYSTEM, OnUpdateBool, strict_mode,
@@ -122,7 +122,7 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
     ddtrace_dispatch_init(TSRMLS_C);
     SIGNALFX_TRACING_G(disable_in_current_request) = 0;
 
-    if (SIGNALFX_TRACING_G(internal_blacklisted_modules_list) && !dd_no_blacklisted_modules(TSRMLS_C)) {
+    if (SIGNALFX_TRACING_G(internal_denylisted_modules_list) && !dd_no_denylisted_modules(TSRMLS_C)) {
         return SUCCESS;
     }
 

@@ -108,7 +108,7 @@ class Zend_Acl
     protected $_isAllowedPrivilege = null;
 
     /**
-     * ACL rules; whitelist (deny everything to all) by default
+     * ACL rules; allowlist (deny everything to all) by default
      *
      * @var array
      */
@@ -803,8 +803,8 @@ class Zend_Acl
      * an existing Resource and Role combination.
      *
      * If either $role or $resource is null, then the query applies to all Roles or all Resources,
-     * respectively. Both may be null to query whether the ACL has a "blacklist" rule
-     * (allow everything to all). By default, Zend_Acl creates a "whitelist" rule (deny
+     * respectively. Both may be null to query whether the ACL has a "denylist" rule
+     * (allow everything to all). By default, Zend_Acl creates a "allowlist" rule (deny
      * everything to all), and this method would return false unless this default has
      * been overridden (i.e., by executing $acl->allow()).
      *

@@ -497,11 +497,11 @@ class Model extends Object implements CakeEventListener {
 	public $Behaviors = null;
 
 /**
- * Whitelist of fields allowed to be saved.
+ * allowlist of fields allowed to be saved.
  *
  * @var array
  */
-	public $whitelist = array();
+	public $allowlist = array();
 
 /**
  * Whether or not to cache sources for this model.
@@ -1711,7 +1711,7 @@ class Model extends Object implements CakeEventListener {
 	}
 
 /**
- * Saves model data (based on white-list, if supplied) to the database. By
+ * Saves model data (based on allow-list, if supplied) to the database. By
  * default, validation occurs before save. Passthrough method to _doSave() with
  * transaction handling.
  *
@@ -1773,7 +1773,7 @@ class Model extends Object implements CakeEventListener {
 	}
 
 /**
- * Saves model data (based on white-list, if supplied) to the database. By
+ * Saves model data (based on allow-list, if supplied) to the database. By
  * default, validation occurs before save.
  *
  * @param array $data Data to save.
@@ -1790,23 +1790,23 @@ class Model extends Object implements CakeEventListener {
  * @link http://book.cakephp.org/2.0/en/models/saving-your-data.html
  */
 	protected function _doSave($data = null, $options = array()) {
-		$_whitelist = $this->whitelist;
+		$_allowlist = $this->allowlist;
 		$fields = array();
 
 		if (!empty($options['fieldList'])) {
 			if (!empty($options['fieldList'][$this->alias]) && is_array($options['fieldList'][$this->alias])) {
-				$this->whitelist = $options['fieldList'][$this->alias];
+				$this->allowlist = $options['fieldList'][$this->alias];
 			} elseif (Hash::dimensions($options['fieldList']) < 2) {
-				$this->whitelist = $options['fieldList'];
+				$this->allowlist = $options['fieldList'];
 			}
 		} elseif ($options['fieldList'] === null) {
-			$this->whitelist = array();
+			$this->allowlist = array();
 		}
 
 		$this->set($data);
 
 		if (empty($this->data) && !$this->hasField(array('created', 'updated', 'modified'))) {
-			$this->whitelist = $_whitelist;
+			$this->allowlist = $_allowlist;
 			return false;
 		}
 
@@ -1834,7 +1834,7 @@ class Model extends Object implements CakeEventListener {
 		}
 
 		if ($options['validate'] && !$this->validates($options)) {
-			$this->whitelist = $_whitelist;
+			$this->allowlist = $_allowlist;
 			return false;
 		}
 
@@ -1843,11 +1843,11 @@ class Model extends Object implements CakeEventListener {
 
 		foreach ($dateFields as $updateCol) {
 			$fieldHasValue = in_array($updateCol, $fields);
-			$fieldInWhitelist = (
-				count($this->whitelist) === 0 ||
-				in_array($updateCol, $this->whitelist)
+			$fieldInallowlist = (
+				count($this->allowlist) === 0 ||
+				in_array($updateCol, $this->allowlist)
 			);
-			if (($fieldHasValue && $fieldInWhitelist) || !$this->hasField($updateCol)) {
+			if (($fieldHasValue && $fieldInallowlist) || !$this->hasField($updateCol)) {
 				continue;
 			}
 
@@ -1859,8 +1859,8 @@ class Model extends Object implements CakeEventListener {
 				$time = call_user_func($colType['formatter'], $colType['format']);
 			}
 
-			if (!empty($this->whitelist)) {
-				$this->whitelist[] = $updateCol;
+			if (!empty($this->allowlist)) {
+				$this->allowlist[] = $updateCol;
 			}
 			$this->set($updateCol, $time);
 		}
@@ -1870,7 +1870,7 @@ class Model extends Object implements CakeEventListener {
 			list($event->break, $event->breakOn) = array(true, array(false, null));
 			$this->getEventManager()->dispatch($event);
 			if (!$event->result) {
-				$this->whitelist = $_whitelist;
+				$this->allowlist = $_allowlist;
 				return false;
 			}
 		}
@@ -1894,7 +1894,7 @@ class Model extends Object implements CakeEventListener {
 				}
 
 				foreach ($v as $x => $y) {
-					if ($this->hasField($x) && (empty($this->whitelist) || in_array($x, $this->whitelist))) {
+					if ($this->hasField($x) && (empty($this->allowlist) || in_array($x, $this->allowlist))) {
 						list($fields[], $values[]) = array($x, $y);
 					}
 				}
@@ -1902,7 +1902,7 @@ class Model extends Object implements CakeEventListener {
 		}
 
 		if (empty($fields) && empty($joined)) {
-			$this->whitelist = $_whitelist;
+			$this->allowlist = $_allowlist;
 			return false;
 		}
 
@@ -1954,7 +1954,7 @@ class Model extends Object implements CakeEventListener {
 		}
 
 		if (!$success) {
-			$this->whitelist = $_whitelist;
+			$this->allowlist = $_allowlist;
 			return $success;
 		}
 
@@ -1975,7 +1975,7 @@ class Model extends Object implements CakeEventListener {
 
 		$this->_clearCache();
 		$this->validationErrors = array();
-		$this->whitelist = $_whitelist;
+		$this->allowlist = $_allowlist;
 		$this->data = false;
 
 		return $success;
@@ -2502,7 +2502,7 @@ class Model extends Object implements CakeEventListener {
 					} else {
 						$data = array_merge(array($key => $Model->id), $data, array($key => $Model->id));
 					}
-					$options = $this->_addToWhiteList($key, $options);
+					$options = $this->_addToAllowlist($key, $options);
 				} else {
 					$validationErrors[$association] = $Model->validationErrors;
 				}
@@ -2542,7 +2542,7 @@ class Model extends Object implements CakeEventListener {
 						$saved = false;
 
 						if ($validates) {
-							$options = $Model->_addToWhiteList($key, $options);
+							$options = $Model->_addToAllowlist($key, $options);
 							if ($options['deep']) {
 								$saved = $Model->saveAssociated($values, array('atomic' => false) + $options);
 							} else {
@@ -2566,7 +2566,7 @@ class Model extends Object implements CakeEventListener {
 							}
 						}
 
-						$options = $Model->_addToWhiteList($key, $options);
+						$options = $Model->_addToAllowlist($key, $options);
 						$_return = $Model->saveMany($values, array('atomic' => false) + $options);
 						if (in_array(false, $_return, true)) {
 							$validationErrors[$association] = $Model->validationErrors;
@@ -2615,9 +2615,9 @@ class Model extends Object implements CakeEventListener {
  * @param array $options Options list
  * @return array options
  */
-	protected function _addToWhiteList($key, $options) {
-		if (empty($options['fieldList']) && $this->whitelist && !in_array($key, $this->whitelist)) {
-			$options['fieldList'][$this->alias] = $this->whitelist;
+	protected function _addToAllowlist($key, $options) {
+		if (empty($options['fieldList']) && $this->allowlist && !in_array($key, $this->allowlist)) {
+			$options['fieldList'][$this->alias] = $this->allowlist;
 			$options['fieldList'][$this->alias][] = $key;
 			return $options;
 		}

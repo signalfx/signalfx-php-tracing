@@ -4,10 +4,10 @@
 #define __DD_FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define __DD_PRINTF(fmt, ...)                                                        \
     do {                                                                             \
-        const char* blacklist = getenv("DEBUG_BLACKLIST");                           \
+        const char* denylist = getenv("DEBUG_DENYLIST");                           \
         char file_line[100];                                                         \
         snprintf(file_line, sizeof(file_line), "%s:%d", __DD_FILENAME__, __LINE__);  \
-        if (blacklist && strstr(blacklist, file_line) != NULL) {                     \
+        if (denylist && strstr(denylist, file_line) != NULL) {                     \
             continue;                                                                \
         }                                                                            \
         fprintf(stderr, "%s #%s " fmt "\n", file_line, __FUNCTION__, ##__VA_ARGS__); \
