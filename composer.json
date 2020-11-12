@@ -201,6 +201,22 @@
             "@composer test -- tests/Integrations/Predis",
             "@composer scenario default"
         ],
+        "test-integrations-74": [
+            "sh clean-composer-scenario-locks.sh",
+            "@composer scenario:update",
+            "@composer scenario default",
+            "@composer test -- tests/Integrations/Curl",
+            "@composer test -- tests/Integrations/Memcached",
+            "@composer test -- tests/Integrations/Mysqli",
+            "@composer test -- tests/Integrations/PDO",
+            "@composer scenario guzzle5",
+            "@composer test -- tests/Integrations/Guzzle/V5",
+            "@composer scenario guzzle6",
+            "@composer test -- tests/Integrations/Guzzle/V6",
+            "@composer scenario predis1",
+            "@composer test -- tests/Integrations/Predis",
+            "@composer scenario default"
+        ],
         "test-web-54": [
             "@cakephp-28-update",
             "@cakephp-28-test",
@@ -311,6 +327,27 @@
             "@symfony-42-suite",
             "@zend-framework-1-test",
             "@custom-framework-autoloaded-suite"
+        ],
+        "test-web-74": [
+            "@laravel-57-update",
+            "@laravel-57-test",
+            "@laravel-58-update",
+            "@laravel-58-test",
+            "@lumen-52-update",
+            "@lumen-52-test",
+            "@lumen-56-update",
+            "@lumen-56-test",
+            "@lumen-58-update",
+            "@lumen-58-test",
+            "@slim-312-update",
+            "@slim-312-test",
+            "@symfony-40-suite",
+            "@symfony-42-suite",
+            "@wordpress-48-test",
+            "@yii-2-suite",
+            "@zend-framework-1-test",
+            "@custom-framework-autoloaded-suite",
+            "@opentracing-10-test"
         ],
 
         "inrease-memory-limit": "export COMPOSER_MEMORY_LIMIT=-1",
