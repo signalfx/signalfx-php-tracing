@@ -4,8 +4,11 @@ All notable changes to this project will be documented in this file - [read more
 
 ## [Unreleased]
 
+## [0.30.1-beta-sfx4]
+
 - Added support SIGNALFX_RECORDED_VALUE_MAX_LENGTH to limit size of span attribute values
 - Migrated to SignalFx error attributes from OpenTracing
+- Added support for PHP 7.4
 
 ## [0.30.1]
 ### Fixed

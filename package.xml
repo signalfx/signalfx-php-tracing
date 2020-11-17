@@ -10,7 +10,7 @@
       <email>signalfx-oss@splunk.com</email>
       <active>yes</active>
     </lead>
-    <date>2020-08-28</date>
+    <date>2020-11-17</date>
     <version>
         <release>0.30.2.0</release>
         <api>0.30.2.0</api>
@@ -21,9 +21,9 @@
     </stability>
     <license uri="https://github.com/signalfx/signalfx-php-tracing/blob/master/LICENSE">BSD 3-Clause</license>
     <notes>
-        Initial SignalFx beta release
-        ### Fixed
-        - Ensure the request init hook is bound by the `open_basedir` INI directive #579
+        - Added support SIGNALFX_RECORDED_VALUE_MAX_LENGTH to limit size of span attribute values
+        - Migrated to SignalFx error attributes from OpenTracing
+        - Added support for PHP 7.4
     </notes>
     <contents>
         <dir name="/">
