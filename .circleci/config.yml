@@ -314,6 +314,9 @@ jobs:
       xfail_list:
         type: string
         default: none
+      php_src_dir:
+        type: string
+        default: /usr/src/php
     working_directory: ~/datadog
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
@@ -329,15 +332,17 @@ jobs:
       - run:
           name: Run tests
           command: |
+            mkdir -p <<parameters.php_src_dir>>
             docker-php-source extract
             if [[ ! "<<parameters.xfail_list>>" == "none" ]]; then
-              cp "<<parameters.xfail_list>>" /usr/src/php/xfail_tests.list
+              cp "<<parameters.xfail_list>>" <<parameters.php_src_dir>>/xfail_tests.list
               (
-                cd /usr/src/php
-                cat xfail_tests.list | xargs -n 1 sed -i -e $'s/\(--FILE.*--\)/--XFAIL--\\\nvar_dump missmatch\\\n\\1/g'
+                cd <<parameters.php_src_dir>>
+                cat xfail_tests.list | xargs -n 1 grep -L '\-\-SKIPIF\-\-' | xargs -n 1 -r sed -i -e $'s/\(--FILE.*--\)/--SKIPIF--\\\n\\1/g' || true
+                cat xfail_tests.list | xargs -n 1 sed -i -e $'s/\(--SKIPIF--\)/\\1\\\nskip Unreliable output or flaky test/g'
               )
             fi
-            cd /usr/src/php
+            cd <<parameters.php_src_dir>>
             export SIGNALFX_TRACING_CLI_ENABLED=true
             export REPORT_EXIT_STATUS=1
             export TEST_PHP_JUNIT=/tmp/artifacts/tests/php-tests.xml
@@ -348,7 +353,7 @@ jobs:
               -d ddtrace.request_init_hook=/home/circleci/datadog/bridge/dd_wrap_autoloader.php
       - run:
           command: |
-            cd /usr/src/php
+            cd <<parameters.php_src_dir>>
             mkdir -p /tmp/artifacts/core_dumps
             find ./ -name "core.*" | xargs -I % -n 1 cp % /tmp/artifacts/core_dumps
           when: on_fail
@@ -585,6 +590,12 @@ workflows:
           so_suffix: "20180731"
       - compile_extension:
           requires: [ 'Code Checkout' ]
+          name: "Compile PHP 74"
+          lib_curl_command: yum -y install libcurl-devel
+          docker_image: "datadog/dd-trace-ci:php-7.4-centos-7"
+          so_suffix: "20190902"
+      - compile_extension:
+          requires: [ 'Code Checkout' ]
           name: "Compile PHP 56-zts"
           docker_image: "circleci/php:5.6-zts"
           lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
@@ -613,6 +624,12 @@ workflows:
           docker_image: "circleci/php:7.3-zts"
           lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
           so_suffix: "20180731-zts"
+      - compile_extension:
+          requires: [ 'Code Checkout' ]
+          name: "Compile PHP 74-zts"
+          docker_image: "circleci/php:7.4-zts"
+          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
+          so_suffix: "20190902-zts"
       - "package extension":
           requires:
             - "Compile PHP 54"
@@ -621,11 +638,13 @@ workflows:
             - "Compile PHP 71"
             - "Compile PHP 72"
             - "Compile PHP 73"
+            - "Compile PHP 74"
             - "Compile PHP 56-zts"
             - "Compile PHP 70-zts"
             - "Compile PHP 71-zts"
             - "Compile PHP 72-zts"
             - "Compile PHP 73-zts"
+            - "Compile PHP 74-zts"
       - "package verification":
           requires:
             - "package extension"
@@ -695,6 +714,18 @@ workflows:
           name: "PHP 73 language tests"
           xfail_list: dockerfiles/ci/xfail_tests/7.3.list
           docker_image: "datadog/dd-trace-php:7.3-buster-debug"
+      - unit_tests:
+          requires: [ 'Code Checkout' ]
+          name: "PHP 74 Unit tests"
+          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
+          valgrind_config: 7_4_musl
+          lib_curl_command: sudo apk update ; sudo apk add curl-dev
+      - php_language_tests:
+          requires: [ 'Language tests' ]
+          name: "PHP 74 language tests"
+          xfail_list: dockerfiles/ci/xfail_tests/7.4.list
+          docker_image: "datadog/dd-trace-ci:php-7.4-debug-buster"
+          php_src_dir: "/usr/local/src/php"
       - php_language_tests:
           requires: [ 'Language tests' ]
           name: "PHP 72 language tests"
@@ -758,6 +789,12 @@ workflows:
           lib_curl_command: sudo apk update ; sudo apk add curl-dev
       - integration_tests:
           requires: [ 'Code Checkout' ]
+          name: "PHP 74 Integration tests"
+          integration_testsuite: "test-integrations-74"
+          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
+          lib_curl_command: sudo apk update ; sudo apk add curl-dev
+      - integration_tests:
+          requires: [ 'Code Checkout' ]
           name: "PHP 54 Web integration tests"
           docker_image: "datadog/docker-library:ddtrace_alpine_php-5.4-debug"
           integration_testsuite: "test-web-54"
@@ -793,6 +830,13 @@ workflows:
           integration_testsuite: "test-web-73"
           docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
           lib_curl_command: sudo apk update ; sudo apk add curl-dev
+      - integration_tests:
+          requires: [ 'Code Checkout' ]
+          name: "PHP 74 Web integration tests"
+          resource_class: medium+
+          integration_testsuite: "test-web-74"
+          docker_image: "datadog/dd-trace-ci:php-dev-7.4"
+          lib_curl_command: sudo apt update ; sudo apt-get -y install libcurl4-nss-dev
       - hyperfine_tests:
           requires: [ 'Code Checkout' ]
           name: "Hyperfine 54 benchmarks"
@@ -822,6 +866,11 @@ workflows:
           requires: [ 'Code Checkout' ]
           name: "Hyperfine 73 benchmarks"
           docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
+          lib_curl_command: sudo apk update ; sudo apk add curl-dev
+      - hyperfine_tests:
+          requires: [ 'Code Checkout' ]
+          name: "Hyperfine 74 benchmarks"
+          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
           lib_curl_command: sudo apk update ; sudo apk add curl-dev
       - "Lint files":
           requires: [ 'Code Checkout' ]
