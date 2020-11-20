@@ -165,7 +165,7 @@ This change should not impact most users.
 - MessagePack serialization for traces sent to the Agent with a new function `dd_trace_serialize_msgpack()` #378
 
 ### Changed
-- Request init hook module blacklist now avoids miss matching partial matches #372
+- Request init hook module denylist now avoids miss matching partial matches #372
 - Add 10MB cap to payloads sent to the Agent #388
 - Added an `getTracesAsArray()` method to `DDTrace\Contracts\Tracer` which returns an array of spans (which are also encoded as an array.) To encode an instance of `DDTrace\Contracts\Span` as an array, use `DDTrace\Encoders\SpanEncoder::encode($span)` #378
 - `DDTrace\Transport::send()` now takes an instance of `DDTrace\Contracts\Tracer` instead of an `array` #378
@@ -190,7 +190,7 @@ This change should not impact most users.
 - Inside request init hook we disable all function tracing when we decide not to trace #361
 
 ### Added
-- Disable request_init_hook functionality in presence of blacklisted modules via `ddtrace.internal_blacklisted_modules_list=some_module,some_other_module` #345 & #370
+- Disable request_init_hook functionality in presence of denylisted modules via `ddtrace.internal_denylisted_modules_list=some_module,some_other_module` #345 & #370
 - Integration-level configuration #354
 - `dd_trace_disable_in_request` function which disables all function tracing until request ends #361
 

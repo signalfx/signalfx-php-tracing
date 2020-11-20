@@ -900,7 +900,7 @@ class FormHelper extends AppHelper {
  * for more fine grained control use the `fieldset` and `legend` keys in `$options` param.
  *
  * @param array $fields An array of fields to generate inputs for, or null.
- * @param array $blacklist A simple array of fields to not create inputs for.
+ * @param array $denylist A simple array of fields to not create inputs for.
  * @param array $options Options array. Valid keys are:
  * - `fieldset` Set to false to disable the fieldset. If a string is supplied it will be used as
  *    the class name for the fieldset element.
@@ -909,7 +909,7 @@ class FormHelper extends AppHelper {
  * @return string Completed form inputs.
  * @link http://book.cakephp.org/2.0/en/core-libraries/helpers/form.html#FormHelper::inputs
  */
-	public function inputs($fields = null, $blacklist = null, $options = array()) {
+	public function inputs($fields = null, $denylist = null, $options = array()) {
 		$fieldset = $legend = true;
 		$modelFields = array();
 		$model = $this->model();
@@ -968,11 +968,11 @@ class FormHelper extends AppHelper {
 				$options = array();
 			}
 			$entity = explode('.', $name);
-			$blacklisted = (
-				is_array($blacklist) &&
-				(in_array($name, $blacklist) || in_array(end($entity), $blacklist))
+			$denylisted = (
+				is_array($denylist) &&
+				(in_array($name, $denylist) || in_array(end($entity), $denylist))
 			);
-			if ($blacklisted) {
+			if ($denylisted) {
 				continue;
 			}
 			$out .= $this->input($name, $options);

@@ -570,11 +570,11 @@ class TreeBehaviorNumberTest extends CakeTestCase {
 	}
 
 /**
- * testMoveWithWhitelist method
+ * testMoveWithAllowlist method
  *
  * @return void
  */
-	public function testMoveWithWhitelist() {
+	public function testMoveWithAllowlist() {
 		extract($this->settings);
 		$this->Tree = new $modelClass();
 		$this->Tree->initialize(2, 2);
@@ -585,7 +585,7 @@ class TreeBehaviorNumberTest extends CakeTestCase {
 
 		$data = $this->Tree->find('first', array('fields' => array('id'), 'conditions' => array($modelClass . '.name' => '1.1.1')));
 		$this->Tree->id = $data[$modelClass]['id'];
-		$this->Tree->whitelist = array($parentField, 'name', 'description');
+		$this->Tree->allowlist = array($parentField, 'name', 'description');
 		$this->Tree->saveField($parentField, $parentId);
 
 		$result = $this->Tree->children($parentId, true, array('id', 'name', $parentField, $leftField, $rightField));
@@ -597,16 +597,16 @@ class TreeBehaviorNumberTest extends CakeTestCase {
 	}
 
 /**
- * testInsertWithWhitelist method
+ * testInsertWithAllowlist method
  *
  * @return void
  */
-	public function testInsertWithWhitelist() {
+	public function testInsertWithAllowlist() {
 		extract($this->settings);
 		$this->Tree = new $modelClass();
 		$this->Tree->initialize(2, 2);
 
-		$this->Tree->whitelist = array('name', $parentField);
+		$this->Tree->allowlist = array('name', $parentField);
 		$this->Tree->create();
 		$this->Tree->save(array($modelClass => array('name' => 'testAddOrphan', $parentField => null)));
 		$result = $this->Tree->findByName('testAddOrphan', array('name', $parentField, $leftField, $rightField));

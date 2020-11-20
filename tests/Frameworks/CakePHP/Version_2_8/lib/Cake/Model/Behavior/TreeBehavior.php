@@ -218,9 +218,9 @@ class TreeBehavior extends ModelBehavior {
 	public function beforeSave(Model $Model, $options = array()) {
 		extract($this->settings[$Model->alias]);
 
-		$this->_addToWhitelist($Model, array($left, $right));
+		$this->_addToAllowlist($Model, array($left, $right));
 		if ($level) {
-			$this->_addToWhitelist($Model, $level);
+			$this->_addToAllowlist($Model, $level);
 		}
 		$parentIsSet = array_key_exists($parent, $Model->data[$Model->alias]);
 
@@ -254,7 +254,7 @@ class TreeBehavior extends ModelBehavior {
 			}
 			if (!$Model->data[$Model->alias][$parent]) {
 				$Model->data[$Model->alias][$parent] = null;
-				$this->_addToWhitelist($Model, $parent);
+				$this->_addToAllowlist($Model, $parent);
 				if ($level) {
 					$Model->data[$Model->alias][$level] = 0;
 				}

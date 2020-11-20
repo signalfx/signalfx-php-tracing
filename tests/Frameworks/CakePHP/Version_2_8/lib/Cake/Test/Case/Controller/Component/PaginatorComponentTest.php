@@ -790,11 +790,11 @@ class PaginatorComponentTest extends CakeTestCase {
 	}
 
 /**
- * test that the default whitelist doesn't let people screw with things they should not be allowed to.
+ * test that the default allowlist doesn't let people screw with things they should not be allowed to.
  *
  * @return void
  */
-	public function testMergeOptionsDefaultWhiteList() {
+	public function testMergeOptionsDefaultAllowlist() {
 		$this->request->params['named'] = array(
 			'page' => 10,
 			'limit' => 10,
@@ -815,11 +815,11 @@ class PaginatorComponentTest extends CakeTestCase {
 	}
 
 /**
- * test that modifying the whitelist works.
+ * test that modifying the allowlist works.
  *
  * @return void
  */
-	public function testMergeOptionsExtraWhitelist() {
+	public function testMergeOptionsExtraAllowlist() {
 		$this->request->params['named'] = array(
 			'page' => 10,
 			'limit' => 10,
@@ -834,7 +834,7 @@ class PaginatorComponentTest extends CakeTestCase {
 			'maxLimit' => 100,
 			'paramType' => 'named',
 		);
-		$this->Paginator->whitelist[] = 'fields';
+		$this->Paginator->allowlist[] = 'fields';
 		$result = $this->Paginator->mergeOptions('Post');
 		$expected = array(
 			'page' => 10, 'limit' => 10, 'maxLimit' => 100, 'paramType' => 'named', 'fields' => array('bad.stuff')
@@ -956,11 +956,11 @@ class PaginatorComponentTest extends CakeTestCase {
 	}
 
 /**
- * test that fields not in whitelist won't be part of order conditions.
+ * test that fields not in allowlist won't be part of order conditions.
  *
  * @return void
  */
-	public function testValidateSortWhitelistFailure() {
+	public function testValidateSortAllowlistFailure() {
 		$model = $this->getMock('Model');
 		$model->alias = 'model';
 		$model->expects($this->any())->method('hasField')->will($this->returnValue(true));
@@ -972,11 +972,11 @@ class PaginatorComponentTest extends CakeTestCase {
 	}
 
 /**
- * test that fields in the whitelist are not validated
+ * test that fields in the allowlist are not validated
  *
  * @return void
  */
-	public function testValidateSortWhitelistTrusted() {
+	public function testValidateSortAllowlistTrusted() {
 		$model = $this->getMock('Model');
 		$model->alias = 'model';
 		$model->expects($this->never())->method('hasField');

@@ -306,7 +306,7 @@ class SecurityComponent extends Component {
 	}
 
 /**
- * Sets the actions that require whitelisted form submissions.
+ * Sets the actions that require allowlisted form submissions.
  *
  * Adding actions with this method will enforce the restrictions
  * set in SecurityComponent::$allowedControllers and

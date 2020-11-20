@@ -72,7 +72,7 @@ class ApiShellTest extends CakeTestCase {
 			'14. implementedEvents()',
 			'15. invokeAction($request)',
 			'16. loadModel($modelClass = NULL, $id = NULL)',
-			'17. paginate($object = NULL, $scope = array (), $whitelist = array ())',
+			'17. paginate($object = NULL, $scope = array (), $allowlist = array ())',
 			'18. postConditions($data = array (), $op = NULL, $bool = \'AND\', $exclusive = false)',
 			'19. redirect($url, $status = NULL, $exit = true)',
 			'20. referer($default = NULL, $local = false)',

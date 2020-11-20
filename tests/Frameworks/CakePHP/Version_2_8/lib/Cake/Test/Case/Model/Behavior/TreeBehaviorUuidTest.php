@@ -117,11 +117,11 @@ class TreeBehaviorUuidTest extends CakeTestCase {
 	}
 
 /**
- * testMoveWithWhitelist method
+ * testMoveWithAllowlist method
  *
  * @return void
  */
-	public function testMoveWithWhitelist() {
+	public function testMoveWithAllowlist() {
 		extract($this->settings);
 		$this->Tree = new $modelClass();
 		$this->Tree->order = null;
@@ -133,7 +133,7 @@ class TreeBehaviorUuidTest extends CakeTestCase {
 
 		$data = $this->Tree->find('first', array('fields' => array('id'), 'conditions' => array($modelClass . '.name' => '1.1.1')));
 		$this->Tree->id = $data[$modelClass]['id'];
-		$this->Tree->whitelist = array($parentField, 'name', 'description');
+		$this->Tree->allowlist = array($parentField, 'name', 'description');
 		$this->Tree->saveField($parentField, $parentId);
 
 		$result = $this->Tree->children($parentId, true, array('name', $leftField, $rightField));

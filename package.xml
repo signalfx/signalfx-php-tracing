@@ -133,7 +133,7 @@
                     <file name="private_self_access.phpt" role="test" />
                     <file name="protected_method_hook.phpt" role="test" />
                     <file name="recursion.phpt" role="test" />
-                    <file name="request_init_hook_check_blacklisted_modules.phpt" role="test" />
+                    <file name="request_init_hook_check_denylisted_modules.phpt" role="test" />
                     <file name="request_init_hook_file_not_found.phpt" role="test" />
                     <file name="read_c_configuration.phpt" role="test" />
                     <file name="reset_configured_overrides.phpt" role="test" />

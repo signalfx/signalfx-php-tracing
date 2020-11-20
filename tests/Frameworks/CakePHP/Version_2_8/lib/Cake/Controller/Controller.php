@@ -1081,12 +1081,12 @@ class Controller extends Object implements CakeEventListener {
  *
  * @param Model|string $object Model to paginate (e.g: model instance, or 'Model', or 'Model.InnerModel')
  * @param string|array $scope Conditions to use while paginating
- * @param array $whitelist List of allowed options for paging
+ * @param array $allowlist List of allowed options for paging
  * @return array Model query results
  * @link http://book.cakephp.org/2.0/en/controllers.html#Controller::paginate
  */
-	public function paginate($object = null, $scope = array(), $whitelist = array()) {
-		return $this->Components->load('Paginator', $this->paginate)->paginate($object, $scope, $whitelist);
+	public function paginate($object = null, $scope = array(), $allowlist = array()) {
+		return $this->Components->load('Paginator', $this->paginate)->paginate($object, $scope, $allowlist);
 	}
 
 /**

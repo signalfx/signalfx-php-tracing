@@ -1,8 +1,8 @@
 --TEST--
-Prepend PHP code before the processing takes place and do not blacklist functionality on partial match
+Prepend PHP code before the processing takes place and do not denylist functionality on partial match
 --INI--
 ddtrace.request_init_hook=tests/ext/simple_sanity_check.phpt
-ddtrace.internal_blacklisted_modules_list=ddtrace_its_not,some_other_module
+ddtrace.internal_denylisted_modules_list=ddtrace_its_not,some_other_module
 
 --FILE--
 <?php

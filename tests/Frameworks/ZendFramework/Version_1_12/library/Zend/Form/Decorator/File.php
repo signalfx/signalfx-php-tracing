@@ -48,7 +48,7 @@ class Zend_Form_Decorator_File
      * Attributes that should not be passed to helper
      * @var array
      */
-    protected $_attribBlacklist = array('helper', 'placement', 'separator', 'value');
+    protected $_attribDenylist = array('helper', 'placement', 'separator', 'value');
 
     /**
      * Default placement: append
@@ -69,7 +69,7 @@ class Zend_Form_Decorator_File
             $attribs = array_merge($attribs, $element->getAttribs());
         }
 
-        foreach ($this->_attribBlacklist as $key) {
+        foreach ($this->_attribDenylist as $key) {
             if (array_key_exists($key, $attribs)) {
                 unset($attribs[$key]);
             }

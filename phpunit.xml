@@ -42,11 +42,9 @@
             <directory>tests/Unit/</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">src</directory>
-        </whitelist>
-    </filter>
+    <coverage processUncoveredFilesFromWhitelist="true">
+        <directory suffix=".php">src</directory>
+    </coverage>
     <listeners>
         <listener class="DDTrace\Tests\DDTestListener"/>
     </listeners>

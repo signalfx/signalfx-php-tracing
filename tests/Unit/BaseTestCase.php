@@ -10,7 +10,7 @@ use PHPUnit\Framework;
 
 abstract class BaseTestCase extends Framework\TestCase
 {
-    protected function tearDown()
+    protected function tearDown(): void
     {
         \Mockery::close();
         Logger::reset();

@@ -175,8 +175,8 @@ class TestBehavior extends ModelBehavior {
 				return true;
 			case 'test':
 				return null;
-			case 'whitelist':
-				$this->_addToWhitelist($model, array('name'));
+			case 'allowlist':
+				$this->_addToAllowlist($model, array('name'));
 				return true;
 			case 'stop':
 				$model->invalidate('name');
@@ -988,13 +988,13 @@ class BehaviorCollectionTest extends CakeTestCase {
 		$this->assertFalse($Apple->validates());
 		$this->assertSame($Apple->validationErrors, array('name' => array(true, true)));
 
-		$Apple->Behaviors->load('Test', array('validate' => 'whitelist'));
+		$Apple->Behaviors->load('Test', array('validate' => 'allowlist'));
 		$Apple->validates();
-		$this->assertSame($Apple->whitelist, array());
+		$this->assertSame($Apple->allowlist, array());
 
-		$Apple->whitelist = array('unknown');
+		$Apple->allowlist = array('unknown');
 		$Apple->validates();
-		$this->assertSame($Apple->whitelist, array('unknown', 'name'));
+		$this->assertSame($Apple->allowlist, array('unknown', 'name'));
 	}
 
 /**

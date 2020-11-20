@@ -168,7 +168,7 @@ class ModelValidationTest extends BaseModelTest {
 		$this->assertEquals($expected, $TestModel->validationErrors);
 		$TestModel->validationErrors = array();
 
-		$TestModel->whitelist = array('name');
+		$TestModel->allowlist = array('name');
 		$TestModel->invalidFields();
 		$expected = array('name' => array('This field cannot be left blank'));
 		$this->assertEquals($expected, $TestModel->validationErrors);
@@ -181,7 +181,7 @@ class ModelValidationTest extends BaseModelTest {
  *
  * @return void
  */
-	public function testInvalidFieldsWhitelist() {
+	public function testInvalidFieldsallowlist() {
 		$TestModel = new ValidationTest1();
 		$TestModel->validate = array(
 			'title' => array(
@@ -193,7 +193,7 @@ class ModelValidationTest extends BaseModelTest {
 				'required' => true
 		));
 
-		$TestModel->whitelist = array('name');
+		$TestModel->allowlist = array('name');
 		$TestModel->save(array('name' => '#$$#', 'title' => '$$$$'));
 
 		$expected = array('name' => array('This field cannot be left blank'));
@@ -649,7 +649,7 @@ class ModelValidationTest extends BaseModelTest {
 	}
 
 /**
- * Test that if a behavior modifies the model's whitelist validation gets triggered
+ * Test that if a behavior modifies the model's allowlist validation gets triggered
  * properly for those fields.
  *
  * @return void
@@ -2533,7 +2533,7 @@ class ValidationRuleBehavior extends ModelBehavior {
 	public function beforeValidate(Model $Model, $options = array()) {
 		$fields = $this->settings[$Model->alias]['fields'];
 		foreach ($fields as $field) {
-			$Model->whitelist[] = $field;
+			$Model->allowlist[] = $field;
 		}
 	}
 

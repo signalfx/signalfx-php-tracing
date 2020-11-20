@@ -216,24 +216,24 @@ class ModelBehavior extends Object {
 	}
 
 /**
- * If $model's whitelist property is non-empty, $field will be added to it.
+ * If $model's allowlist property is non-empty, $field will be added to it.
  * Note: this method should *only* be used in beforeValidate or beforeSave to ensure
- * that it only modifies the whitelist for the current save operation. Also make sure
+ * that it only modifies the allowlist for the current save operation. Also make sure
  * you explicitly set the value of the field which you are allowing.
  *
  * @param Model $model Model using this behavior
- * @param string $field Field to be added to $model's whitelist
+ * @param string $field Field to be added to $model's allowlist
  * @return void
  */
-	protected function _addToWhitelist(Model $model, $field) {
+	protected function _addToAllowlist(Model $model, $field) {
 		if (is_array($field)) {
 			foreach ($field as $f) {
-				$this->_addToWhitelist($model, $f);
+				$this->_addToAllowlist($model, $f);
 			}
 			return;
 		}
-		if (!empty($model->whitelist) && !in_array($field, $model->whitelist)) {
-			$model->whitelist[] = $field;
+		if (!empty($model->allowlist) && !in_array($field, $model->allowlist)) {
+			$model->allowlist[] = $field;
 		}
 	}
 

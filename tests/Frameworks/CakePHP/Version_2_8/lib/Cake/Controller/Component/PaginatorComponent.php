@@ -97,7 +97,7 @@ class PaginatorComponent extends Component {
  *
  * @var array
  */
-	public $whitelist = array(
+	public $allowlist = array(
 		'limit', 'sort', 'page', 'direction'
 	);
 
@@ -118,16 +118,16 @@ class PaginatorComponent extends Component {
  *
  * @param Model|string $object Model to paginate (e.g: model instance, or 'Model', or 'Model.InnerModel')
  * @param string|array $scope Additional find conditions to use while paginating
- * @param array $whitelist List of allowed fields for ordering. This allows you to prevent ordering
+ * @param array $allowlist List of allowed fields for ordering. This allows you to prevent ordering
  *   on non-indexed, or undesirable columns. See PaginatorComponent::validateSort() for additional details
- *   on how the whitelisting and sort field validation works.
+ *   on how the allowlisting and sort field validation works.
  * @return array Model query results
  * @throws MissingModelException
  * @throws NotFoundException
  */
-	public function paginate($object = null, $scope = array(), $whitelist = array()) {
+	public function paginate($object = null, $scope = array(), $allowlist = array()) {
 		if (is_array($object)) {
-			$whitelist = $scope;
+			$allowlist = $scope;
 			$scope = $object;
 			$object = null;
 		}
@@ -139,7 +139,7 @@ class PaginatorComponent extends Component {
 		}
 
 		$options = $this->mergeOptions($object->alias);
-		$options = $this->validateSort($object, $options, $whitelist);
+		$options = $this->validateSort($object, $options, $allowlist);
 		$options = $this->checkLimit($options);
 
 		$conditions = $fields = $order = $limit = $page = $recursive = null;
@@ -301,7 +301,7 @@ class PaginatorComponent extends Component {
  * - Request parameters
  *
  * The result of this method is the aggregate of all the option sets combined together. You can change
- * PaginatorComponent::$whitelist to modify which options/values can be set using request parameters.
+ * PaginatorComponent::$allowlist to modify which options/values can be set using request parameters.
  *
  * @param string $alias Model alias being paginated, if the general settings has a key with this value
  *   that key's settings will be used for pagination instead of the general ones.
@@ -317,7 +317,7 @@ class PaginatorComponent extends Component {
 				$request = $this->Controller->request->query;
 				break;
 		}
-		$request = array_intersect_key($request, array_flip($this->whitelist));
+		$request = array_intersect_key($request, array_flip($this->allowlist));
 		return array_merge($defaults, $request);
 	}
 
@@ -347,18 +347,18 @@ class PaginatorComponent extends Component {
  * virtualFields can be sorted on. The direction param will also be sanitized. Lastly
  * sort + direction keys will be converted into the model friendly order key.
  *
- * You can use the whitelist parameter to control which columns/fields are available for sorting.
+ * You can use the allowlist parameter to control which columns/fields are available for sorting.
  * This helps prevent users from ordering large result sets on un-indexed values.
  *
- * Any columns listed in the sort whitelist will be implicitly trusted. You can use this to sort
+ * Any columns listed in the sort allowlist will be implicitly trusted. You can use this to sort
  * on synthetic columns, or columns added in custom find operations that may not exist in the schema.
  *
  * @param Model $object The model being paginated.
  * @param array $options The pagination options being used for this request.
- * @param array $whitelist The list of columns that can be used for sorting. If empty all keys are allowed.
+ * @param array $allowlist The list of columns that can be used for sorting. If empty all keys are allowed.
  * @return array An array of options with sort + direction removed and replaced with order if possible.
  */
-	public function validateSort(Model $object, array $options, array $whitelist = array()) {
+	public function validateSort(Model $object, array $options, array $allowlist = array()) {
 		if (empty($options['order']) && is_array($object->order)) {
 			$options['order'] = $object->order;
 		}
@@ -374,10 +374,10 @@ class PaginatorComponent extends Component {
 			$options['order'] = array($options['sort'] => $direction);
 		}
 
-		if (!empty($whitelist) && isset($options['order']) && is_array($options['order'])) {
+		if (!empty($allowlist) && isset($options['order']) && is_array($options['order'])) {
 			$field = key($options['order']);
-			$inWhitelist = in_array($field, $whitelist, true);
-			if (!$inWhitelist) {
+			$inallowlist = in_array($field, $allowlist, true);
+			if (!$inallowlist) {
 				$options['order'] = null;
 			}
 			return $options;
@@ -427,3 +427,4 @@ class PaginatorComponent extends Component {
 	}
 
 }
+

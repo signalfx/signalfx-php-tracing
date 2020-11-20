@@ -22,9 +22,9 @@
     </testsuites>
 
     <filter>
-        <whitelist>
+        <allowlist>
             <directory>src</directory>
-        </whitelist>
+        </allowlist>
     </filter>
 
     <listeners>
