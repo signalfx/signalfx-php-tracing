@@ -6,7 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 
-final class TraceSearchConfigTest extends WebFrameworkTestCase
+class TraceSearchConfigTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
@@ -31,28 +31,23 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
         });
 
         $this->assertExpectedSpans(
-            $this,
             $traces,
             [
-                SpanAssertion::build(
-                    'zf1.request',
-                    'unnamed-php-service',
-                    SpanAssertion::NOT_TESTED,
-                    'simple@index default'
-                )->withExactTags([
-                    'zf1.controller' => 'simple',
-                    'zf1.action' => 'index',
-                    'zf1.route_name' => 'default',
-                    'http.method' => 'GET',
-                    'http.url' => 'http://localhost:9999/simple',
-                    'http.status_code' => '200',
-                    'integration.name' => 'zendframework',
-                    'component' => 'zendframework',
-                ])
-                ->withExactMetrics([
-                    '_dd1.sr.eausr' => 0.3,
-                    '_sampling_priority_v1' => 1,
-                ]),
+                SpanAssertion::build('zf1.request', 'zf1', 'web', 'simple@index default')
+                    ->withExactTags([
+                        'zf1.controller' => 'simple',
+                        'zf1.action' => 'index',
+                        'zf1.route_name' => 'default',
+                        'http.method' => 'GET',
+                        'http.url' => 'http://localhost:9999/simple',
+                        'http.status_code' => '200',
+                        'integration.name' => 'zendframework',
+                        'component' => 'zendframework',
+                    ])
+                    ->withExactMetrics([
+                        '_dd1.sr.eausr' => 0.3,
+                        '_sampling_priority_v1' => 1,
+                    ]),
             ]
         );
     }

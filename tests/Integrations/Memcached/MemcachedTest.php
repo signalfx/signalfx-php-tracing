@@ -2,11 +2,9 @@
 
 namespace DDTrace\Tests\Integrations\Memcached;
 
-use DDTrace\Integrations\IntegrationsLoader;
 use DDTrace\Obfuscation;
 use DDTrace\Tests\Common\IntegrationTestCase;
 use DDTrace\Tests\Common\SpanAssertion;
-
 
 final class MemcachedTest extends IntegrationTestCase
 {
@@ -18,15 +16,9 @@ final class MemcachedTest extends IntegrationTestCase
     private static $host = 'memcached_integration';
     private static $port = '11211';
 
-    public static function setUpBeforeClass()
+    protected function ddSetUp()
     {
-        parent::setUpBeforeClass();
-        IntegrationsLoader::load();
-    }
-
-    protected function setUp()
-    {
-        parent::setUp();
+        parent::ddSetUp();
 
         $this->client = new \Memcached();
         $this->client->addServer(self::$host, self::$port);
@@ -660,6 +652,70 @@ final class MemcachedTest extends IntegrationTestCase
                     'memcached.server_key' => 'my_server',
                 ])),
         ]);
+    }
+
+    public function testCas()
+    {
+        $this->client->set('ip_block', 'some_value');
+        if (\PHP_MAJOR_VERSION === 5) {
+            $cas = null;
+            $this->client->get('ip_block', null, $cas);
+        } else {
+            $result = $this->client->get('ip_block', null, \Memcached::GET_EXTENDED);
+            $cas = $result['cas'];
+        }
+        $traces = $this->isolateTracer(function () use ($cas) {
+            $this->client->cas($cas, 'key', 'value');
+        });
+        $this->assertSpans($traces, [
+            SpanAssertion::build('Memcached.cas', 'memcached', 'memcached', 'cas')
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags(array_merge(self::baseTags(), [
+                    'memcached.query' => 'cas ' . Obfuscation::toObfuscatedString('key'),
+                    'memcached.command' => 'cas',
+                ]))
+                ->withExistingTagsNames(['memcached.cas_token']),
+        ]);
+    }
+
+    public function testCasByKey()
+    {
+        $this->client->setByKey('my_server', 'ip_block', 'some_value');
+        if (\PHP_MAJOR_VERSION === 5) {
+            $cas = null;
+            $this->client->getByKey('my_server', 'ip_block', null, $cas);
+        } else {
+            $result = $this->client->getByKey('my_server', 'ip_block', null, \Memcached::GET_EXTENDED);
+            $cas = $result['cas'];
+        }
+        $traces = $this->isolateTracer(function () use ($cas) {
+            $this->client->casByKey($cas, 'my_server', 'key', 'value');
+        });
+        $this->assertSpans($traces, [
+            SpanAssertion::build('Memcached.casByKey', 'memcached', 'memcached', 'casByKey')
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags(array_merge(self::baseTags(), [
+                    'memcached.query' => 'casByKey ' . Obfuscation::toObfuscatedString('key'),
+                    'memcached.command' => 'casByKey',
+                    'memcached.server_key' => 'my_server',
+                ]))
+                ->withExistingTagsNames(['memcached.cas_token']),
+        ]);
+    }
+
+    // https://github.com/DataDog/dd-trace-php/issues/622
+    // https://github.com/DataDog/dd-trace-php/issues/656
+    public function testResultCodeIsError()
+    {
+        $this->isolateTracer(function () {
+            $m = new \Memcached();
+            $m->addServer('memcached_server_does_not_exist', 11211);
+            $m->get('foo');
+            $this->assertSame(
+                \Memcached::RES_HOST_LOOKUP_FAILURE,
+                $m->getResultCode()
+            );
+        });
     }
 
     private static function baseTags()

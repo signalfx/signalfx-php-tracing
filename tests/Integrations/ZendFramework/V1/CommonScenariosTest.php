@@ -6,7 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 
-final class CommonScenariosTest extends WebFrameworkTestCase
+class CommonScenariosTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
@@ -25,7 +25,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertExpectedSpans($this, $traces, $spanExpectations);
+        $this->assertFlameGraph($traces, $spanExpectations);
     }
 
     public function provideSpecs()
@@ -33,45 +33,33 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         return $this->buildDataProvider(
             [
                 'A simple GET request returning a string' => [
-                    SpanAssertion::build(
-                        'zf1.request',
-                        'unnamed-php-service',
-                        SpanAssertion::NOT_TESTED,
-                        'simple@index default'
-                    )->withExactTags([
-                        'zf1.controller' => 'simple',
-                        'zf1.action' => 'index',
-                        'zf1.route_name' => 'default',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/simple',
-                        'http.status_code' => '200',
-                        'integration.name' => 'zendframework',
-                        'component' => 'zendframework',
-                    ]),
+                    SpanAssertion::build('zf1.request', 'zf1', 'web', 'simple@index default')
+                        ->withExactTags([
+                            'zf1.controller' => 'simple',
+                            'zf1.action' => 'index',
+                            'zf1.route_name' => 'default',
+                            'http.method' => 'GET',
+                            'http.url' => 'http://localhost:9999/simple',
+                            'http.status_code' => '200',
+                            'integration.name' => 'zendframework',
+                            'component' => 'zendframework',
+                        ]),
                 ],
                 'A simple GET request with a view' => [
-                    SpanAssertion::build(
-                        'zf1.request',
-                        'unnamed-php-service',
-                        SpanAssertion::NOT_TESTED,
-                        'simple@view my_simple_view_route'
-                    )->withExactTags([
-                        'zf1.controller' => 'simple',
-                        'zf1.action' => 'view',
-                        'zf1.route_name' => 'my_simple_view_route',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/simple_view',
-                        'http.status_code' => '200',
-                        'integration.name' => 'zendframework',
-                        'component' => 'zendframework',
-                    ]),
+                    SpanAssertion::build('zf1.request', 'zf1', 'web', 'simple@view my_simple_view_route')
+                        ->withExactTags([
+                            'zf1.controller' => 'simple',
+                            'zf1.action' => 'view',
+                            'zf1.route_name' => 'my_simple_view_route',
+                            'http.method' => 'GET',
+                            'http.url' => 'http://localhost:9999/simple_view',
+                            'http.status_code' => '200',
+                            'integration.name' => 'zendframework',
+                            'component' => 'zendframework',
+                        ]),
                 ],
                 'A GET request with an exception' => [
-                    SpanAssertion::build(
-                        'zf1.request',
-                        'unnamed-php-service',
-                        SpanAssertion::NOT_TESTED,
-                        'error@error default'
+                    SpanAssertion::build('zf1.request', 'zf1', 'web', 'error@error default')
                     )->withExactTags([
                         'zf1.controller' => 'error',
                         'zf1.action' => 'error',

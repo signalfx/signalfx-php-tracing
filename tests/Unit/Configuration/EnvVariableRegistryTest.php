@@ -7,9 +7,9 @@ use DDTrace\Tests\Unit\BaseTestCase;
 
 final class EnvVariableRegistryTest extends BaseTestCase
 {
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
         putenv('SIGNALFX_SOME_TEST_PARAMETER');
         putenv('SIGNALFX_CUSTOM_PREFIX_SOME_TEST_PARAMETER');
     }

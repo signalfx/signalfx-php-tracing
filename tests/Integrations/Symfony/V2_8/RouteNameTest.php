@@ -6,7 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 
-final class RouteNameTest extends WebFrameworkTestCase
+class RouteNameTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
@@ -19,11 +19,11 @@ final class RouteNameTest extends WebFrameworkTestCase
     public function testResource2UriMapping()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $spec  = GetSpec::create('Resource name properly set to route', '/');
+            $spec  = GetSpec::create('Resource name properly set to route', '/app.php');
             $this->call($spec);
         });
 
-        $this->assertExpectedSpans($this, $traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'web.request',
                 'unnamed-php-service',
@@ -31,10 +31,14 @@ final class RouteNameTest extends WebFrameworkTestCase
                 'AppBundle\Controller\DefaultController testingRouteNameAction'
             )->withExactTags([
                 'http.method' => 'GET',
-                'http.url' => '/',
+                'http.url' => '/app.php',
                 'http.status_code' => '200',
                 'integration.name' => 'symfony',
                 'component' => 'web.request',
+            ])->withChildren([
+                SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
+                    SpanAssertion::exists('symfony.httpkernel.kernel.boot'),
+                ]),
             ]),
         ]);
     }

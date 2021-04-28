@@ -1,0 +1,29 @@
+version: "3.6"
+
+services:
+  laravel:
+    depends_on: ['redis', 'nginx_file_server', 'memcached']
+    environment:
+      - "REDIS_HOST=redis"
+      - "MEMCACHED_HOST=memcached"
+    image: 'datadog/dd-trace-ci:php-framework-laravel'
+    build:
+      context: contrib
+      target: laravel
+    ulimits:
+      core: 99999999999
+    cap_add:
+      - SYS_PTRACE
+
+  redis:
+    image: redis:5.0.5
+    expose:
+      - 6379
+  memcached:
+    image: memcached
+    expose:
+      - 11211
+
+  nginx_file_server:
+    build: nginx_file_server
+    expose: ["80"]

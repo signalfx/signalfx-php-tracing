@@ -31,13 +31,12 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
         });
 
         $this->assertExpectedSpans(
-            $this,
             $traces,
             [
                 SpanAssertion::build(
                     'web.request',
-                    'unnamed-php-service',
-                    SpanAssertion::NOT_TESTED,
+                    'web.request',
+                    'web',
                     'GET /simple'
                 )->withExactTags([
                     'http.method' => 'GET',

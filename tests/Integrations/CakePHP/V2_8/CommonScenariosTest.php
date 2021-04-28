@@ -6,7 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 
-final class CommonScenariosTest extends WebFrameworkTestCase
+class CommonScenariosTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
@@ -32,7 +32,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertExpectedSpans($this, $traces, $spanExpectations);
+        $this->assertFlameGraph($traces, $spanExpectations);
     }
 
     public function provideSpecs()
@@ -53,6 +53,13 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.status_code' => '200',
                         'integration.name' => 'cakephp',
                         'component' => 'cakephp',
+                    ])->withChildren([
+                        SpanAssertion::build(
+                            'Controller.invokeAction',
+                            'cakephp_test_app',
+                            'web',
+                            'Controller.invokeAction'
+                        ),
                     ]),
                 ],
                 'A simple GET request with a view' => [
@@ -69,16 +76,23 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.status_code' => '200',
                         'integration.name' => 'cakephp',
                         'component' => 'cakephp',
-                    ]),
-                    SpanAssertion::build(
-                        'cakephp.view',
-                        'cakephp_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'SimpleView/index.ctp'
-                    )->withExactTags([
-                        'cakephp.view' => 'SimpleView/index.ctp',
-                        'integration.name' => 'cakephp',
-                        'component' => 'cakephp',
+                    ])->withChildren([
+                        SpanAssertion::build(
+                            'Controller.invokeAction',
+                            'cakephp_test_app',
+                            'web',
+                            'Controller.invokeAction'
+                        ),
+                        SpanAssertion::build(
+                            'cakephp.view',
+                            'cakephp_test_app',
+                            'web',
+                            'SimpleView/index.ctp'
+                        )->withExactTags([
+                            'cakephp.view' => 'SimpleView/index.ctp',
+                            'integration.name' => 'cakephp',
+                            'component' => 'cakephp',
+                        ]),
                     ]),
                 ],
                 'A GET request with an exception' => [
@@ -98,16 +112,28 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'component' => 'cakephp',
                     ])->withExistingTagsNames([
                         'sfx.error.stack'
-                    ])->setError(null, 'Foo error'),
-                    SpanAssertion::build(
-                        'cakephp.view',
-                        'cakephp_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'Errors/index.ctp'
-                    )->withExactTags([
-                        'cakephp.view' => 'Errors/index.ctp',
-                        'integration.name' => 'cakephp',
-                        'component' => 'cakephp',
+                    ])->setError(
+                        null,
+                        'Foo error'
+                    )->withChildren([
+                        SpanAssertion::build(
+                            'Controller.invokeAction',
+                            'cakephp_test_app',
+                            'web',
+                            'Controller.invokeAction'
+                        )->withExistingTagsNames([
+                            'sfx.error.stack'
+                        ])->setError(null, 'Foo error'),
+                        SpanAssertion::build(
+                            'cakephp.view',
+                            'cakephp_test_app',
+                            'web',
+                            'Errors/index.ctp'
+                        )->withExactTags([
+                            'cakephp.view' => 'Errors/index.ctp',
+                            'integration.name' => 'cakephp',
+                            'component' => 'cakephp',
+                        ]),
                     ]),
                 ],
             ]

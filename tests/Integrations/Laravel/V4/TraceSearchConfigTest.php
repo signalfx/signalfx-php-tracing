@@ -2,11 +2,11 @@
 
 namespace DDTrace\Tests\Integrations\Laravel\V4;
 
-use DDTrace\Tests\Common\SpanAssertion;
+use  DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 
-final class TraceSearchConfigTest extends WebFrameworkTestCase
+class TraceSearchConfigTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
@@ -30,8 +30,7 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             $this->call(GetSpec::create('Testing trace analytics config metric', '/simple'));
         });
 
-        $this->assertExpectedSpans(
-            $this,
+        $this->assertFlameGraph(
             $traces,
             [
                 SpanAssertion::build(
@@ -51,12 +50,34 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                     ->withExactMetrics([
                         '_dd1.sr.eausr' => 0.3,
                         '_sampling_priority_v1' => 1,
+                    ])
+                    ->withChildren([
+                        SpanAssertion::exists('laravel.application.handle')
+                            ->withChildren([
+                                SpanAssertion::build('laravel.action', 'laravel', 'web', 'simple')
+                                    ->withExactTags([
+                                    ]),
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
+                            ]),
+                        SpanAssertion::exists(
+                            'laravel.provider.load',
+                            'Illuminate\Foundation\ProviderRepository::load'
+                        )->withChildren([
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                            SpanAssertion::exists('laravel.event.handle'),
+                        ]),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
                     ]),
-                SpanAssertion::exists('laravel.event.handle'),
-                SpanAssertion::exists('laravel.event.handle'),
-                SpanAssertion::exists('laravel.event.handle'),
-                SpanAssertion::exists('laravel.action'),
-                SpanAssertion::exists('laravel.event.handle'),
             ]
         );
     }

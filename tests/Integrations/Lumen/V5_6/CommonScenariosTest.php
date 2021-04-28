@@ -3,11 +3,11 @@
 namespace DDTrace\Tests\Integrations\Lumen\V5_6;
 
 use DDTrace\Tests\Common\SpanAssertion;
-use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
+use DDTrace\Tests\Integrations\Lumen\V5_2\CommonScenariosTest as V5_2_CommonScenariosTest;
 
-final class CommonScenariosTest extends WebFrameworkTestCase
+class CommonScenariosTest extends V5_2_CommonScenariosTest
 {
     protected static function getAppIndexScript()
     {
@@ -33,7 +33,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertExpectedSpans($this, $traces, $spanExpectations);
+        $this->assertFlameGraph($traces, $spanExpectations);
     }
 
     public function provideSpecs()
@@ -54,6 +54,13 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.status_code' => '200',
                         'integration.name' => 'lumen',
                         'component' => 'lumen',
+                    ])->withChildren([
+                        SpanAssertion::build(
+                            'Laravel\Lumen\Application.handleFoundRoute',
+                            'lumen_test_app',
+                            'web',
+                            'Laravel\Lumen\Application.handleFoundRoute'
+                        )
                     ]),
                 ],
                 'A simple GET request with a view' => [
@@ -69,15 +76,27 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.status_code' => '200',
                         'integration.name' => 'lumen',
                         'component' => 'lumen',
-                    ]),
-                    SpanAssertion::build(
-                        'lumen.view',
-                        'lumen_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
-                    )->withExactTags([
-                        'integration.name' => 'lumen',
-                        'component' => 'lumen',
+                    ])->withChildren([
+                        SpanAssertion::build(
+                            'Laravel\Lumen\Application.handleFoundRoute',
+                            'lumen_test_app',
+                            'web',
+                            'Laravel\Lumen\Application.handleFoundRoute'
+                        )->withChildren([
+                            SpanAssertion::build(
+                                'laravel.view.render',
+                                'lumen_test_app',
+                                'web',
+                                'simple_view'
+                            )->withExactTags([])->withChildren([
+                                SpanAssertion::build(
+                                    'lumen.view',
+                                    'lumen_test_app',
+                                    'web',
+                                    '*/resources/views/simple_view.blade.php'
+                                )->withExactTags([]),
+                            ]),
+                        ]),
                     ]),
                 ],
                 'A GET request with an exception' => [
@@ -94,6 +113,25 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'integration.name' => 'lumen',
                         'component' => 'lumen',
                     ])->setError(),
+                    ])->withExistingTagsNames([
+                        'sfx.error.stack',
+                    ])->setError('Exception', 'Controller error')
+                    ->withChildren([
+                        SpanAssertion::build(
+                            'Laravel\Lumen\Application.handleFoundRoute',
+                            'lumen_test_app',
+                            'web',
+                            'Laravel\Lumen\Application.handleFoundRoute'
+                        )->withExistingTagsNames([
+                            'error.stack',
+                        ])->setError('Exception', 'Controller error'),
+                        SpanAssertion::build(
+                            'Laravel\Lumen\Application.sendExceptionToHandler',
+                            'lumen_test_app',
+                            'web',
+                            'Laravel\Lumen\Application.sendExceptionToHandler'
+                        ),
+                    ]),
                 ],
             ]
         );

@@ -3,6 +3,7 @@
 namespace DDTrace\Tests\Common;
 
 use DDTrace\Tag;
+use DDTrace\Util\Versions;
 
 final class SpanAssertion
 {
@@ -14,6 +15,8 @@ final class SpanAssertion
     private $exactTags = SpanAssertion::NOT_TESTED;
     /** @var string[] Tags the MUST be present but with any value */
     private $existingTags = ['system.pid'];
+    /** @var string[] Ignore any tags that match these regexp patterns */
+    private $skipTagPatterns = [];
     /** @var array Exact metrics set on the span */
     private $exactMetrics = SpanAssertion::NOT_TESTED;
     private $service = SpanAssertion::NOT_TESTED;
@@ -21,6 +24,12 @@ final class SpanAssertion
     private $resource = SpanAssertion::NOT_TESTED;
     private $onlyCheckExistence = false;
     private $isTraceAnalyticsCandidate = false;
+    /** @var SpanAssertion[] */
+    private $children = [];
+
+    private $toBeSkipped = false;
+
+    private $statusCode = SpanAssertion::NOT_TESTED;
 
     /**
      * @param string $name
@@ -54,7 +63,7 @@ final class SpanAssertion
      * @param array $exactTags
      * @param null $parent
      * @param bool $error
-     * @param array $extactMetrics
+     * @param array|string $extactMetrics
      * @return SpanAssertion
      */
     public static function build(
@@ -65,7 +74,7 @@ final class SpanAssertion
         $exactTags = [],
         $parent = null,
         $error = false,
-        $extactMetrics = []
+        $extactMetrics = SpanAssertion::NOT_TESTED
     ) {
         return SpanAssertion::forOperation($name, $error)
             ->service($service)
@@ -90,12 +99,16 @@ final class SpanAssertion
     /**
      * @param string|null $errorType The expected sfx.error.kind
      * @param string|null $errorMessage The expected sfx.error.message
+     * @param bool $exceptionThrown If we would expect sfx.error.stack
      * @return $this
      */
-    public function setError($errorType = null, $errorMessage = null)
+    public function setError($errorType = null, $errorMessage = null, $exceptionThrown = false)
     {
         $this->hasError = true;
-        if (isset($this->exactTags[Tag::ERROR_KIND])) {
+        if (!is_array($this->exactTags)) {
+            $this->exactTags = [];
+        }
+        if (isset($this->exactTags[Tag::ERROR_TYPE])) {
             return $this;
         }
         if (null !== $errorType) {
@@ -106,16 +119,35 @@ final class SpanAssertion
         if (null !== $errorMessage) {
             $this->exactTags[Tag::ERROR_MSG] = $errorMessage;
         }
+        if ($exceptionThrown) {
+            $this->existingTags[] = Tag::ERROR_STACK;
+        }
         return $this;
     }
 
     /**
-     * @param array $tags
+     * @param SpanAssertion|SpanAssertion[] $children
      * @return $this
      */
-    public function withExactTags(array $tags)
+    public function withChildren($children)
     {
-        if (is_array($this->exactTags)) {
+        $toBeAdded = is_array($children) ? $children : [$children];
+        $this->children = array_merge(
+            $this->children,
+            array_values(array_filter($toBeAdded, function (SpanAssertion $assertion) {
+                return !$assertion->isToBeSkipped();
+            }))
+        );
+        return $this;
+    }
+
+    /**
+     * @param array|string $tags
+     * @return $this
+     */
+    public function withExactTags($tags)
+    {
+        if (is_array($this->exactTags) && is_array($tags)) {
             $this->exactTags = array_merge($this->exactTags, $tags);
         } else {
             $this->exactTags = $tags;
@@ -124,10 +156,10 @@ final class SpanAssertion
     }
 
     /**
-     * @param array $metrics
+     * @param array|string $metrics
      * @return $this
      */
-    public function withExactMetrics(array $metrics)
+    public function withExactMetrics($metrics)
     {
         $this->exactMetrics = $metrics;
         return $this;
@@ -142,6 +174,21 @@ final class SpanAssertion
     {
         $this->existingTags = $merge ? array_merge($tagNames, $this->existingTags) : $tagNames;
         return $this;
+    }
+
+    /**
+     * @param string $pattern regular expression
+     * @return $this
+     */
+    public function skipTagsLike($pattern)
+    {
+        $this->skipTagPatterns[] = $pattern;
+        return $this;
+    }
+
+    public function getSkippedTagPatterns()
+    {
+        return $this->skipTagPatterns;
     }
 
     /**
@@ -183,6 +230,14 @@ final class SpanAssertion
     }
 
     /**
+     * @return SpanAssertion[]
+     */
+    public function getChildren()
+    {
+        return $this->children;
+    }
+
+    /**
      * @return bool
      */
     public function hasError()
@@ -191,7 +246,7 @@ final class SpanAssertion
     }
 
     /**
-     * @return string
+     * @return string[]
      */
     public function getExactTags()
     {
@@ -210,6 +265,14 @@ final class SpanAssertion
             });
         }
         return $this->existingTags;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode()
+    {
+        return $this->statusCode;
     }
 
     /**
@@ -269,14 +332,58 @@ final class SpanAssertion
         return $this->exactMetrics;
     }
 
-    /**
-     * @return array
-     */
-    public function getNotTestedMetricNames()
+    public function __toString()
     {
-        return [
-            '_sampling_priority_v1',
-            '_dd1.sr.eausr',
-        ];
+        return sprintf(
+            "{name:'%s' resource:'%s'}",
+            $this->getOperationName(),
+            $this->getResource()
+        );
+    }
+
+    /**
+     * @param $condition
+     * @return $this
+     */
+    public function skipIf($condition)
+    {
+        $this->toBeSkipped = (bool)$condition;
+        return $this;
+    }
+
+    /**
+     * @param $condition
+     * @return $this
+     */
+    public function onlyIf($condition)
+    {
+        return $this->skipIf(!$condition);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isToBeSkipped()
+    {
+        return $this->toBeSkipped;
+    }
+
+    /**
+     * Executes a callback only if the php version does not match the provided one.
+     * Version can be provided in the form: '5' -> all 5, '7.1' -> all 7.1.*, '7.1.2' -> only 7.1.2
+     * The callback will receive only one argument, which is the current assertion itself.
+     *
+     * @param string $version
+     * @param Callable $callback
+     * @return $this
+     */
+    public function ifPhpVersionNotMatch($version, $callback)
+    {
+        if (Versions::phpVersionMatches($version)) {
+            return $this;
+        }
+
+        $callback($this);
+        return $this;
     }
 }

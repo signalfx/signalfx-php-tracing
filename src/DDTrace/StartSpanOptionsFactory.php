@@ -20,10 +20,10 @@ class StartSpanOptionsFactory
      */
     public static function createForWebRequest(TracerInterface $tracer, array $options = [], array $headers = [])
     {
-        $globalConfiguration = Configuration::get();
-
-        if ($globalConfiguration->isDistributedTracingEnabled()
-                && $spanContext = $tracer->extract(Format::HTTP_HEADERS, $headers)) {
+        if (
+            \ddtrace_config_distributed_tracing_enabled()
+            && $spanContext = $tracer->extract(Format::HTTP_HEADERS, $headers)
+        ) {
             $options[Reference::CHILD_OF] = $spanContext;
         }
 

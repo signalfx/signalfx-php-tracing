@@ -7,7 +7,7 @@
     beStrictAboutResourceUsageDuringSmallTests="true"
     beStrictAboutTestsThatDoNotTestAnything="true"
     beStrictAboutTodoAnnotatedTests="true"
-    bootstrap="tests/bootstrap.php"
+    bootstrap="./tests/api/bootstrap.php"
     colors="true"
     columns="max"
     verbose="true"

@@ -3,9 +3,9 @@
 namespace DDTrace\Tests\Integrations\CLI\Laravel\V5_8;
 
 use DDTrace\Tests\Common\SpanAssertion;
-use DDTrace\Tests\Integrations\CLI\CLITestCase;
+use DDTrace\Tests\Common\CLITestCase;
 
-final class CommonScenariosTest extends CLITestCase
+class CommonScenariosTest extends CLITestCase
 {
     protected function getScriptLocation()
     {
@@ -23,7 +23,7 @@ final class CommonScenariosTest extends CLITestCase
     {
         $traces = $this->getTracesFromCommand();
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan',
                 'unnamed-php-service',
@@ -32,7 +32,12 @@ final class CommonScenariosTest extends CLITestCase
             )->withExactTags([
                 'integration.name' => 'laravel',
                 'component' => 'laravel'
-            ])
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ]),
         ]);
     }
 
@@ -40,7 +45,7 @@ final class CommonScenariosTest extends CLITestCase
     {
         $traces = $this->getTracesFromCommand('route:list');
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan route:list',
                 'unnamed-php-service',
@@ -49,7 +54,12 @@ final class CommonScenariosTest extends CLITestCase
             )->withExactTags([
                 'integration.name' => 'laravel',
                 'component' => 'laravel'
-            ])
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ]),
         ]);
     }
 
@@ -57,7 +67,7 @@ final class CommonScenariosTest extends CLITestCase
     {
         $traces = $this->getTracesFromCommand('foo:error');
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan foo:error',
                 'unnamed-php-service',
@@ -69,7 +79,12 @@ final class CommonScenariosTest extends CLITestCase
             ])->withExistingTagsNames([
                 'sfx.error.message',
                 'sfx.error.stack'
-            ])->setError()
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ])->setError(),
         ]);
     }
 }
