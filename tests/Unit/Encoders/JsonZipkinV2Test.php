@@ -37,8 +37,11 @@ final class JsonZipkinV2Test extends BaseTestCase
 
     public function testEncodeTracesSuccess()
     {
+        $context = SpanContext::createAsRoot();
+        $traceId = $context->getTraceId();
+        $parentId = $context->getSpanId();
         $expectedPayload = <<<JSON
-[{"traceId":"160e7072ff7bd5f1","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"160e7072ff7bd5f2",
+[{"traceId":"$traceId","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"$parentId",
 JSON
             .   <<<JSON
 "tags":{"component":"cli"},"kind":"CLIENT",
@@ -47,10 +50,6 @@ JSON
 "localEndpoint":{"serviceName":"unnamed-php-service"}}]
 JSON;
 
-        $context = new SpanContext(
-            HexConversion::idToHex('1589331357723252209'),
-            HexConversion::idToHex('1589331357723252210')
-        );
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
 
@@ -74,7 +73,7 @@ JSON;
 
         $expectedPayload = '[]';
 
-        $context = new SpanContext('160e7072ff7bd5f1', '160e7072ff7bd5f2');
+        $context = SpanContext::createAsRoot();
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         // this will generate a malformed UTF-8 string
         $span->setTag('invalid', hex2bin('37f2bef0ab085308'));
