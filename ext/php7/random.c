@@ -10,7 +10,7 @@
 #include "env_config.h"
 #include "mt19937/mt19937-64.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 void ddtrace_seed_prng(TSRMLS_D) {
     if (get_dd_trace_debug_prng_seed() > 0) {

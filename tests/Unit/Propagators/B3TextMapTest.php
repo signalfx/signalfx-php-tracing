@@ -8,9 +8,9 @@ use DDTrace\Tests\DebugTransport;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Util\HexConversion;
-use PHPUnit\Framework;
+use DDTrace\Tests\Common\BaseTestCase;
 
-final class B3TextMapTest extends Framework\TestCase
+final class B3TextMapTest extends BaseTestCase
 {
     const BAGGAGE_ITEM_KEY = 'test_key';
     const BAGGAGE_ITEM_VALUE = 'test_value';
@@ -26,9 +26,9 @@ final class B3TextMapTest extends Framework\TestCase
      */
     private $tracer;
 
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
         $this->tracer = new Tracer(new DebugTransport());
         GlobalTracer::set($this->tracer);
     }

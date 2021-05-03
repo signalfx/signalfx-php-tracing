@@ -42,9 +42,7 @@ EOD;
         putenv('SIGNALFX_TRACE_DEBUG');
         putenv('SIGNALFX_TRACING_ENABLED');
         putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
-        putenv('ddtrace_app_name');
         putenv('SIGNALFX_ENV');
-        putenv('SIGNALFX_SAMPLING_RATE');
         putenv('SIGNALFX_SERVICE_MAPPING');
         putenv('SIGNALFX_SERVICE');
         putenv('SIGNALFX_TAGS');
@@ -65,7 +63,7 @@ EOD;
 
     public function testTracerDisabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_trace_enabled());
     }
 
@@ -117,7 +115,7 @@ EOD;
 
     public function testIntegrationsDisabledIfGlobalDisabledDeprecatedEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_INTEGRATIONS_DISABLED=pdo', 'SIGNALFX_TRACE_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_INTEGRATIONS_DISABLED=pdo', 'SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('mysqli'));
     }
@@ -230,13 +228,13 @@ EOD;
     public function testEndpointURLTakesPrecedence()
     {
         $this->putEnvAndReloadConfig(['SIGNALFX_ENDPOINT_URL=https://ingest.signalfx.com/asdf']);
-        $this->assertSame("https://ingest.signalfx.com/asdf", Configuration::get()->getEndpointURL());
+        $this->assertSame("https://ingest.signalfx.com/asdf", \sfx_trace_config_endpoint_url());
     }
 
     public function testEndpointURLMadeFromDefaultParts()
     {
         $this->putEnvAndReloadConfig(['SIGNALFX_ENDPOINT_URL']);
-        $this->assertSame("http://localhost:9080/v1/trace", Configuration::get()->getEndpointURL());
+        $this->assertSame("http://localhost:9080/v1/trace", \sfx_trace_config_endpoint_url());
     }
 
     public function testEndpointURLMadeFromOverriddenParts()
@@ -247,7 +245,7 @@ EOD;
           'SIGNALFX_ENDPOINT_PORT=500',
           'SIGNALFX_ENDPOINT_PATH=/asdf',
         ]);
-        $this->assertSame("https://example.com:500/asdf", Configuration::get()->getEndpointURL());
+        $this->assertSame("https://example.com:500/asdf", \sfx_trace_config_endpoint_url());
     }
 
     public function testServiceName()
@@ -257,7 +255,7 @@ EOD;
         $this->assertSame('__default__', \ddtrace_config_app_name('__default__'));
 
         $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME=my_app']);
-        $this->assertSame('my_app', Configuration::get()->appName('my_app'));
+        $this->assertSame('my_app', \ddtrace_config_app_name());
     }
 
     public function testServiceNameViaDDServiceWinsOverDDServiceName()
@@ -279,7 +277,7 @@ EOD;
             'SIGNALFX_TRACE_APP_NAME=wrong_app',
             'ddtrace_app_name=wrong_app',
         ]);
-        $this->assertSame('my_app', \ddtrace_config_app_name('my_app'));
+        $this->assertSame('my_app', \ddtrace_config_app_name());
     }
 
     public function testAnalyticsDisabledByDefault()
@@ -627,14 +625,12 @@ EOD;
 
     public function testRecordedValueMaxLength()
     {
-        $this->assertSame(1200, Configuration::get()->getMaxAttributeLength());
+        $this->assertSame(1200, sfx_trace_config_max_attribute_length());
 
-        Configuration::clear();
-        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=strval');
-        $this->assertSame(1200, Configuration::get()->getMaxAttributeLength());
+        $this->putEnvAndReloadConfig(['SIGNALFX_RECORDED_VALUE_MAX_LENGTH=strval']);
+        $this->assertSame(1200, sfx_trace_config_max_attribute_length());
 
-        Configuration::clear();
-        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=10');
-        $this->assertSame(10, Configuration::get()->getMaxAttributeLength());
+        $this->putEnvAndReloadConfig(['SIGNALFX_RECORDED_VALUE_MAX_LENGTH=10']);
+        $this->assertSame(10, sfx_trace_config_max_attribute_length());
     }
 }

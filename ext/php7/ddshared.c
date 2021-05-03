@@ -4,7 +4,7 @@
 #include "ddtrace.h"
 #include "logging.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static char dd_container_id[DATADOG_PHP_CONTAINER_ID_MAX_LEN + 1];
 

@@ -67,6 +67,8 @@
             <file name="ext/vendor/mpack/mpack.h" role="src" />
             <file name="ext/vendor/mt19937/mt19937-64.c" role="src" />
             <file name="ext/vendor/mt19937/mt19937-64.h" role="src" />
+            <file name="ext/vendor/hex_utils.c" role="src" />
+            <file name="ext/vendor/hex_utils.h" role="src" />
             <file name="m4/ax_execinfo.m4" role="src" />
             <file name="m4/polyfill.m4" role="src" />
             <!-- PHP 5.x -->

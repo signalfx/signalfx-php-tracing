@@ -46,7 +46,7 @@ void ddtrace_php_get_configuration(zval *return_value, zval *zenv_name) {
     }
 }
 
-#define ID_TO_ENV_PREFIX "DD_"
+#define ID_TO_ENV_PREFIX "SIGNALFX_"
 
 size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length) {
     if (id_length == 0) {

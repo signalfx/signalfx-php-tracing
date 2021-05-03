@@ -117,9 +117,6 @@ abstract class Integration
      */
     public static function shouldLoad($name)
     {
-        if (!Configuration::get()->isIntegrationEnabled($name)) {
-            return false;
-        }
         if (!extension_loaded('signalfx_tracing')) {
             trigger_error('signalfx_tracing extension required to load integration.', E_USER_WARNING);
             return false;

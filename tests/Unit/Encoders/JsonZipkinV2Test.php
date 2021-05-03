@@ -7,7 +7,7 @@ use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
 use DDTrace\Tests\DebugTransport;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Type;
@@ -21,17 +21,17 @@ final class JsonZipkinV2Test extends BaseTestCase
      */
     private $tracer;
 
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
         putenv('SIGNALFX_AUTOFINISH_SPANS=true');
         $this->tracer = new Tracer(new DebugTransport());
         GlobalTracer::set($this->tracer);
     }
 
-    protected function tearDown()
+    protected function ddTearDown()
     {
-        parent::tearDown();
+        parent::ddTearDown();
         putenv('SIGNALFX_AUTOFINISH_SPANS=');
     }
 

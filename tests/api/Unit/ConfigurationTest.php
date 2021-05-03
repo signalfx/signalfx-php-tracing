@@ -31,24 +31,34 @@ EOD;
 
     private function cleanUpEnvs()
     {
-        putenv('DD_DISTRIBUTED_TRACING');
-        putenv('DD_ENV');
-        putenv('DD_INTEGRATIONS_DISABLED');
-        putenv('DD_PRIORITY_SAMPLING');
-        putenv('DD_SAMPLING_RATE');
-        putenv('DD_SERVICE_MAPPING');
-        putenv('DD_SERVICE_NAME');
-        putenv('DD_SERVICE');
-        putenv('DD_TAGS');
-        putenv('DD_TRACE_ANALYTICS_ENABLED');
-        putenv('DD_TRACE_DEBUG');
-        putenv('DD_TRACE_ENABLED');
-        putenv('DD_TRACE_GLOBAL_TAGS');
-        putenv('DD_TRACE_SAMPLE_RATE');
-        putenv('DD_TRACE_SAMPLING_RULES');
-        putenv('DD_TRACE_SLIM_ENABLED');
-        putenv('DD_TRACE_PDO_ENABLED');
-        putenv('DD_VERSION');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
+        putenv('SIGNALFX_ENDPOINT_HOST');
+        putenv('SIGNALFX_ENDPOINT_HTTPS');
+        putenv('SIGNALFX_ENDPOINT_PATH');
+        putenv('SIGNALFX_ENDPOINT_PORT');
+        putenv('SIGNALFX_ENDPOINT_URL');
+        putenv('SIGNALFX_INTEGRATIONS_DISABLED');
+        putenv('SIGNALFX_PRIORITY_SAMPLING');
+        putenv('SIGNALFX_SERVICE_NAME');
+        putenv('SIGNALFX_TRACE_APP_NAME');
+        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
+        putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('SIGNALFX_TRACE_ENABLED');
+        putenv('SIGNALFX_TRACING_ENABLED');
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
+
+        putenv('SIGNALFX_ENV');
+        putenv('SIGNALFX_SAMPLING_RATE');
+        putenv('SIGNALFX_SERVICE_MAPPING');
+        putenv('SIGNALFX_SERVICE');
+        putenv('SIGNALFX_TAGS');
+        putenv('SIGNALFX_TRACE_ENABLED');
+        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+        putenv('SIGNALFX_TRACE_SAMPLE_RATE');
+        putenv('SIGNALFX_TRACE_SAMPLING_RULES');
+        putenv('SIGNALFX_TRACE_SLIM_ENABLED');
+        putenv('SIGNALFX_TRACE_PDO_ENABLED');
+        putenv('SIGNALFX_VERSION');
     }
 
     public function testTracerEnabledByDefault()

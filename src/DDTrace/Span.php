@@ -51,7 +51,7 @@ final class Span extends DataSpan
         $this->service = (string)$service;
         $this->resource = null === $resource ? null : (string)$resource;
         $this->startTime = $startTime ?: Time::now();
-        $this->maxAttributeLength = Configuration::get()->getMaxAttributeLength();
+        $this->maxAttributeLength = \sfx_trace_config_max_attribute_length();
     }
 
     /**

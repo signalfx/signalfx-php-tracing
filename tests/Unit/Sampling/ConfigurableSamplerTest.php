@@ -5,7 +5,7 @@ namespace DDTrace\Tests\Unit\Sampling;
 use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Span;
 use DDTrace\SpanContext;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Util\HexConversion;
 
 final class ConfigurableSamplerTest extends BaseTestCase
@@ -15,14 +15,14 @@ final class ConfigurableSamplerTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        \putenv('DD_TRACE_SAMPLING_RULES');
-        \putenv('DD_TRACE_SAMPLE_RATE');
+        \putenv('SIGNALFX_TRACE_SAMPLING_RULES');
+        \putenv('SIGNALFX_TRACE_SAMPLE_RATE');
     }
 
     protected function ddTearDown()
     {
-        \putenv('DD_TRACE_SAMPLING_RULES');
-        \putenv('DD_TRACE_SAMPLE_RATE');
+        \putenv('SIGNALFX_TRACE_SAMPLING_RULES');
+        \putenv('SIGNALFX_TRACE_SAMPLE_RATE');
         parent::ddTearDown();
     }
 
@@ -34,7 +34,7 @@ final class ConfigurableSamplerTest extends BaseTestCase
      */
     public function testSampleNoSamplingRules($samplingRate, $lower, $upper)
     {
-        putenv("DD_TRACE_SAMPLE_RATE=$samplingRate");
+        putenv("SIGNALFX_TRACE_SAMPLE_RATE=$samplingRate");
         $sampler = new ConfigurableSampler();
 
         $output = 0;
@@ -78,8 +78,8 @@ final class ConfigurableSamplerTest extends BaseTestCase
     public function testSampleWithSamplingRules($samplingRules, $expected)
     {
         $delta = 0.05;
-        putenv("DD_TRACE_SAMPLE_RATE=0.3");
-        putenv("DD_TRACE_SAMPLING_RULES=$samplingRules");
+        putenv("SIGNALFX_TRACE_SAMPLE_RATE=0.3");
+        putenv("SIGNALFX_TRACE_SAMPLING_RULES=$samplingRules");
 
         $sampler = new ConfigurableSampler();
 
@@ -135,7 +135,7 @@ final class ConfigurableSamplerTest extends BaseTestCase
 
     public function testMetricIsAddedToCommunicateSampleRateUsed()
     {
-        putenv('DD_TRACE_SAMPLING_RULES=[{"sample_rate":0.7}]');
+        putenv('SIGNALFX_TRACE_SAMPLING_RULES=[{"sample_rate":0.7}]');
         $sampler = new ConfigurableSampler();
 
         $context = new SpanContext('', dd_trace_generate_id());

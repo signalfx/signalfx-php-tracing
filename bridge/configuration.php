@@ -165,7 +165,7 @@ function _ddtrace_config_associative_array($value, $default)
  */
 function ddtrace_config_env()
 {
-    return \_ddtrace_config_string(\getenv('DD_ENV'), null);
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENV'), null);
 }
 
 /**
@@ -175,7 +175,55 @@ function ddtrace_config_env()
  */
 function ddtrace_config_service_version()
 {
-    return \_ddtrace_config_string(\getenv('DD_VERSION'), null);
+    return \_ddtrace_config_string(\getenv('SIGNALFX_VERSION'), null);
+}
+
+function sfx_trace_config_endpoint_url()
+{
+	  $endpoint = \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_URL'), '');
+    if ($endpoint === '') {
+        $parts = [
+          "scheme" => \sfx_trace_config_endpoint_https() === true ? "https" : "http",
+          "host" => \sfx_trace_config_endpoint_host(),
+          "port" => \sfx_trace_config_endpoint_port(),
+          "path" => \sfx_trace_config_endpoint_path(),
+        ];
+    } else {
+        $parts = parse_url($endpoint);
+    }
+    $portPart = "";
+    if (isset($parts['port']) &&
+        (($parts['scheme'] === "https" && $parts['port'] !== "443") ||
+            ($parts['scheme'] === "http" && $parts['port'] !== "80"))) {
+        $portPart = ":" . $parts['port'];
+    }
+
+    return "${parts['scheme']}://${parts['host']}${portPart}${parts['path']}";
+}
+
+function sfx_trace_config_endpoint_host()
+{
+	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_HOST'), 'localhost');
+}
+
+function sfx_trace_config_endpoint_port()
+{
+	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PORT'), '9080');
+}
+
+function sfx_trace_config_endpoint_path()
+{
+	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PATH'), '/v1/trace');
+}
+
+function sfx_trace_config_endpoint_https()
+{
+	return \_ddtrace_config_bool(\getenv('SIGNALFX_ENDPOINT_HTTPS'), false);
+}
+
+function sfx_trace_config_access_token()
+{
+	return \_ddtrace_config_string(\getenv('SIGNALFX_ACCESS_TOKEN'), '');
 }
 
 /**
@@ -185,7 +233,7 @@ function ddtrace_config_service_version()
  */
 function ddtrace_config_debug_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_DEBUG'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_DEBUG'), false);
 }
 
 /**
@@ -195,7 +243,7 @@ function ddtrace_config_debug_enabled()
  */
 function ddtrace_config_analytics_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_ANALYTICS_ENABLED'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_ANALYTICS_ENABLED'), false);
 }
 
 /**
@@ -206,7 +254,7 @@ function ddtrace_config_analytics_enabled()
 function ddtrace_config_priority_sampling_enabled()
 {
     return \ddtrace_config_distributed_tracing_enabled()
-        && \_ddtrace_config_bool(\getenv('DD_PRIORITY_SAMPLING'), true);
+        && \_ddtrace_config_bool(\getenv('SIGNALFX_PRIORITY_SAMPLING'), true);
 }
 
 /**
@@ -216,7 +264,7 @@ function ddtrace_config_priority_sampling_enabled()
  */
 function ddtrace_config_hostname_reporting_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_REPORT_HOSTNAME'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_REPORT_HOSTNAME'), false);
 }
 
 /**
@@ -226,7 +274,7 @@ function ddtrace_config_hostname_reporting_enabled()
  */
 function ddtrace_config_url_resource_name_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED'), true);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_URL_AS_RESOURCE_NAMES_ENABLED'), true);
 }
 
 /**
@@ -234,7 +282,7 @@ function ddtrace_config_url_resource_name_enabled()
  */
 function ddtrace_config_path_fragment_regex()
 {
-    return \_ddtrace_config_indexed_array(\getenv('DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX'), []);
+    return \_ddtrace_config_indexed_array(\getenv('SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX'), []);
 }
 
 /**
@@ -242,7 +290,7 @@ function ddtrace_config_path_fragment_regex()
  */
 function ddtrace_config_path_mapping_incoming()
 {
-    return \_ddtrace_config_indexed_array(\getenv('DD_TRACE_RESOURCE_URI_MAPPING_INCOMING'), []);
+    return \_ddtrace_config_indexed_array(\getenv('SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING'), []);
 }
 
 /**
@@ -250,7 +298,7 @@ function ddtrace_config_path_mapping_incoming()
  */
 function ddtrace_config_path_mapping_outgoing()
 {
-    return \_ddtrace_config_indexed_array(\getenv('DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING'), []);
+    return \_ddtrace_config_indexed_array(\getenv('SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING'), []);
 }
 
 /**
@@ -260,7 +308,7 @@ function ddtrace_config_path_mapping_outgoing()
  */
 function ddtrace_config_http_client_split_by_domain_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN'), false);
+    return \_ddtrace_config_bool(\getenv('SIGALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN'), false);
 }
 
 /**
@@ -270,7 +318,7 @@ function ddtrace_config_http_client_split_by_domain_enabled()
  */
 function ddtrace_config_redis_client_split_by_host_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_REDIS_CLIENT_SPLIT_BY_HOST'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_REDIS_CLIENT_SPLIT_BY_HOST'), false);
 }
 
 /**
@@ -284,7 +332,7 @@ function ddtrace_config_redis_client_split_by_host_enabled()
  */
 function ddtrace_config_autofinish_span_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_AUTOFINISH_SPANS'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_AUTOFINISH_SPANS'), false);
 }
 
 /**
@@ -294,8 +342,8 @@ function ddtrace_config_autofinish_span_enabled()
  */
 function ddtrace_config_sampling_rate()
 {
-    $deprecated = \_ddtrace_config_float(\getenv('DD_SAMPLING_RATE'), 1.0, 0.0, 1.0);
-    return \_ddtrace_config_float(\getenv('DD_TRACE_SAMPLE_RATE'), $deprecated, 0.0, 1.0);
+    $deprecated = \_ddtrace_config_float(\getenv('SIGNALFX_SAMPLING_RATE'), 1.0, 0.0, 1.0);
+    return \_ddtrace_config_float(\getenv('SIGNALFX_TRACE_SAMPLE_RATE'), $deprecated, 0.0, 1.0);
 }
 
 /**
@@ -315,7 +363,7 @@ function ddtrace_config_sampling_rate()
  */
 function ddtrace_config_sampling_rules()
 {
-    $json = \_ddtrace_config_json(\getenv('DD_TRACE_SAMPLING_RULES'), []);
+    $json = \_ddtrace_config_json(\getenv('SIGNALFX_TRACE_SAMPLING_RULES'), []);
     $normalized = [];
     // We do a proper parsing here to make sure that once the sampling rules leave this method
     // they are always properly defined.
@@ -340,10 +388,10 @@ function ddtrace_config_sampling_rules()
  */
 function ddtrace_config_global_tags()
 {
-    $rawValue = \getenv('DD_TAGS');
+    $rawValue = \getenv('SIGNALFX_TAGS');
     if (false === $rawValue) {
         // Fallback to legacy env variable name
-        $rawValue = \getenv('DD_TRACE_GLOBAL_TAGS');
+        $rawValue = \getenv('SIGNALFX_TRACE_GLOBAL_TAGS');
     }
     return \_ddtrace_config_associative_array($rawValue, []);
 }
@@ -353,7 +401,7 @@ function ddtrace_config_global_tags()
  */
 function ddtrace_config_service_mapping()
 {
-    return \_ddtrace_config_associative_array(\getenv('DD_SERVICE_MAPPING'), []);
+    return \_ddtrace_config_associative_array(\getenv('SIGNALFX_SERVICE_MAPPING'), []);
 }
 
 /**
@@ -365,6 +413,11 @@ function ddtrace_config_http_headers()
         function ($header) {
             return \strtolower($header);
         },
-        \_ddtrace_config_indexed_array(\getenv('DD_TRACE_HEADER_TAGS'), [])
+        \_ddtrace_config_indexed_array(\getenv('SIGNALFX_TRACE_HEADER_TAGS'), [])
     );
+}
+
+function sfx_trace_config_max_attribute_length()
+{
+	return (int)\_ddtrace_config_float(\getenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH'), 1200);
 }

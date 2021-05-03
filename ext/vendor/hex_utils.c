@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "configuration.h"
-
 /**
  * Converts the input string to an unsigned long long using base and returns string formatted by format string
  * Will return "0" for all input with invalid characters for given base to match dechex() functionality.

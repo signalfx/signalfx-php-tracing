@@ -2,7 +2,6 @@
 
 namespace DDTrace\Encoders;
 
-use DDTrace\Configuration;
 use DDTrace\Contracts\Span;
 use DDTrace\Contracts\Tracer;
 use DDTrace\Encoder;
@@ -27,8 +26,7 @@ final class JsonZipkinV2 implements Encoder
     public function __construct(LoggerInterface $logger = null)
     {
         $this->logger = $logger ?: Logger::get();
-        $config = Configuration::get();
-        $this->serviceName = $config->appName("unnamed-php-service");
+        $this->serviceName = \ddtrace_config_app_name("unnamed-php-service");
     }
 
     /**
@@ -37,6 +35,8 @@ final class JsonZipkinV2 implements Encoder
     public function encodeTraces(Tracer $tracer)
     {
         $traces = $tracer->getTracesAsArray();
+				$s = fopen('/tmp/traceslog', 'w');
+				fwrite($s, print_r($traces, TRUE));
         return '[' . implode(',', array_map(function ($trace) {
                 return implode(',', array_filter(array_map(function ($span) {
                     return $this->encodeSpan($span);

@@ -12,7 +12,7 @@ PHP_MAJOR_MINOR:=$(shell php -r 'echo PHP_MAJOR_VERSION . PHP_MINOR_VERSION;')
 
 VERSION:=$(shell awk -F\' '/const VERSION/ {print $$2}' < src/DDTrace/Tracer.php)
 
-INI_FILE := /usr/local/etc/php/conf.d/signalfx-tracing.ini
+INI_FILE := $(shell php -i | awk -F"=>" '/Scan this dir for additional .ini files/ {print $$2}')/signalfx-tracing.ini
 
 C_FILES := $(shell find components ext src/dogstatsd zend_abstract_interface -name '*.c' -o -name '*.h' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
 TEST_FILES := $(shell find tests/ext -name '*.php*' -o -name '*.inc' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )

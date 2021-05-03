@@ -139,11 +139,6 @@ class IntegrationsLoader
      */
     public function loadAll()
     {
-        $globalConfig = Configuration::get();
-        if (!$globalConfig->isEnabled()) {
-            return;
-        }
-
         if (!extension_loaded('signalfx_tracing')) {
             trigger_error(
                 'Missing signalfx_tracing extension. To disable tracing set env variable '

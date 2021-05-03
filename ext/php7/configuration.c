@@ -166,7 +166,7 @@ bool ddtrace_config_env_bool(ddtrace_string env_name, bool default_value TSRMLS_
 }
 
 bool ddtrace_config_distributed_tracing_enabled(TSRMLS_D) {
-    ddtrace_string env_name = DDTRACE_STRING_LITERAL("DD_DISTRIBUTED_TRACING");
+    ddtrace_string env_name = DDTRACE_STRING_LITERAL("SIGNALFX_DISTRIBUTED_TRACING");
     return ddtrace_config_env_bool(env_name, true TSRMLS_CC);
 }
 
@@ -202,7 +202,7 @@ bool ddtrace_config_integration_enabled_ex(ddtrace_integration_name integration_
     bool result = DD_INTEGRATION_ENABLED_DEFAULT;
     ddtrace_integration* integration = &ddtrace_integrations[integration_name];
 
-    ddtrace_string env_val = _dd_env_integration_value("DD_TRACE_", integration, "_ENABLED" TSRMLS_CC);
+    ddtrace_string env_val = _dd_env_integration_value("SIGNALFX_TRACE_", integration, "_ENABLED" TSRMLS_CC);
     if (env_val.len) {
         result = ddtrace_config_bool(env_val, result);
         efree(env_val.ptr);
@@ -213,7 +213,7 @@ bool ddtrace_config_integration_enabled_ex(ddtrace_integration_name integration_
     }
 
     // Deprecated as of 0.47.1
-    env_val = ddtrace_string_getenv(ZEND_STRL("DD_INTEGRATIONS_DISABLED") TSRMLS_CC);
+    env_val = ddtrace_string_getenv(ZEND_STRL("SIGNALFX_INTEGRATIONS_DISABLED") TSRMLS_CC);
     if (env_val.len) {
         ddtrace_string tmp;
         tmp.ptr = integration->name_lcase;
@@ -233,7 +233,7 @@ static bool _dd_config_integration_analytics_enabled_ex(ddtrace_integration_name
     ddtrace_integration* integration = &ddtrace_integrations[integration_name];
     ddtrace_string env_val;
 
-    env_val = _dd_env_integration_value("DD_TRACE_", integration, "_ANALYTICS_ENABLED" TSRMLS_CC);
+    env_val = _dd_env_integration_value("SIGNALFX_TRACE_", integration, "_ANALYTICS_ENABLED" TSRMLS_CC);
     if (env_val.len) {
         result = ddtrace_config_bool(env_val, result);
         efree(env_val.ptr);
@@ -244,7 +244,7 @@ static bool _dd_config_integration_analytics_enabled_ex(ddtrace_integration_name
     }
 
     // Deprecated as of 0.47.1
-    env_val = _dd_env_integration_value("DD_", integration, "_ANALYTICS_ENABLED" TSRMLS_CC);
+    env_val = _dd_env_integration_value("SIGNALFX_", integration, "_ANALYTICS_ENABLED" TSRMLS_CC);
     if (env_val.len) {
         result = ddtrace_config_bool(env_val, result);
         efree(env_val.ptr);
@@ -271,7 +271,7 @@ static double _dd_config_integration_analytics_sample_rate_ex(ddtrace_integratio
     ddtrace_integration* integration = &ddtrace_integrations[integration_name];
     ddtrace_string env_val;
 
-    env_val = _dd_env_integration_value("DD_TRACE_", integration, "_ANALYTICS_SAMPLE_RATE" TSRMLS_CC);
+    env_val = _dd_env_integration_value("SIGNALFX_TRACE_", integration, "_ANALYTICS_SAMPLE_RATE" TSRMLS_CC);
     if (env_val.len) {
         result = ddtrace_char_to_double(env_val.ptr, result);
         efree(env_val.ptr);
@@ -282,7 +282,7 @@ static double _dd_config_integration_analytics_sample_rate_ex(ddtrace_integratio
     }
 
     // Deprecated as of 0.47.1
-    env_val = _dd_env_integration_value("DD_", integration, "_ANALYTICS_SAMPLE_RATE" TSRMLS_CC);
+    env_val = _dd_env_integration_value("SIGNALFX_", integration, "_ANALYTICS_SAMPLE_RATE" TSRMLS_CC);
     if (env_val.len) {
         result = ddtrace_char_to_double(env_val.ptr, result);
         efree(env_val.ptr);
@@ -303,6 +303,6 @@ double ddtrace_config_integration_analytics_sample_rate(ddtrace_string integrati
 }
 
 bool ddtrace_config_trace_enabled(TSRMLS_D) {
-    ddtrace_string env_name = DDTRACE_STRING_LITERAL("DD_TRACE_ENABLED");
+    ddtrace_string env_name = DDTRACE_STRING_LITERAL("SIGNALFX_TRACING_ENABLED");
     return ddtrace_config_env_bool(env_name, true TSRMLS_CC);
 }

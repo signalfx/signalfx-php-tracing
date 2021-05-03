@@ -36,12 +36,12 @@ final class Bootstrap
             $tracer = GlobalTracer::get();
             $scopeManager = $tracer->getScopeManager();
             $scopeManager->close();
-            if (!\dd_trace_env_config('DD_TRACE_AUTO_FLUSH_ENABLED')) {
+            if (!\dd_trace_env_config('SIGNALFX_TRACE_AUTO_FLUSH_ENABLED')) {
                 $tracer->flush();
             }
         });
 
-        if (\dd_trace_env_config('DD_TRACE_GENERATE_ROOT_SPAN')) {
+        if (\dd_trace_env_config('SIGNALFX_TRACE_GENERATE_ROOT_SPAN')) {
             self::initRootSpan($tracer);
             register_shutdown_function(function () {
                 /*

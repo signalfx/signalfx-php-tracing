@@ -16,7 +16,7 @@
 #include "mpack/mpack.h"
 #include "span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static int msgpack_write_zval(mpack_writer_t *writer, zval *trace TSRMLS_DC);
 

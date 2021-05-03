@@ -12,6 +12,10 @@ final class HexConversion
 
     public static function hexToInt($hex)
     {
+				$s = fopen('/tmp/hextoint', 'a+');
+				fwrite($s, print_r($hex, TRUE));
+				fwrite($s, "\n");
+
         if (strlen($hex) > 16) {
             throw new \InvalidArgumentException(
                 '\HexConversion::hexToInt() arg must be hexstring with <= 16 characters'

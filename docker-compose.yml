@@ -16,7 +16,7 @@ x-aliases:
         - agent
         - ddagent_integration
         - signalfx_agent_integration
-        - request_replayer
+        - request-replayer
         - elasticsearch2_integration
         - httpbin_integration
         - redis_integration
@@ -186,11 +186,8 @@ services:
     ports:
       - "9080:9080"
 
-  request_replayer:
-    image: php:7.3
-    working_dir: /var/www
-    volumes:
-      - ./tests/request_replayer:/var/www
+  request-replayer:
+    image: datadog/dd-trace-ci:php-request-replayer
     ports:
       - "8766:80"
 

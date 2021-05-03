@@ -220,12 +220,12 @@ static void _dd_check_for_deprecated_integration_envs(HashTable *ht, ddtrace_int
     char new[DDTRACE_LONGEST_INTEGRATION_ENV_LEN + 1];
     size_t new_len;
 
-    old_len = ddtrace_config_integration_env_name(old, "DD_", integration, "_ANALYTICS_ENABLED");
-    new_len = ddtrace_config_integration_env_name(new, "DD_TRACE_", integration, "_ANALYTICS_ENABLED");
+    old_len = ddtrace_config_integration_env_name(old, "SIGNALFX_", integration, "_ANALYTICS_ENABLED");
+    new_len = ddtrace_config_integration_env_name(new, "SIGNALFX_TRACE_", integration, "_ANALYTICS_ENABLED");
     _dd_check_for_deprecated_env(ht, old, old_len, new, new_len);
 
-    old_len = ddtrace_config_integration_env_name(old, "DD_", integration, "_ANALYTICS_SAMPLE_RATE");
-    new_len = ddtrace_config_integration_env_name(new, "DD_TRACE_", integration, "_ANALYTICS_SAMPLE_RATE");
+    old_len = ddtrace_config_integration_env_name(old, "SIGNALFX_", integration, "_ANALYTICS_SAMPLE_RATE");
+    new_len = ddtrace_config_integration_env_name(new, "SIGNALFX_TRACE_", integration, "_ANALYTICS_SAMPLE_RATE");
     _dd_check_for_deprecated_env(ht, old, old_len, new, new_len);
 }
 
@@ -284,18 +284,18 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
                              "with the PHP tracer due to a bug in OPcache: https://bugs.php.net/bug.php?id=79825");
     }
 
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_SERVICE_NAME"), ZEND_STRL("DD_SERVICE"));
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_APP_NAME"), ZEND_STRL("DD_SERVICE"));
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("DD_SERVICE"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_SERVICE_NAME"), ZEND_STRL("SIGNALFX_SERVICE"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_TRACE_APP_NAME"), ZEND_STRL("SIGNALFX_SERVICE"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("SIGNALFX_SERVICE"));
 
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_GLOBAL_TAGS"), ZEND_STRL("DD_TAGS"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_TRACE_GLOBAL_TAGS"), ZEND_STRL("SIGNALFX_TAGS"));
     _dd_check_for_deprecated_env(
-        ht, ZEND_STRL("DD_TRACE_RESOURCE_URI_MAPPING"),
-        ZEND_STRL("DD_TRACE_RESOURCE_URI_MAPPING_INCOMING and DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING"));
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_SAMPLING_RATE"), ZEND_STRL("DD_TRACE_SAMPLE_RATE"));
+        ht, ZEND_STRL("SIGNALFX_TRACE_RESOURCE_URI_MAPPING"),
+        ZEND_STRL("SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING and SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_SAMPLING_RATE"), ZEND_STRL("SIGNALFX_TRACE_SAMPLE_RATE"));
 
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_INTEGRATIONS_DISABLED"),
-                                 ZEND_STRL("DD_TRACE_[INTEGRATION]_ENABLED=false"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_INTEGRATIONS_DISABLED"),
+                                 ZEND_STRL("SIGNALFX_TRACE_[INTEGRATION]_ENABLED=false"));
 
     for (size_t i = 0; i < ddtrace_integrations_len; ++i) {
         _dd_check_for_deprecated_integration_envs(ht, &ddtrace_integrations[i]);
