@@ -100,7 +100,7 @@ void ddtrace_config_shutdown(void);
     BOOL(get_dd_trace_cli_enabled, "SIGNALFX_TRACE_CLI_ENABLED", false)                                             \
     BOOL(get_dd_trace_measure_compile_time, "SIGNALFX_TRACE_MEASURE_COMPILE_TIME", true)                            \
     BOOL(get_dd_trace_debug, "SIGNALFX_TRACE_DEBUG", false)                                                         \
-    BOOL(get_dd_trace_enabled, "SIGNALFX_TRACE_ENABLED", true)                                                      \
+    BOOL(get_dd_trace_enabled, "SIGNALFX_TRACING_ENABLED", true)                                                    \
     CHAR(get_dd_trace_global_tags, "SIGNALFX_TRACE_GLOBAL_TAGS", "")                                                \
     BOOL(get_dd_trace_heath_metrics_enabled, "SIGNALFX_TRACE_HEALTH_METRICS_ENABLED", false)                        \
     DOUBLE(get_dd_trace_heath_metrics_heartbeat_sample_rate, "SIGNALFX_TRACE_HEALTH_METRICS_HEARTBEAT_SAMPLE_RATE", \
