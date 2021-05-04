@@ -43,7 +43,6 @@ EOD;
         putenv('SIGNALFX_TRACE_APP_NAME');
         putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
         putenv('SIGNALFX_TRACE_DEBUG');
-        putenv('SIGNALFX_TRACE_ENABLED');
         putenv('SIGNALFX_TRACING_ENABLED');
         putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
 
@@ -52,7 +51,6 @@ EOD;
         putenv('SIGNALFX_SERVICE_MAPPING');
         putenv('SIGNALFX_SERVICE');
         putenv('SIGNALFX_TAGS');
-        putenv('SIGNALFX_TRACE_ENABLED');
         putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
         putenv('SIGNALFX_TRACE_SAMPLE_RATE');
         putenv('SIGNALFX_TRACE_SAMPLING_RULES');
