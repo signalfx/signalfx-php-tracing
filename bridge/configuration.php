@@ -308,7 +308,7 @@ function ddtrace_config_path_mapping_outgoing()
  */
 function ddtrace_config_http_client_split_by_domain_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('SIGALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN'), false);
 }
 
 /**
