@@ -2,47 +2,6 @@
 
 This file explains why we decided to disable specific PHP language tests. Investigations for tests disabled before this file was created are not present.
 
----
-
-# Categories of tests
-
-## Object/resource ID skips
-
-The following tests are marked as skipped due to the test relying on a hard-coded resource or object ID. All of these IDs change when the PHP tracer is enabled due to the objects/resources created in the `ddtrace.request_init_hook`.
-
-- `ext/sockets/tests/socket_create_pair.phpt`
-- `ext/zip/tests/bug38943.phpt`
-- `ext/zip/tests/bug38943_2.phpt`
-- `Zend/tests/bug80194.phpt`
-
-## Random port selection
-
-Many tests choose a random port to start up a service. Many of these tests have been updated to not used a random port in more recent PHP versions, but we skip these tests in older versions of PHP because they often choose a port that is already in use in CI.
-
-- `ext/sockets/tests/socket_connect_params.phpt` ([Fixed](https://github.com/php/php-src/commit/3e9dac2) in PHP 7.4)
-
-## Fail even with no tracer installed
-
-The following tests fail even when the tracer is not installed.
-
-- `ext/mcrypt/tests/bug67707.phpt` (PHP 7.1 only)
-- `ext/mcrypt/tests/bug72535.phpt` (PHP 7.1 only)
-- `ext/standard/tests/streams/stream_context_tcp_nodelay_fopen.phpt` (PHP 7.1+)
-
-## Deep call stacks (PHP 5)
-
-On PHP 5, certain tests can have intermittently deep call stacks that are deep enough to trigger the warning: `ddtrace has detected a call stack depth of 512`.
-
-- `Zend/tests/bug54268.phpt`
-
----
-
-# Specific tests
-
-## `Zend/tests/object_gc_in_shutdown.phpt`, `Zend/tests/bug81104.phpt`
-
-Tests memory limits, which we exceed due to tracer being loaded.
-
 ## `ext/pcntl/tests/pcntl_unshare_01.phpt`
 
 Disabled on versions: `7.4` (it wasn't there on [7.3-](https://github.com/php/php-src/tree/PHP-7.3/ext/pcntl/tests)).
