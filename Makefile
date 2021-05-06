@@ -70,7 +70,7 @@ install_ini: $(INI_FILE)
 
 install_all: install install_ini
 
-test_c: export DD_TRACE_CLI_ENABLED=1
+test_c: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	set -xe; \
 	export REPORT_EXIT_STATUS=1; \
@@ -78,7 +78,7 @@ test_c: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	export USE_TRACKED_ALLOC=1; \
 	php -n -d 'memory_limit=-1' $$TEST_PHP_SRCDIR/run-tests.php -n -p $$(which php) -d extension=$(SO_FILE) -q --show-all $(TESTS)
 
-test_c_mem: export DD_TRACE_CLI_ENABLED=1
+test_c_mem: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c_mem: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	set -xe; \
 	export REPORT_EXIT_STATUS=1; \
@@ -89,7 +89,7 @@ test_c_mem: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 test_c2php: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	( \
 	set -xe; \
-	export DD_TRACE_CLI_ENABLED=1; \
+	export SIGNALFX_TRACE_CLI_ENABLED=1; \
 	export USE_ZEND_ALLOC=0; \
 	export ZEND_DONT_UNLOAD_MODULES=1; \
 	export USE_TRACKED_ALLOC=1; \
@@ -99,7 +99,7 @@ test_c2php: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 test_with_init_hook_asan: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	( \
 	set -xe; \
-	export DD_TRACE_CLI_ENABLED=1; \
+	export SIGNALFX_TRACE_CLI_ENABLED=1; \
 	export REPORT_EXIT_STATUS=1; \
 	export TEST_PHP_SRCDIR=$(BUILD_DIR); \
 	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/asan-extension-init-hook-test.xml; \
@@ -107,7 +107,7 @@ test_with_init_hook_asan: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	php -n -d 'memory_limit=-1' $$TEST_PHP_SRCDIR/run-tests.php -n -p $$(which php) -d extension=$(SO_FILE) -d ddtrace.request_init_hook=$$(pwd)/bridge/dd_wrap_autoloader.php -q --show-all --asan $(INIT_HOOK_TEST_FILES); \
 	)
 
-test_c_asan: export DD_TRACE_CLI_ENABLED=1
+test_c_asan: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c_asan: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	( \
 	set -xe; \
@@ -240,7 +240,7 @@ cores:
 # TESTS
 ########################################################################################################################
 REQUEST_INIT_HOOK := -d ddtrace.request_init_hook=$(PROJECT_ROOT)/bridge/dd_wrap_autoloader.php
-ENV_OVERRIDE := DD_TRACE_CLI_ENABLED=true
+ENV_OVERRIDE := SIGNALFX_TRACE_CLI_ENABLED=true
 
 ### DDTrace tests ###
 TESTS_ROOT := ./tests
