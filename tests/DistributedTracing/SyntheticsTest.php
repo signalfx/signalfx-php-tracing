@@ -8,6 +8,14 @@ use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 
 class SyntheticsTest extends WebFrameworkTestCase
 {
+    protected function ddSetUp()
+    {
+        parent::ddSetUp();
+        /* Here we are disabling ddtrace for the test harness so that it doesn't
+         * instrument the curl call and alter the x-datadog headers. */
+        \dd_trace_disable_in_request();
+    }
+
     protected static function getAppIndexScript()
     {
         return __DIR__ . '/../Frameworks/Custom/Version_Not_Autoloaded/index.php';
@@ -22,8 +30,9 @@ class SyntheticsTest extends WebFrameworkTestCase
             // Disabling priority sampling will break Synthetic requests
             'DD_PRIORITY_SAMPLING' => 'true',
             // Disabling distributed tracing will break Synthetic requests
-            'DD_DISTRIBUTED_TRACING' => 'true',
+            'SIGNALFX_DISTRIBUTED_TRACING' => 'true',
             'DD_TRACE_NO_AUTOLOADER' => 'true',
+            'DD_TRACE_MEASURE_COMPILE_TIME' => 'false',
         ]);
     }
 
@@ -35,10 +44,8 @@ class SyntheticsTest extends WebFrameworkTestCase
                 'GET',
                 '/index.php',
                 [
-                    'x-datadog-trace-id: 123456',
-                    'x-datadog-parent-id: 0',
-                    'x-datadog-sampling-priority: 1',
-                    'x-datadog-origin: synthetics-browser',
+                    'x-b3-traceid: e457b5a2e4d86bd1',
+                    'x-b3-spanid: e457b5a2e4d86bd2',
                 ]
             );
             $this->call($spec);
@@ -48,18 +55,19 @@ class SyntheticsTest extends WebFrameworkTestCase
             $traces,
             SpanAssertion::build(
                 'web.request',
-                'web.request',
-                'web',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
                 'GET /index.php'
             )->withExactTags([
                 'http.method' => 'GET',
                 'http.url' => '/index.php',
                 'http.status_code' => '200',
-                '_dd.origin' => 'synthetics-browser',
-            ])->withExactMetrics([
-                '_sampling_priority_v1' => 1,
+                // SFX: origin not extracted at B3TextMap
+                // '_dd.origin' => 'synthetics-browser',
+                'component' => 'web.request',
             ])
         );
-        $this->assertSame(123456, $traces[0][0]['trace_id']);
+
+        $this->assertSame('16453819474850114513', $traces[0][0]['trace_id']);
     }
 }
