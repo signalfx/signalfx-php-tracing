@@ -10,4 +10,7 @@ zend_string* dd_trace_hex_dec(char* hex);
 void dd_trace_dec_hex(char* dec, char* buf);
 void dd_trace_hex_dec(char* hex, char* buf);
 #endif
+
+uint64_t decode_hex_id(const char* hex, int length);
+
 #endif  // DD_HEX_UTILS_H

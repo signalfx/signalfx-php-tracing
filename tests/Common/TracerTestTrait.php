@@ -15,7 +15,7 @@ use DDTrace\Tests\WebServer;
 use DDTrace\Tracer;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\Configuration;
-use DDTrace\Transport\Http;
+use DDTrace\Util\HexConversion;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -101,10 +101,10 @@ trait TracerTestTrait
         // Clearing existing dumped file
         $this->resetRequestDumper();
 
-        $transport = new HttpSignalFx(new JsonZipkinV2(), ['endpoint' => self::$agentRequestDumperUrl]);
-
         // Reset the current C-level array of generated spans
         dd_trace_serialize_closed_spans();
+
+        $transport = new HttpSignalFx(new JsonZipkinV2(), ['endpoint' => self::$agentRequestDumperUrl]);
 
         /* Disable Expect: 100-Continue that automatically gets added by curl,
          * as it adds a 1s delay, causing tests to sometimes fail.
@@ -266,24 +266,19 @@ trait TracerTestTrait
             return [];
         }
 
-        $rawTraces = json_decode($uniqueRequest['body'], true);
+        $rawTraces = [json_decode($uniqueRequest['body'], true)];
 
         $traces = [];
 
-        foreach ($jsonTraces as $spansInTrace) {
+        foreach ($rawTraces as $spansInTrace) {
             $spans = [];
             foreach ($spansInTrace as $rawSpan) {
                 $spanContext = new SpanContext(
-                    $rawSpan['traceId'],
-                    $rawSpan['id'],
-                    isset($rawSpan['parentId']) ? $rawSpan['parentId'] : null
+                    sfx_trace_convert_hex_id($rawSpan['traceId']),
+                    sfx_trace_convert_hex_id($rawSpan['id']),
+                    isset($rawSpan['parentId']) ? sfx_trace_convert_hex_id($rawSpan['parentId']) : null
                 );
                 $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
-                if (empty($rawSpan['resource'])) {
-                    TestCase::fail(sprintf("Span '%s' has empty resource name", $rawSpan['name']));
-                    return;
-                }
-
                 $span = new Span(
                     $rawSpan['name'],
                     $spanContext,
@@ -291,6 +286,7 @@ trait TracerTestTrait
                     $resource,
                     $rawSpan['timestamp']
                 );
+
                 unset($rawSpan['tags'][Tag::RESOURCE_NAME]);
                 if (isset($rawSpan['tags'][Tag::SPAN_TYPE])) {
                     $rawSpan['type'] = $rawSpan['tags'][Tag::SPAN_TYPE];

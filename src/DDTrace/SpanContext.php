@@ -5,7 +5,6 @@ namespace DDTrace;
 use ArrayIterator;
 use DDTrace\Contracts\SpanContext as SpanContextInterface;
 use DDTrace\Data\SpanContext as SpanContextData;
-use DDTrace\Util\HexConversion;
 
 final class SpanContext extends SpanContextData
 {
@@ -28,11 +27,11 @@ final class SpanContext extends SpanContextData
         // Since dd_trace_push_span_id() updates the return value of
         // dd_trace_peek_span_id(), we need to access the existing
         // value before generating a new ID
-        $activeSpanId = HexConversion::idToHex(dd_trace_peek_span_id());
+        $activeSpanId = dd_trace_peek_span_id();
 
         $instance = new self(
             $parentContext->getTraceId(),
-            HexConversion::idToHex(dd_trace_push_span_id()),
+            dd_trace_push_span_id(),
             // Since the last span could have been generated internally,
             // we can't use `$parentContext->getSpanId()` here
             $activeSpanId,
@@ -52,7 +51,7 @@ final class SpanContext extends SpanContextData
 
     public static function createAsRoot(array $baggageItems = [])
     {
-        $nextId = HexConversion::idToHex(dd_trace_push_span_id());
+        $nextId = dd_trace_push_span_id();
 
         return new self(
             $nextId,

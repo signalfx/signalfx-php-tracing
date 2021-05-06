@@ -10,6 +10,7 @@ use DDTrace\Log\Logger;
 use DDTrace\Log\LoggerInterface;
 use DDTrace\Tag;
 use DDTrace\Type;
+use DDTrace\Util\HexConversion;
 
 /**
  * This converts from the DD span format to the Zipkin V2 JSON span format.
@@ -78,8 +79,8 @@ final class JsonZipkinV2 implements Encoder
     private function spanToArray(array $span)
     {
         $arraySpan = [
-            'traceId' => $span['trace_id'],
-            'id' => $span['span_id'],
+            'traceId' => HexConversion::idToHex($span['trace_id']),
+            'id' => HexConversion::idToHex($span['span_id']),
             'name' => $span['name'],
             // This gets filled in by string substitution to avoid exponential formats.
             'start_micro' => '-',
@@ -90,7 +91,7 @@ final class JsonZipkinV2 implements Encoder
         }
 
         if (isset($span['parent_id'])) {
-            $arraySpan['parentId'] = $span['parent_id'];
+            $arraySpan['parentId'] = HexConversion::idToHex($span['parent_id']);
         }
 
         $span['tags'] = [];

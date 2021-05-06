@@ -38,8 +38,8 @@ final class JsonZipkinV2Test extends BaseTestCase
     public function testEncodeTracesSuccess()
     {
         $context = SpanContext::createAsRoot();
-        $traceId = $context->getTraceId();
-        $parentId = $context->getSpanId();
+        $traceId = HexConversion::idToHex($context->getTraceId());
+        $parentId = HexConversion::idToHex($context->getSpanId());
         $expectedPayload = <<<JSON
 [{"traceId":"$traceId","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"$parentId",
 JSON

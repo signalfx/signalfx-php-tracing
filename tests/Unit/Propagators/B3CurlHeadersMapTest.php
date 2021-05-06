@@ -8,6 +8,7 @@ use DDTrace\Tests\DebugTransport;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Tests\Common\BaseTestCase;
+use DDTrace\Util\HexConversion;
 
 final class B3CurlHeadersMapTest extends BaseTestCase
 {
@@ -37,9 +38,9 @@ final class B3CurlHeadersMapTest extends BaseTestCase
         (new B3CurlHeadersMap($this->tracer))->inject($context, $carrier);
 
         $this->assertEquals([
-            'x-b3-traceid: ' . $rootContext->getTraceId(),
-            'x-b3-spanid: ' . $context->getSpanId(),
-            'x-b3-parentspanid: ' . $context->getParentId(),
+            'x-b3-traceid: ' . HexConversion::idToHex($rootContext->getTraceId()),
+            'x-b3-spanid: ' . HexConversion::idToHex($context->getSpanId()),
+            'x-b3-parentspanid: ' . HexConversion::idToHex($context->getParentId()),
             'x-b3-sampled: 0',
             'baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
@@ -59,9 +60,9 @@ final class B3CurlHeadersMapTest extends BaseTestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-b3-traceid: ' . $rootContext->getTraceId(),
-            'x-b3-spanid: ' . $context->getSpanId(),
-            'x-b3-parentspanid: ' . $context->getParentId(),
+            'x-b3-traceid: ' . HexConversion::idToHex($rootContext->getTraceId()),
+            'x-b3-spanid: ' . HexConversion::idToHex($context->getSpanId()),
+            'x-b3-parentspanid: ' . HexConversion::idToHex($context->getParentId()),
             'x-b3-sampled: 0',
             'baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
@@ -84,9 +85,9 @@ final class B3CurlHeadersMapTest extends BaseTestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-b3-traceid: ' . $rootContext->getTraceId(),
-            'x-b3-spanid: ' . $context->getSpanId(),
-            'x-b3-parentspanid: ' . $context->getParentId(),
+            'x-b3-traceid: ' . HexConversion::idToHex($rootContext->getTraceId()),
+            'x-b3-spanid: ' . HexConversion::idToHex($context->getSpanId()),
+            'x-b3-parentspanid: ' . HexConversion::idToHex($context->getParentId()),
             'x-b3-sampled: 0',
             'baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));

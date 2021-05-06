@@ -34,9 +34,9 @@
 #include "engine_hooks.h"
 #include "excluded_modules.h"
 #include "handlers_internal.h"
+#include "hex_utils.h"
 #include "integrations/integrations.h"
 #include "logging.h"
-#include "hex_utils.h"
 #include "memory_limit.h"
 #include "random.h"
 #include "request_hooks.h"
@@ -151,7 +151,19 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id, 0, 0, 1)
 ZEND_ARG_INFO(0, trace_id)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id_hex, 0, 0, 1)
+ZEND_ARG_INFO(0, trace_id)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id, 0, 0, 0)
+ZEND_ARG_INFO(0, existing_id)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id_hex, 0, 0, 0)
+ZEND_ARG_INFO(0, existing_id)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_sfx_trace_convert_hex_id, 0, 0, 0)
 ZEND_ARG_INFO(0, existing_id)
 ZEND_END_ARG_INFO()
 
@@ -292,7 +304,7 @@ static void dd_disable_if_incompatible_sapi_detected(void) {
 
 static PHP_MINIT_FUNCTION(signalfx_tracing) {
     UNUSED(type);
-    REGISTER_STRING_CONSTANT("SIGNALFX_TRACE_VERSION", PHP_DDTRACE_VERSION, CONST_CS | CONST_PERSISTENT);
+    REGISTER_STRING_CONSTANT("DD_TRACE_VERSION", PHP_DDTRACE_VERSION, CONST_CS | CONST_PERSISTENT);
     REGISTER_INI_ENTRIES();
 
     // config initialization needs to be at the top
@@ -1250,6 +1262,20 @@ static PHP_FUNCTION(dd_trace_set_trace_id) {
     RETURN_BOOL(0);
 }
 
+/* {{{ proto string dd_trace_set_trace_id_hex() */
+static PHP_FUNCTION(dd_trace_set_trace_id_hex) {
+    UNUSED(execute_data);
+
+    zval *trace_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &trace_id) == SUCCESS) {
+        if (ddtrace_set_userland_trace_id_hex(trace_id TSRMLS_CC) == TRUE) {
+            RETURN_BOOL(1);
+        }
+    }
+
+    RETURN_BOOL(0);
+}
+
 static inline void return_span_id(zval *return_value, uint64_t id) {
     char buf[DD_TRACE_MAX_ID_LEN + 1];
     snprintf(buf, sizeof(buf), "%" PRIu64, id);
@@ -1269,6 +1295,35 @@ static PHP_FUNCTION(dd_trace_push_span_id) {
     }
 
     return_span_id(return_value, ddtrace_push_span_id(0 TSRMLS_CC));
+}
+
+/* {{{ proto string dd_trace_push_span_id_hex() */
+static PHP_FUNCTION(dd_trace_push_span_id_hex) {
+    UNUSED(execute_data);
+
+    zval *existing_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &existing_id) == SUCCESS) {
+        if (ddtrace_push_userland_span_id_hex(existing_id TSRMLS_CC) == TRUE) {
+            return_span_id(return_value, ddtrace_peek_span_id(TSRMLS_C));
+            return;
+        }
+    }
+
+    return_span_id(return_value, ddtrace_push_span_id(0 TSRMLS_CC));
+}
+
+/* {{{ proto string sfx_trace_convert_hex_id() */
+static PHP_FUNCTION(sfx_trace_convert_hex_id) {
+    UNUSED(execute_data);
+
+    zval *hex_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &hex_id) == SUCCESS) {
+        uint64_t id = sfxtrace_hex_to_u64(hex_id);
+        return_span_id(return_value, id);
+        return;
+    }
+
+    return_span_id(return_value, 0);
 }
 
 /* {{{ proto string dd_trace_pop_span_id() */
@@ -1337,7 +1392,7 @@ static PHP_FUNCTION(startup_logs) {
 
 /* {{{ proto string dd_trace_hex_dec(hex_string) */
 static PHP_FUNCTION(dd_trace_hex_dec) {
-   	UNUSED(execute_data);
+    UNUSED(execute_data);
     zval *hex = NULL;
 
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &hex) != SUCCESS) {
@@ -1361,7 +1416,7 @@ static PHP_FUNCTION(dd_trace_hex_dec) {
 
 /* {{{ proto string dd_trace_dec_hex(dec_string) */
 static PHP_FUNCTION(dd_trace_dec_hex) {
-		UNUSED(execute_data);
+    UNUSED(execute_data);
     zval *dec = NULL;
 
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &dec) != SUCCESS) {
@@ -1403,13 +1458,16 @@ static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_FE(dd_trace_pop_span_id, arginfo_ddtrace_void),
     DDTRACE_NS_FE(trace_id, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_push_span_id, arginfo_dd_trace_push_span_id),
-		DDTRACE_FE(dd_trace_dec_hex, arginfo_dd_trace_dec_hex),
-		DDTRACE_FE(dd_trace_hex_dec, arginfo_dd_trace_hex_dec),
+    DDTRACE_FE(dd_trace_push_span_id_hex, arginfo_dd_trace_push_span_id_hex),
+    DDTRACE_FE(sfx_trace_convert_hex_id, arginfo_sfx_trace_convert_hex_id),
+    DDTRACE_FE(dd_trace_dec_hex, arginfo_dd_trace_dec_hex),
+    DDTRACE_FE(dd_trace_hex_dec, arginfo_dd_trace_hex_dec),
     DDTRACE_FE(dd_trace_reset, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_send_traces_via_thread, arginfo_dd_trace_send_traces_via_thread),
     DDTRACE_FE(dd_trace_serialize_closed_spans, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack),
     DDTRACE_FE(dd_trace_set_trace_id, arginfo_dd_trace_set_trace_id),
+    DDTRACE_FE(dd_trace_set_trace_id_hex, arginfo_dd_trace_set_trace_id_hex),
     DDTRACE_FE(dd_trace_tracer_is_limited, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_can_try, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_info, arginfo_ddtrace_void),
