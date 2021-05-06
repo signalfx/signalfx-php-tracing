@@ -212,7 +212,7 @@ final class TracerTest extends BaseTestCase
             ]
         );
 
-        $this->assertSame('web.request', $traces[0][0]['resource']);
+        $this->assertSame('web.request', $traces[0][0]['name']);
     }
 
     public function testResourceNormalizationWebHonorOverride()
@@ -447,13 +447,13 @@ final class TracerTest extends BaseTestCase
             },
             __DIR__ . '/TracerTest_files/index.php',
             [
-                'DD_SERVICE_MAPPING' => 'host-httpbin_integration:changed_service',
+                'DD_SERVICE_MAPPING' => 'host-httpbin_integration:changed_service_by_domain_host',
                 'DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN' => true,
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
 
-        $this->assertSame('changed_service', $traces[0][1]['service']);
+        $this->assertSame('changed_service_by_domain_host', $traces[0][1]['meta']['component']);
     }
 
     public function testServiceMappingHttpClientsSplitByDomainIp()
@@ -464,13 +464,13 @@ final class TracerTest extends BaseTestCase
             },
             __DIR__ . '/TracerTest_files/index.php',
             [
-                'DD_SERVICE_MAPPING' => 'host-127.0.0.1:changed_service',
+                'DD_SERVICE_MAPPING' => 'host-127.0.0.1:changed_service_by_domain_ip',
                 'DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN' => true,
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
 
-        $this->assertSame('changed_service', $traces[0][1]['service']);
+        $this->assertSame('changed_service_by_domain_ip', $traces[0][1]['meta']['component']);
     }
 
     public function dummyMethodGlobalTags()
