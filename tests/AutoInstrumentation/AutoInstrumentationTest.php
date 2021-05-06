@@ -95,7 +95,7 @@ class AutoInstrumentationTest extends BaseTestCase
             'error_log' => __DIR__ . '/error.log',
             'ddtrace.request_init_hook' => __DIR__ . '/../../bridge/dd_wrap_autoloader.php',
         ]);
-        $webServer->setEnvs([
+        $webServer->mergeEnvs([
             'SIGNALFX_TRACE_DEBUG' => 'true',
         ]);
         $webServer->start();
