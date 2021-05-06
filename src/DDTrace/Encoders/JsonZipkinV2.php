@@ -35,8 +35,6 @@ final class JsonZipkinV2 implements Encoder
     public function encodeTraces(Tracer $tracer)
     {
         $traces = $tracer->getTracesAsArray();
-				$s = fopen('/tmp/traceslog', 'w');
-				fwrite($s, print_r($traces, TRUE));
         return '[' . implode(',', array_map(function ($trace) {
                 return implode(',', array_filter(array_map(function ($span) {
                     return $this->encodeSpan($span);

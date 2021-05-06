@@ -73,7 +73,7 @@ function _util_uri_apply_rules($uriPath, $incoming)
     //   3) Nothing is defined, then apply *new normalization*.
 
     // DEPRECATED: Applying legacy normalization for backward compatibility if preconditions are matched.
-    $legacyMappings = getenv('SIGNALFX_TRACE_RESOURCE_URI_MAPPING');
+    $legacyMappings = getenv('DD_TRACE_RESOURCE_URI_MAPPING');
     if (
         empty($fragmentRegexes)
         && empty($incomingMappings)

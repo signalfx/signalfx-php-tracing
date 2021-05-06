@@ -41,7 +41,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     {
         $this->putEnvAndReloadConfig([
             'SIGNALFX_TRACING_ENABLED=1',
-            'SIGNALFX_INTEGRATIONS_DISABLED=pdo',
+            'DD_INTEGRATIONS_DISABLED=pdo',
         ]);
 
         DummyIntegration1::$value = Integration::LOADED;
@@ -49,7 +49,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
             'SIGNALFX_TRACING_ENABLED',
-            'SIGNALFX_INTEGRATIONS_DISABLED',
+            'DD_INTEGRATIONS_DISABLED',
         ]);
 
         $this->assertSame(Integration::NOT_LOADED, $loader->getLoadingStatus('pdo'));

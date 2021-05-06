@@ -26,6 +26,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     PHP_CHECK_LIBRARY(execinfo, backtrace,
       [PHP_ADD_LIBRARY(execinfo, , EXTRA_LDFLAGS)])
   )
+
   if test "$PHP_SIGNALFX_TRACING_SANITIZE" != "no"; then
     EXTRA_LDFLAGS="-fsanitize=address"
     EXTRA_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"

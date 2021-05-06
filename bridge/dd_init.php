@@ -17,10 +17,10 @@ if (\PHP_VERSION_ID < 70000) {
 function dd_tracing_enabled()
 {
     if ('cli' === PHP_SAPI) {
-        return dd_env_as_boolean('DD_TRACE_CLI_ENABLED', dd_env_as_boolean('DD_PHPUNIT_BOOTSTRAP', false));
+        return dd_env_as_boolean('SIGNALFX_TRACE_CLI_ENABLED', dd_env_as_boolean('DD_PHPUNIT_BOOTSTRAP', false));
     }
 
-    return dd_env_as_boolean('DD_TRACE_ENABLED', true);
+    return dd_env_as_boolean('SIGNALFX_TRACING_ENABLED', true);
 }
 
 /**

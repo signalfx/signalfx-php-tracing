@@ -164,11 +164,12 @@ trait TracerTestTrait
         $this->resetRequestDumper();
         $envs = (string) new EnvSerializer(array_merge(
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
-                'DD_AGENT_HOST' => 'request-replayer',
-                'DD_TRACE_AGENT_PORT' => '80',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_ENDPOINT_HOST' => 'request-replayer',
+                'SIGNALFX_ENDPOINT_PORT' => '80',
+                'SIGNALFX_ENDPOINT_PATH' => '/',
                 // Uncomment to see debug-level messages
-                //'DD_TRACE_DEBUG' => 'true',
+                'SIGNALFX_TRACE_DEBUG' => 'true',
             ],
             $customEnvs
         ));

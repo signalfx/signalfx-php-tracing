@@ -6,7 +6,6 @@ use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tests\Common\BaseTestCase;
-use DDTrace\Util\HexConversion;
 
 final class ConfigurableSamplerTest extends BaseTestCase
 {
@@ -15,14 +14,14 @@ final class ConfigurableSamplerTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        \putenv('SIGNALFX_TRACE_SAMPLING_RULES');
-        \putenv('SIGNALFX_TRACE_SAMPLE_RATE');
+        \putenv('DD_TRACE_SAMPLING_RULES');
+        \putenv('DD_TRACE_SAMPLE_RATE');
     }
 
     protected function ddTearDown()
     {
-        \putenv('SIGNALFX_TRACE_SAMPLING_RULES');
-        \putenv('SIGNALFX_TRACE_SAMPLE_RATE');
+        \putenv('DD_TRACE_SAMPLING_RULES');
+        \putenv('DD_TRACE_SAMPLE_RATE');
         parent::ddTearDown();
     }
 
@@ -34,13 +33,13 @@ final class ConfigurableSamplerTest extends BaseTestCase
      */
     public function testSampleNoSamplingRules($samplingRate, $lower, $upper)
     {
-        putenv("SIGNALFX_TRACE_SAMPLE_RATE=$samplingRate");
+        putenv("DD_TRACE_SAMPLE_RATE=$samplingRate");
         $sampler = new ConfigurableSampler();
 
         $output = 0;
 
         for ($i = 0; $i < self::REPETITIONS; $i++) {
-            $context = new SpanContext('', HexConversion::idToHex(dd_trace_generate_id()));
+            $context = new SpanContext('', dd_trace_generate_id());
             $output += $sampler->getPrioritySampling(new Span('', $context, '', ''));
         }
 
@@ -78,8 +77,8 @@ final class ConfigurableSamplerTest extends BaseTestCase
     public function testSampleWithSamplingRules($samplingRules, $expected)
     {
         $delta = 0.05;
-        putenv("SIGNALFX_TRACE_SAMPLE_RATE=0.3");
-        putenv("SIGNALFX_TRACE_SAMPLING_RULES=$samplingRules");
+        putenv("DD_TRACE_SAMPLE_RATE=0.3");
+        putenv("DD_TRACE_SAMPLING_RULES=$samplingRules");
 
         $sampler = new ConfigurableSampler();
 
@@ -135,7 +134,7 @@ final class ConfigurableSamplerTest extends BaseTestCase
 
     public function testMetricIsAddedToCommunicateSampleRateUsed()
     {
-        putenv('SIGNALFX_TRACE_SAMPLING_RULES=[{"sample_rate":0.7}]');
+        putenv('DD_TRACE_SAMPLING_RULES=[{"sample_rate":0.7}]');
         $sampler = new ConfigurableSampler();
 
         $context = new SpanContext('', dd_trace_generate_id());

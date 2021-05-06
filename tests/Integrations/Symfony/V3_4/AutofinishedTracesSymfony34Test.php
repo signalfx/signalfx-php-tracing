@@ -16,7 +16,7 @@ class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_AUTOFINISH_SPANS' => 'true',
+            'DD_AUTOFINISH_SPANS' => 'true',
         ]);
     }
 

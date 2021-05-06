@@ -23,7 +23,7 @@ class Tag
     const ERROR_MSG = 'sfx.error.message'; // string representing the error message
     const ERROR_KIND = 'sfx.error.kind'; // short string representing the type of the error
     const ERROR_STACK = 'sfx.error.stack'; // human readable version of the stack
-    const ERROR_TYPE = ERROR_KIND;
+    const ERROR_TYPE = 'sfx.error.kind';
     const HTTP_METHOD = 'http.method';
     const HTTP_STATUS_CODE = 'http.status_code';
     const HTTP_URL = 'http.url';

@@ -11,7 +11,6 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tracer;
 use DDTrace\Util\ArrayKVStore;
 use DDTrace\GlobalTracer;
-use DDTrace\Util\HexConversion;
 use DDTrace\Util\Versions;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 
@@ -53,8 +52,8 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
     private function cleanUp()
     {
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
         putenv('DD_CURL_ANALYTICS_ENABLED');
-        putenv('DD_DISTRIBUTED_TRACING');
         putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN');
         putenv('DD_TRACE_MEMORY_LIMIT');
         putenv('DD_TRACE_SPANS_LIMIT');
@@ -490,7 +489,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
     public function testAppendHostnameToServiceName()
     {
-        putenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
+        putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
 
         $traces = $this->isolateTracer(function () {
             $ch = curl_init(self::URL . '/status/200');

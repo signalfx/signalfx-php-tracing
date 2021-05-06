@@ -15,7 +15,7 @@ final class CurrentContextAccessTest extends IntegrationTestCase
             },
             __DIR__ . '/web.php',
             [
-                'DD_SERVICE' => 'top_level_app',
+                'SIGNALFX_SERVICE' => 'top_level_app',
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );

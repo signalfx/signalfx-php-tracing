@@ -35,25 +35,25 @@ EOD;
         putenv('SIGNALFX_ENDPOINT_URL');
         putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
         putenv('SIGNALFX_DISTRIBUTED_TRACING');
-        putenv('SIGNALFX_ENV');
-        putenv('SIGNALFX_INTEGRATIONS_DISABLED');
-        putenv('SIGNALFX_PRIORITY_SAMPLING');
-        putenv('SIGNALFX_SAMPLING_RATE');
-        putenv('SIGNALFX_SERVICE_MAPPING');
         putenv('SIGNALFX_SERVICE_NAME');
         putenv('SIGNALFX_SERVICE');
-        putenv('SIGNALFX_TAGS');
-        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
-        putenv('SIGNALFX_TRACE_DEBUG');
         putenv('SIGNALFX_TRACING_ENABLED');
-        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
-        putenv('SIGNALFX_TRACE_PDO_ENABLED');
-        putenv('SIGNALFX_TRACE_REDIS_CLIENT_SPLIT_BY_HOST');
-        putenv('SIGNALFX_TRACE_SAMPLE_RATE');
-        putenv('SIGNALFX_TRACE_SAMPLING_RULES');
-        putenv('SIGNALFX_TRACE_SLIM_ENABLED');
-        putenv('SIGNALFX_TRACE_HEADER_TAGS');
-        putenv('SIGNALFX_VERSION');
+        putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('DD_ENV');
+        putenv('DD_INTEGRATIONS_DISABLED');
+        putenv('DD_PRIORITY_SAMPLING');
+        putenv('DD_SAMPLING_RATE');
+        putenv('DD_SERVICE_MAPPING');
+        putenv('DD_TAGS');
+        putenv('DD_TRACE_ANALYTICS_ENABLED');
+        putenv('DD_TRACE_GLOBAL_TAGS');
+        putenv('DD_TRACE_PDO_ENABLED');
+        putenv('DD_TRACE_REDIS_CLIENT_SPLIT_BY_HOST');
+        putenv('DD_TRACE_SAMPLE_RATE');
+        putenv('DD_TRACE_SAMPLING_RULES');
+        putenv('DD_TRACE_SLIM_ENABLED');
+        putenv('DD_TRACE_HEADER_TAGS');
+        putenv('DD_VERSION');
     }
 
     public function testTracerEnabledByDefault()
@@ -96,7 +96,7 @@ EOD;
 
     public function testPrioritySamplingDisabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_PRIORITY_SAMPLING=false']);
+        $this->putEnvAndReloadConfig(['DD_PRIORITY_SAMPLING=false']);
         $this->assertFalse(\ddtrace_config_priority_sampling_enabled());
     }
 
@@ -107,7 +107,7 @@ EOD;
 
     public function testIntegrationsDisabledDeprecatedEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_INTEGRATIONS_DISABLED=pdo,slim']);
+        $this->putEnvAndReloadConfig(['DD_INTEGRATIONS_DISABLED=pdo,slim']);
         $this->assertFalse(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('slim'));
         $this->assertTrue(\ddtrace_config_integration_enabled('mysqli'));
@@ -115,14 +115,14 @@ EOD;
 
     public function testIntegrationsDisabledIfGlobalDisabledDeprecatedEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_INTEGRATIONS_DISABLED=pdo', 'SIGNALFX_TRACING_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_INTEGRATIONS_DISABLED=pdo', 'SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('mysqli'));
     }
 
     public function testIntegrationsDisabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_PDO_ENABLED=false', 'SIGNALFX_TRACE_SLIM_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=false', 'DD_TRACE_SLIM_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('slim'));
         $this->assertTrue(\ddtrace_config_integration_enabled('mysqli'));
@@ -130,14 +130,14 @@ EOD;
 
     public function testIntegrationsDisabledIfGlobalDisabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_PDO_ENABLED=false', 'SIGNALFX_TRACING_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=false', 'SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('mysqli'));
     }
 
     public function testIntegrationsDisabledPrecedenceWithDeprecatedEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_PDO_ENABLED=true', 'SIGNALFX_INTEGRATIONS_DISABLED=pdo,slim']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=true', 'DD_INTEGRATIONS_DISABLED=pdo,slim']);
         $this->assertTrue(\ddtrace_config_integration_enabled('pdo'));
         $this->assertFalse(\ddtrace_config_integration_enabled('slim'));
     }
@@ -146,14 +146,14 @@ EOD;
     {
         $integrations = self::getIntegrationsUpper();
         foreach ($integrations as $integration) {
-            $this->putEnvAndReloadConfig(["SIGNALFX_TRACE_{$integration}_ENABLED=false"]);
+            $this->putEnvAndReloadConfig(["DD_TRACE_{$integration}_ENABLED=false"]);
 
             $lower = strtolower($integration);
             $error = "'{$lower}' was expected to be disabled." . self::INTEGRATION_ERROR;
             self::assertFalse(\ddtrace_config_integration_enabled($lower), $error);
 
             // Reset
-            putenv("SIGNALFX_TRACE_{$integration}_ENABLED");
+            putenv("DD_TRACE_{$integration}_ENABLED");
         }
 
         // Make sure we're not testing the default fallback
@@ -164,7 +164,7 @@ EOD;
     {
         $integrations = self::getIntegrationsUpper();
         foreach ($integrations as $integration) {
-            $this->putEnvAndReloadConfig(["SIGNALFX_TRACE_{$integration}_ANALYTICS_ENABLED=true"]);
+            $this->putEnvAndReloadConfig(["DD_TRACE_{$integration}_ANALYTICS_ENABLED=true"]);
 
             $lower = strtolower($integration);
             self::assertTrue(
@@ -173,7 +173,7 @@ EOD;
             );
 
             // Reset
-            putenv("SIGNALFX_TRACE_{$integration}_ANALYTICS_ENABLED");
+            putenv("DD_TRACE_{$integration}_ANALYTICS_ENABLED");
         }
 
         // Make sure we're not testing the default fallback
@@ -184,7 +184,7 @@ EOD;
     {
         $integrations = self::getIntegrationsUpper();
         foreach ($integrations as $integration) {
-            $this->putEnvAndReloadConfig(["SIGNALFX_TRACE_{$integration}_ANALYTICS_SAMPLE_RATE=0.42"]);
+            $this->putEnvAndReloadConfig(["DD_TRACE_{$integration}_ANALYTICS_SAMPLE_RATE=0.42"]);
 
             $lower = strtolower($integration);
             self::assertSame(
@@ -194,7 +194,7 @@ EOD;
             );
 
             // Reset
-            putenv("SIGNALFX_TRACE_{$integration}_ANALYTICS_SAMPLE_RATE");
+            putenv("DD_TRACE_{$integration}_ANALYTICS_SAMPLE_RATE");
         }
 
         // Make sure we're not testing the default fallback
@@ -287,7 +287,7 @@ EOD;
 
     public function testAnalyticsCanBeGloballyEnabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_ANALYTICS_ENABLED=true']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_ANALYTICS_ENABLED=true']);
         $this->assertTrue(\ddtrace_config_analytics_enabled());
     }
 
@@ -299,7 +299,7 @@ EOD;
     public function testTraceSamplingRules($rules, $expected)
     {
         if (false !== $rules) {
-            $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_SAMPLING_RULES=' . $rules]);
+            $this->putEnvAndReloadConfig(['DD_TRACE_SAMPLING_RULES=' . $rules]);
         }
 
         $this->assertSame($expected, \ddtrace_config_sampling_rules());
@@ -308,27 +308,27 @@ EOD;
     public function dataProviderTestTraceSamplingRules()
     {
         return [
-            'SIGNALFX_TRACE_SAMPLING_RULES not defined' => [
+            'DD_TRACE_SAMPLING_RULES not defined' => [
                 false,
                 [],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES empty string' => [
+            'DD_TRACE_SAMPLING_RULES empty string' => [
                 '',
                 [],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES not a valid json' => [
+            'DD_TRACE_SAMPLING_RULES not a valid json' => [
                 '[a!}',
                 [],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES empty array' => [
+            'DD_TRACE_SAMPLING_RULES empty array' => [
                 '[]',
                 [],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES empty object' => [
+            'DD_TRACE_SAMPLING_RULES empty object' => [
                 '[{}]',
                 [],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES only rate' => [
+            'DD_TRACE_SAMPLING_RULES only rate' => [
                 '[{"sample_rate": 0.3}]',
                 [
                     [
@@ -338,7 +338,7 @@ EOD;
                     ],
                 ],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES service defined' => [
+            'DD_TRACE_SAMPLING_RULES service defined' => [
                 '[{"service": "my_service", "sample_rate": 0.3}]',
                 [
                     [
@@ -348,7 +348,7 @@ EOD;
                     ],
                 ],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES named defined' => [
+            'DD_TRACE_SAMPLING_RULES named defined' => [
                 '[{"name": "my_name", "sample_rate": 0.3}]',
                 [
                     [
@@ -358,7 +358,7 @@ EOD;
                     ],
                 ],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES multiple values keeps order' => [
+            'DD_TRACE_SAMPLING_RULES multiple values keeps order' => [
                 '[{"name": "my_name", "sample_rate": 0.3}, {"service": "my_service", "sample_rate": 0.7}]',
                 [
                     [
@@ -373,7 +373,7 @@ EOD;
                     ],
                 ],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES values converted to proper type' => [
+            'DD_TRACE_SAMPLING_RULES values converted to proper type' => [
                 '[{"name": 1, "sample_rate": "0.3"}]',
                 [
                     [
@@ -383,8 +383,18 @@ EOD;
                     ],
                 ],
             ],
-            'SIGNALFX_TRACE_SAMPLING_RULES regex can be provided' => [
+            'DD_TRACE_SAMPLING_RULES regex can be provided' => [
                 '[{"name": "^a.*b$", "sample_rate": 0.3}]',
+                [
+                    [
+                        'service' => '.*',
+                        'name' => '^a.*b$',
+                        'sample_rate' => 0.3,
+                    ],
+                ],
+            ],
+            'DD_TRACE_SAMPLING_RULES escaped' => [
+                '\'[{"name": "^a.*b$", "sample_rate": 0.3}]\'',
                 [
                     [
                         'service' => '.*',
@@ -417,34 +427,34 @@ EOD;
                 [],
                 1.0,
             ],
-            'SIGNALFX_TRACE_SAMPLE_RATE can be set' => [
+            'DD_TRACE_SAMPLE_RATE can be set' => [
                 [
-                    'SIGNALFX_TRACE_SAMPLE_RATE=0.7',
+                    'DD_TRACE_SAMPLE_RATE=0.7',
                 ],
                 0.7,
             ],
-            'SIGNALFX_TRACE_SAMPLE_RATE has a minimum of 0.0' => [
+            'DD_TRACE_SAMPLE_RATE has a minimum of 0.0' => [
                 [
-                    'SIGNALFX_TRACE_SAMPLE_RATE=-0.1',
+                    'DD_TRACE_SAMPLE_RATE=-0.1',
                 ],
                 0.0,
             ],
-            'SIGNALFX_TRACE_SAMPLE_RATE has a maximum of 1.0' => [
+            'DD_TRACE_SAMPLE_RATE has a maximum of 1.0' => [
                 [
-                    'SIGNALFX_TRACE_SAMPLE_RATE=1.1',
+                    'DD_TRACE_SAMPLE_RATE=1.1',
                 ],
                 1.0,
             ],
-            'deprecated SIGNALFX_SAMPLING_RATE can still be used' => [
+            'deprecated DD_SAMPLING_RATE can still be used' => [
                 [
-                    'SIGNALFX_SAMPLING_RATE=0.7',
+                    'DD_SAMPLING_RATE=0.7',
                 ],
                 0.7,
             ],
-            'SIGNALFX_TRACE_SAMPLE_RATE wins over deprecated SIGNALFX_SAMPLING_RATE' => [
+            'DD_TRACE_SAMPLE_RATE wins over deprecated DD_SAMPLING_RATE' => [
                 [
-                    'SIGNALFX_SAMPLING_RATE=0.3',
-                    'SIGNALFX_TRACE_SAMPLE_RATE=0.7',
+                    'DD_SAMPLING_RATE=0.3',
+                    'DD_TRACE_SAMPLE_RATE=0.7',
                 ],
                 0.7,
             ],
@@ -459,7 +469,7 @@ EOD;
     public function testTraceServiceMapping($env, $expected)
     {
         if (false !== $env) {
-            $this->putEnvAndReloadConfig(["SIGNALFX_SERVICE_MAPPING=$env"]);
+            $this->putEnvAndReloadConfig(["DD_SERVICE_MAPPING=$env"]);
         }
 
         $this->assertSame($expected, \ddtrace_config_service_mapping());
@@ -493,25 +503,25 @@ EOD;
 
     public function testEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_ENV=my-env']);
+        $this->putEnvAndReloadConfig(['DD_ENV=my-env']);
         $this->assertSame('my-env', \ddtrace_config_env());
     }
 
     public function testEnvNotSet()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_ENV']);
+        $this->putEnvAndReloadConfig(['DD_ENV']);
         $this->assertNull(\ddtrace_config_env());
     }
 
     public function testVersion()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_VERSION=1.2.3']);
+        $this->putEnvAndReloadConfig(['DD_VERSION=1.2.3']);
         $this->assertSame('1.2.3', \ddtrace_config_service_version());
     }
 
     public function testVersionNotSet()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_VERSION']);
+        $this->putEnvAndReloadConfig(['DD_VERSION']);
         $this->assertNull(\ddtrace_config_service_version());
     }
 
@@ -522,43 +532,43 @@ EOD;
 
     public function testUriAsResourceNameCanBeDisabled()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_URL_AS_RESOURCE_NAMES_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED=false']);
         $this->assertFalse(\ddtrace_config_url_resource_name_enabled());
     }
 
     public function testGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['DD_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsLegacyEnv()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsNewEnvWinsOverLegacyEnv()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
-            'SIGNALFX_TAGS=key1:value1,key2:value2',
+            'DD_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
+            'DD_TAGS=key1:value1,key2:value2',
         ]);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsWrongValueJustResultsInNoTags()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=wrong_key_value']);
+        $this->putEnvAndReloadConfig(['DD_TAGS=wrong_key_value']);
         $this->assertEquals([], \ddtrace_config_global_tags());
     }
 
     public function testUriNormalizationSettingWhenNotSet()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
         ]);
 
         $this->assertSame([], \ddtrace_config_path_fragment_regex());
@@ -569,9 +579,9 @@ EOD;
     public function testUriNormalizationSettingWheSet()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/a/',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/a/',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*',
         ]);
 
         $this->assertSame(['/a/'], \ddtrace_config_path_fragment_regex());
@@ -587,7 +597,7 @@ EOD;
     public function testRedisClientSplitHostSetFalse()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_REDIS_CLIENT_SPLIT_BY_HOST=false',
+            'DD_TRACE_REDIS_CLIENT_SPLIT_BY_HOST=false',
         ]);
         $this->assertFalse(\ddtrace_config_redis_client_split_by_host_enabled());
     }
@@ -595,7 +605,7 @@ EOD;
     public function testRedisClientSplitHostSetTrue()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_REDIS_CLIENT_SPLIT_BY_HOST=true',
+            'DD_TRACE_REDIS_CLIENT_SPLIT_BY_HOST=true',
         ]);
         $this->assertTrue(\ddtrace_config_redis_client_split_by_host_enabled());
     }
@@ -608,7 +618,7 @@ EOD;
     public function testHttpHeadersCanSetOne()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_HEADER_TAGS=A-Header',
+            'DD_TRACE_HEADER_TAGS=A-Header',
         ]);
         $this->assertSame(['a-header'], \ddtrace_config_http_headers());
     }
@@ -616,7 +626,7 @@ EOD;
     public function testHttpHeadersCanSetMultiple()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_HEADER_TAGS=A-Header   ,Any-Name    ,    cOn7aining-!spe_cial?:ch/ars    ',
+            'DD_TRACE_HEADER_TAGS=A-Header   ,Any-Name    ,    cOn7aining-!spe_cial?:ch/ars    ',
         ]);
         // Same behavior as python tracer:
         // https://github.com/DataDog/dd-trace-py/blob/f1298cb8100f146059f978b58c88641bd7424af8/ddtrace/http/headers.py

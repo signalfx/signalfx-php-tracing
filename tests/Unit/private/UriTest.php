@@ -9,10 +9,10 @@ class UriTest extends BaseTestCase
     protected function ddSetUp()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
+            'DD_TRACE_RESOURCE_URI_MAPPING',
         ]);
         parent::ddSetUp();
     }
@@ -21,17 +21,17 @@ class UriTest extends BaseTestCase
     {
         parent::ddTearDown();
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
+            'DD_TRACE_RESOURCE_URI_MAPPING',
         ]);
     }
 
     public function testLegacyIsStillAppliedIfNewSettingsNotDefined()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING=/user/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING=/user/*',
         ]);
         $this->assertSame(
             '/user/?',
@@ -45,12 +45,12 @@ class UriTest extends BaseTestCase
 
     public function testLegacyIsIgnoredIfAtLeastOneNewSettingIsDefined()
     {
-        // When SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING is also set
+        // When DD_TRACE_RESOURCE_URI_MAPPING_INCOMING is also set
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING=/user/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
+            'DD_TRACE_RESOURCE_URI_MAPPING=/user/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
         ]);
         $this->assertSame(
             '/user/?/nested/?',
@@ -61,12 +61,12 @@ class UriTest extends BaseTestCase
             \DDtrace\Private_\util_uri_normalize_outgoing_path('/user/123/nested/path')
         );
 
-        // When SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING is also set
+        // When DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING is also set
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING=/user/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
+            'DD_TRACE_RESOURCE_URI_MAPPING=/user/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX',
         ]);
         $this->assertSame(
             '/user/?/nested/path',
@@ -77,12 +77,12 @@ class UriTest extends BaseTestCase
             \DDtrace\Private_\util_uri_normalize_outgoing_path('/user/123/nested/path')
         );
 
-        // When SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX is also set
+        // When DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX is also set
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING=/user/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^path$',
+            'DD_TRACE_RESOURCE_URI_MAPPING=/user/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^path$',
         ]);
         $this->assertSame(
             '/user/?/nested/?',
@@ -96,7 +96,7 @@ class UriTest extends BaseTestCase
 
     public function testIncomingConfigurationDoesNotImpactOutgoing()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=before/*']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=before/*']);
         $this->assertSame(
             '/before/something/after',
             \DDtrace\Private_\util_uri_normalize_outgoing_path('/before/something/after')
@@ -109,7 +109,7 @@ class UriTest extends BaseTestCase
 
     public function testOutgoingConfigurationDoesNotImpactIncoming()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=before/*']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=before/*']);
         $this->assertSame(
             '/before/something/after',
             \DDtrace\Private_\util_uri_normalize_incoming_path('/before/something/after')
@@ -122,7 +122,7 @@ class UriTest extends BaseTestCase
 
     public function testWrongIncomingConfigurationResultsInMissedPathNormalizationButDefaultStillWorks()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=no_asterisk,']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=no_asterisk,']);
         $this->assertSame(
             '/no_asterisk/?/after',
             \DDtrace\Private_\util_uri_normalize_incoming_path('/no_asterisk/123/after')
@@ -131,7 +131,7 @@ class UriTest extends BaseTestCase
 
     public function testWrongOutgoingConfigurationResultsInMissedPathNormalizationButDefaultStillWorks()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=no_asterisk,']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=no_asterisk,']);
         $this->assertSame(
             '/no_asterisk/?/after',
             \DDtrace\Private_\util_uri_normalize_outgoing_path('/no_asterisk/123/after')
@@ -140,7 +140,7 @@ class UriTest extends BaseTestCase
 
     public function testMixingFragmentRegexAndPatternMatchingIncoming()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=name/*']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=name/*']);
         $this->assertSame(
             '/numeric/?/name/?',
             \DDtrace\Private_\util_uri_normalize_incoming_path('/numeric/123/name/some_name')
@@ -149,7 +149,7 @@ class UriTest extends BaseTestCase
 
     public function testMixingFragmentRegexAndPatternMatchingOutgoing()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=name/*']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=name/*']);
         $this->assertSame(
             '/numeric/?/name/?',
             \DDtrace\Private_\util_uri_normalize_outgoing_path('/numeric/123/name/some_name')
@@ -210,7 +210,7 @@ class UriTest extends BaseTestCase
     public function testProvidedFragmentRegexAreAdditiveToDefaultFragmentRegexes()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$',
         ]);
 
         $this->assertSame(
@@ -226,7 +226,7 @@ class UriTest extends BaseTestCase
     public function testProvidedFragmentRegexHasOptionalLeadingAndTrailingSlash()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$',
         ]);
 
         $this->assertSame(
@@ -242,7 +242,7 @@ class UriTest extends BaseTestCase
     public function testProvidedFragmentRegexCanHaveLeadingAndTrailingSlash()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/^some_name$/',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/^some_name$/',
         ]);
 
         $this->assertSame(
@@ -258,7 +258,7 @@ class UriTest extends BaseTestCase
     public function testProvidedFragmentRegexCanHaveLeadingAndTrailingSpaces()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$    ,       ^other$     ',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^some_name$    ,       ^other$     ',
         ]);
 
         $this->assertSame(
@@ -274,7 +274,7 @@ class UriTest extends BaseTestCase
     public function testWrongFragmentNormalizationRegexDoesNotCauseError()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/(((((]]]]]]wrong_regex$/',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=/(((((]]]]]]wrong_regex$/',
         ]);
 
         $this->assertSame(
@@ -290,7 +290,7 @@ class UriTest extends BaseTestCase
     public function testWrongFragmentNormalizationRegexDoesNotImpactOtherRegexes()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=(((((]]]]]]wrong_regex$,valid',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=(((((]]]]]]wrong_regex$,valid',
         ]);
 
         $this->assertSame(
@@ -330,8 +330,8 @@ class UriTest extends BaseTestCase
     public function testSamePatternMultipleLocations()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*',
         ]);
 
         $this->assertSame(
@@ -347,8 +347,8 @@ class UriTest extends BaseTestCase
     public function testPartialMatching()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*-something',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*-something',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*-something',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*-something',
         ]);
 
         $this->assertSame(
@@ -364,8 +364,8 @@ class UriTest extends BaseTestCase
     public function testComplexPatterns()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*/*/then/something/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*/*/then/something/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=path/*/*/then/something/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=path/*/*/then/something/*',
         ]);
 
         $this->assertSame(
@@ -381,8 +381,8 @@ class UriTest extends BaseTestCase
     public function testPatternCanNormalizeSingleFragment()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=*-something',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=*-something',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=*-something',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=*-something',
         ]);
 
         $this->assertSame(
@@ -398,9 +398,9 @@ class UriTest extends BaseTestCase
     public function testItWorksWithHttpFulllUrls()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
         ]);
 
         $this->assertSame(
@@ -416,9 +416,9 @@ class UriTest extends BaseTestCase
     public function testItWorksWithHttpsFulllUrls()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
         ]);
 
         $this->assertSame(
@@ -434,9 +434,9 @@ class UriTest extends BaseTestCase
     public function testItWorksWithComplexSchemePatternAsDefinedByRFC3986()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
         ]);
 
         // https://tools.ietf.org/html/rfc3986#page-17
@@ -459,9 +459,9 @@ class UriTest extends BaseTestCase
     public function testItWorksWithHttpFulllUrlsIncludingPort()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
+            'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX=^abc$',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nested/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nested/*',
         ]);
 
         $this->assertSame(
@@ -477,8 +477,8 @@ class UriTest extends BaseTestCase
     public function testCaseSensitivity()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_INCOMING=nEsTeD/*',
-            'SIGNALFX_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nEsTeD/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_INCOMING=nEsTeD/*',
+            'DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING=nEsTeD/*',
         ]);
 
         $this->assertSame(

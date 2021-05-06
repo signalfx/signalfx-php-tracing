@@ -26,18 +26,18 @@ final class TracerTest extends BaseTestCase
 
     protected function ddSetUp()
     {
-        \putenv('SIGNALFX_AUTOFINISH_SPANS');
-        \putenv('SIGNALFX_TRACE_REPORT_HOSTNAME');
-        \putenv('SIGNALFX_TAGS');
+        \putenv('DD_AUTOFINISH_SPANS');
+        \putenv('DD_TRACE_REPORT_HOSTNAME');
+        \putenv('DD_TAGS');
         parent::ddSetUp();
     }
 
     protected function ddTearDown()
     {
         parent::ddTearDown();
-        \putenv('SIGNALFX_TRACE_REPORT_HOSTNAME');
-        \putenv('SIGNALFX_AUTOFINISH_SPANS');
-        \putenv('SIGNALFX_TAGS');
+        \putenv('DD_TRACE_REPORT_HOSTNAME');
+        \putenv('DD_AUTOFINISH_SPANS');
+        \putenv('DD_TAGS');
     }
 
     public function testStartSpanAsNoop()
@@ -209,7 +209,7 @@ final class TracerTest extends BaseTestCase
 
     public function testUnfinishedSpansCanBeFinishedOnFlush()
     {
-        \putenv('SIGNALFX_AUTOFINISH_SPANS=true');
+        \putenv('DD_AUTOFINISH_SPANS=true');
 
         $transport = new DebugTransport();
         $tracer = new Tracer($transport);
@@ -242,7 +242,7 @@ final class TracerTest extends BaseTestCase
 
     public function testFlushAddsHostnameToRootSpanWhenEnabled()
     {
-        \putenv('SIGNALFX_TRACE_REPORT_HOSTNAME=true');
+        \putenv('DD_TRACE_REPORT_HOSTNAME=true');
 
         $tracer = new Tracer(new NoopTransport());
         $scope = $tracer->startRootSpan(self::OPERATION_NAME);
@@ -261,7 +261,7 @@ final class TracerTest extends BaseTestCase
 
     public function testHonorGlobalTags()
     {
-        \putenv('SIGNALFX_TAGS=key1:value1,key2:value2');
+        \putenv('DD_TAGS=key1:value1,key2:value2');
 
         $transport = new DebugTransport();
         $tracer = new Tracer($transport);

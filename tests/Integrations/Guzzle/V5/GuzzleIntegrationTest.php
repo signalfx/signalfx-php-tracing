@@ -47,9 +47,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
     protected function ddTearDown()
     {
         parent::ddTearDown();
-        putenv('DD_DISTRIBUTED_TRACING');
         putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN');
-        putenv('DD_DISTRIBUTED_TRACING');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
     }
 
     /**
@@ -162,7 +161,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
     public function testDistributedTracingIsNotPropagatedIfDisabled()
     {
-        putenv('DD_DISTRIBUTED_TRACING=false');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING=false');
         $client = new Client();
         $found = [];
 
@@ -307,7 +306,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
     public function testAppendHostnameToServiceName()
     {
-        putenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
+        putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
 
         $traces = $this->isolateTracer(function () {
             $this->getMockedClient()->get('http://example.com');
@@ -331,7 +330,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             },
             __DIR__ . '/guzzle_in_web_request.php',
             [
-                'DD_SERVICE' => 'top_level_app',
+                'SIGNALFX_SERVICE' => 'top_level_app',
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );

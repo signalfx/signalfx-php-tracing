@@ -27,7 +27,6 @@ x-aliases:
         - REDIS_HOSTNAME=redis_integration
         - DDAGENT_HOSTNAME=ddagent_integration
         - AGENT_HOSTNAME=signalfx_agent_integration
-        - APP_ENV=dd_testing
         - COMPOSER_MEMORY_LIMIT=-1
         - PHP_IDE_CONFIG=serverName=docker
       cap_add:
@@ -213,7 +212,7 @@ services:
       APACHE_RUN_USER: www-data
       APACHE_RUN_GROUP: www-data
       APACHE_LOG_DIR: /var/log/apache2
-      DD_TRACE_DEBUG: 'true'
+      SIGNALFX_TRACE_DEBUG: 'true'
       DD_AGENT_HOST: agent
     depends_on:
       - agent
