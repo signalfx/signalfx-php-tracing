@@ -14,15 +14,10 @@ final class StreamTest extends BaseTestCase
         $transport = new Stream(new Json());
         $tracer = new Tracer($transport);
 
-        $s = fopen('/tmp/hextoint', 'a+');
-        fwrite($s, "startspan\n");
         $span = $tracer->startSpan('test');
         $span->finish();
 
-        fwrite($s, print_r($span, TRUE));
-
         ob_start();
-        fflush($s);
         $transport->send($tracer);
         $json = ob_get_clean();
 

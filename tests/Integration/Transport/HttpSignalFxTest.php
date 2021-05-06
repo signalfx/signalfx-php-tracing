@@ -4,7 +4,7 @@ namespace DDTrace\Tests\Integration\Transport;
 
 use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Tests\Common\AgentReplayerTrait;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Tracer;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\GlobalTracer;
@@ -15,7 +15,7 @@ final class HttpSignalFxTest extends BaseTestCase
 
     public function agentUrl()
     {
-        return 'http://' . (isset($_SERVER["AGENT_HOSTNAME"]) ? $_SERVER["AGENT_HOSTNAME"] :  "localhost") . ':9080';
+        return 'http://' . (isset($_SERVER["AGENT_HOSTNAME"]) ? $_SERVER["AGENT_HOSTNAME"] : "signalfx_agent_integration") . ':9080';
     }
 
     public function agentTracesUrl()
