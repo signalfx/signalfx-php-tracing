@@ -102,7 +102,7 @@ final class JsonZipkinV2 implements Encoder
             }
         }
 
-        if (!isset($span['meta']['component'])) {
+        if (!isset($span['meta']['component']) && !empty($span['service'])) {
             $arraySpan['tags']['component'] = $span['service'];
         }
 
@@ -116,6 +116,11 @@ final class JsonZipkinV2 implements Encoder
             switch ($span['type']) {
                 case Type::HTTP_CLIENT:
                     $arraySpan['kind'] = "CLIENT";
+                    if (!empty($span['service'])) {
+                      $arraySpan['remoteEndpoint'] = [
+                        'serviceName' => $span['service'],
+                      ];
+                    }
                     break;
                 case Type::CLI:
                 case Type::WEB_SERVLET:
@@ -124,7 +129,8 @@ final class JsonZipkinV2 implements Encoder
             }
         }
 
-        if (isset($span['error']) && $span['error']) {
+        // Integrations set their error via SpanData which does not contain an error field.
+        if (isset($span['meta'][Tag::ERROR_KIND])) {
             $arraySpan['tags'][Tag::ERROR] = "true";
         }
 

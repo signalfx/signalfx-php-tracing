@@ -279,10 +279,17 @@ trait TracerTestTrait
                     isset($rawSpan['parentId']) ? sfx_trace_convert_hex_id($rawSpan['parentId']) : null
                 );
                 $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
+
+                if (isset($rawSpan['remoteEndpoint']['serviceName'])) {
+                  $service = $rawSpan['remoteEndpoint']['serviceName'];
+                } else {
+                  $service = $rawSpan['localEndpoint']['serviceName'];
+                }
+
                 $span = new Span(
                     $rawSpan['name'],
                     $spanContext,
-                    $rawSpan['localEndpoint']['serviceName'],
+                    $service,
                     $resource,
                     $rawSpan['timestamp']
                 );

@@ -35,7 +35,7 @@ final class JsonZipkinV2Test extends BaseTestCase
         putenv('DD_AUTOFINISH_SPANS=');
     }
 
-    public function testEncodeTracesSuccess()
+    public function testEncodeClientSpanTracesSuccess()
     {
         $context = SpanContext::createAsRoot();
         $traceId = HexConversion::idToHex($context->getTraceId());
@@ -44,14 +44,16 @@ final class JsonZipkinV2Test extends BaseTestCase
 [{"traceId":"$traceId","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"$parentId",
 JSON
             .   <<<JSON
-"tags":{"component":"cli"},"kind":"CLIENT",
+"tags":{"component":"icurl"},"kind":"CLIENT",
 JSON
             .   <<<JSON
-"localEndpoint":{"serviceName":"unnamed-php-service"}}]
+"remoteEndpoint":{"serviceName":"remote-service"},"localEndpoint":{"serviceName":"unnamed-php-service"}}]
 JSON;
 
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
+        $span->setTag(Tag::COMPONENT, 'icurl');
+        $span->service = 'remote-service';
 
         $logger = $this->prophesize('DDTrace\Log\LoggerInterface');
         $logger->debug(Argument::any())->shouldNotBeCalled();

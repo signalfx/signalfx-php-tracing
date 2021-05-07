@@ -453,7 +453,7 @@ final class TracerTest extends BaseTestCase
             ]
         );
 
-        $this->assertSame('changed_service_by_domain_host', $traces[0][1]['meta']['component']);
+        $this->assertSame('changed_service_by_domain_host', $traces[0][1]['service']);
     }
 
     public function testServiceMappingHttpClientsSplitByDomainIp()
@@ -470,7 +470,7 @@ final class TracerTest extends BaseTestCase
             ]
         );
 
-        $this->assertSame('changed_service_by_domain_ip', $traces[0][1]['meta']['component']);
+        $this->assertSame('changed_service_by_domain_ip', $traces[0][1]['service']);
     }
 
     public function dummyMethodGlobalTags()

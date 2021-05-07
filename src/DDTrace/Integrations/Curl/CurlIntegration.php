@@ -7,6 +7,7 @@ use DDTrace\Integrations\Integration;
 use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Type;
+use DDTrace\Util\ArrayKVStore;
 
 /**
  * @param \DDTrace\SpanData $span
@@ -50,7 +51,6 @@ final class CurlIntegration extends Integration
             'posthook' => function (SpanData $span, $args, $retval) use ($integration) {
                 $span->name = $span->resource = 'curl_exec';
                 $span->type = Type::HTTP_CLIENT;
-                $span->service = 'curl';
                 $integration->addTraceAnalyticsIfEnabled($span);
 
                 if (!isset($args[0])) {
@@ -78,6 +78,8 @@ final class CurlIntegration extends Integration
                  * See https://docs.datadoghq.com/logs/processing/attributes_naming_convention/
                  */
                 $span->meta[Tag::HTTP_URL] = $sanitizedUrl;
+                $span->meta[Tag::HTTP_METHOD] = ArrayKVStore::getForResource($ch, Tag::HTTP_METHOD, 'GET');
+                $span->meta[Tag::COMPONENT] = 'curl';
 
                 addSpanDataTagFromCurlInfo($span, $info, Tag::HTTP_STATUS_CODE, 'http_code');
 
@@ -107,6 +109,35 @@ final class CurlIntegration extends Integration
                 }
             },
         ]);
+
+        \DDTrace\hook_function('curl_setopt', null, function ($args) use ($integration) {
+              if (!isset($args[0])) {
+                  return;
+              }
+
+              $ch = $args[0];
+              $option = $args[1];
+              $value = $args[2];
+
+              switch ($option) {
+                  case CURLOPT_POST:
+                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'POST');
+                      break;
+                  case CURLOPT_CUSTOMREQUEST:
+                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, $value);
+                      break;
+                  case CURLOPT_PUT:
+                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'PUT');
+                      break;
+                  case CURLOPT_HTTPGET:
+                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'GET');
+                      break;
+                  case CURLOPT_NOBODY:
+                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'HEAD');
+                      break;
+              }
+        });
+
 
         return Integration::LOADED;
     }
