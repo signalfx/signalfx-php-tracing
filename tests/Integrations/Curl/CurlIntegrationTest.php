@@ -346,6 +346,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                 'http.method' => 'GET',
                 'sfx.error.kind' => 'curl error',
             ])
+            ->setError()
             ->withExistingTagsNames(['sfx.error.message'])
             ->withExistingTagsNames(self::commonCurlInfoTags())
             ->skipTagsLike('/^curl\..*/'),
@@ -377,6 +378,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                   'http.method' => 'GET',
                   'sfx.error.kind' => 'curl error',
               ])
+              ->setError()
               ->withExistingTagsNames(['sfx.error.message'])
               ->withExistingTagsNames(self::commonCurlInfoTags())
               ->skipTagsLike('/^curl\..*/')
@@ -409,6 +411,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                 'sfx.error.kind' => 'curl error',
                 'sfx.error.message' => 'Could not resolve host: __i_am_not_real__.invalid',
             ])
+            ->setError()
             ->withExistingTagsNames(self::commonCurlInfoTags())
             ->skipTagsLike('/^curl\..*/')
         ]);
