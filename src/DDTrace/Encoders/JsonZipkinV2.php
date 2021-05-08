@@ -115,6 +115,7 @@ final class JsonZipkinV2 implements Encoder
         if (isset($span['type'])) {
             switch ($span['type']) {
                 case Type::HTTP_CLIENT:
+                case Type::SQL:
                 case Type::MEMCACHED:
                     $arraySpan['kind'] = "CLIENT";
                     if (!empty($span['service'])) {

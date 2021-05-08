@@ -55,9 +55,9 @@ class MysqliTest extends IntegrationTestCase
                 ->setError()
                 ->withExactTags(self::baseTags())
                 ->withExistingTagsNames([
-                    'error.msg',
-                    'error.type',
-                    'error.stack',
+                    'sfx.error.message',
+                    'sfx.error.kind',
+                    'sfx.error.stack',
                 ]),
         ]);
     }
