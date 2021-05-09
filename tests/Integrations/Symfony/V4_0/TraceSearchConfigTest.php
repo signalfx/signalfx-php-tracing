@@ -13,14 +13,6 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
         return __DIR__ . '/../../../Frameworks/Symfony/Version_4_0/public/index.php';
     }
 
-    protected static function getEnvs()
-    {
-        return array_merge(parent::getEnvs(), [
-            'DD_TRACE_ANALYTICS_ENABLED' => 'true',
-            'DD_SYMFONY_ANALYTICS_SAMPLE_RATE' => '0.3',
-        ]);
-    }
-
     /**
      * @throws \Exception
      */
@@ -44,11 +36,7 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                       'http.method' => 'GET',
                       'http.url' => 'http://localhost:9999/simple',
                       'http.status_code' => '200',
-                      'integration.name' => 'symfony',
                       'component' => 'symfony',
-                  ])->withExactMetrics([
-                      '_dd1.sr.eausr' => 0.3,
-                      '_sampling_priority_v1' => 1,
                   ])->withChildren([
                     SpanAssertion::exists('symfony.kernel.terminate'),
                     SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -59,10 +47,10 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                             SpanAssertion::exists('symfony.kernel.controller_arguments'),
                             SpanAssertion::build(
                                 'symfony.controller',
-                                'symfony',
-                                'web',
+                                'unnamed-php-service',
+                                SpanAssertion::NOT_TESTED,
                                 'App\Controller\CommonScenariosController::simpleAction'
-                            ),
+                            )->withExactTags(['component' => 'symfony']),
                             SpanAssertion::exists('symfony.kernel.response'),
                             SpanAssertion::exists('symfony.kernel.finish_request'),
                         ]),
