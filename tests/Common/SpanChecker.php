@@ -205,7 +205,7 @@ final class SpanChecker
         }
         // PHP 5.6 and 7.* handle differently the way a foreach is done while removing in the loop items
         // from the array itself. As a quick fix, we iterate over keys instead of elements themselves.
-        $spanIds = \array_keys($byId);
+        $spanIds = \array_map('strval', \array_keys($byId));
 
         do {
             $lastCount = count($byId);
