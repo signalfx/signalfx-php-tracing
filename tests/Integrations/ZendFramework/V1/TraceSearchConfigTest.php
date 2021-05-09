@@ -13,14 +13,6 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
         return __DIR__ . '/../../../Frameworks/ZendFramework/Version_1_12/public/index.php';
     }
 
-    protected static function getEnvs()
-    {
-        return array_merge(parent::getEnvs(), [
-            'DD_TRACE_ANALYTICS_ENABLED' => 'true',
-            'DD_ZENDFRAMEWORK_ANALYTICS_SAMPLE_RATE' => '0.3',
-        ]);
-    }
-
     /**
      * @throws \Exception
      */
@@ -33,21 +25,21 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
         $this->assertExpectedSpans(
             $traces,
             [
-                SpanAssertion::build('zf1.request', 'zf1', 'web', 'simple@index default')
-                    ->withExactTags([
-                        'zf1.controller' => 'simple',
-                        'zf1.action' => 'index',
-                        'zf1.route_name' => 'default',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/simple',
-                        'http.status_code' => '200',
-                        'integration.name' => 'zendframework',
-                        'component' => 'zendframework',
-                    ])
-                    ->withExactMetrics([
-                        '_dd1.sr.eausr' => 0.3,
-                        '_sampling_priority_v1' => 1,
-                    ]),
+                SpanAssertion::build(
+                    'simple@index default',
+                    'unnamed-php-service',
+                    SpanAssertion::NOT_TESTED,
+                    SpanAssertion::NOT_TESTED,
+                )
+                ->withExactTags([
+                    'zf1.controller' => 'simple',
+                    'zf1.action' => 'index',
+                    'zf1.route_name' => 'default',
+                    'http.method' => 'GET',
+                    'http.url' => 'http://localhost:9999/simple',
+                    'http.status_code' => '200',
+                    'component' => 'zendframework',
+                ])
             ]
         );
     }
