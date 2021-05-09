@@ -16,11 +16,9 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_ANALYTICS_ENABLED' => 'true',
-            'DD_SYMFONY_ANALYTICS_SAMPLE_RATE' => '0.3',
+            'SIGNALFX_SERVICE' => 'symfony',
         ]);
     }
-
     /**
      * @throws \Exception
      */
@@ -36,7 +34,7 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                 SpanAssertion::build(
                     'symfony.request',
                     'symfony',
-                    'web',
+                    SpanAssertion::NOT_TESTED,
                     'simple'
                 )->withExactTags([
                     'symfony.route.action' => 'App\Controller\CommonScenariosController@simpleAction',
@@ -44,9 +42,7 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://localhost:9999/simple',
                     'http.status_code' => '200',
-                ])->withExactMetrics([
-                    '_dd1.sr.eausr' => 0.3,
-                    '_sampling_priority_v1' => 1,
+                    'component' => 'symfony',
                 ])->withChildren([
                     SpanAssertion::exists('symfony.kernel.terminate'),
                     SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -58,9 +54,12 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                             SpanAssertion::build(
                                 'symfony.controller',
                                 'symfony',
-                                'web',
+                                SpanAssertion::NOT_TESTED,
                                 'App\Controller\CommonScenariosController::simpleAction'
-                            ),
+                            )
+                            ->withExactTags([
+                                'component' => 'symfony',
+                            ]),
                             SpanAssertion::exists('symfony.kernel.response'),
                             SpanAssertion::exists('symfony.kernel.finish_request'),
                         ]),
