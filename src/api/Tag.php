@@ -14,7 +14,7 @@ class Tag
     const RESOURCE_NAME = 'resource.name';
     const COMPONENT = 'component';
     const DB_STATEMENT = 'db.statement';
-    const DB_TYPE = 'db.system';
+    const DB_TYPE = 'db.type';
     const DB_INSTANCE = 'db.instance';
     const DB_USER = 'db.user';
 
