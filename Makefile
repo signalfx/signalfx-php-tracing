@@ -280,7 +280,6 @@ TEST_INTEGRATIONS_55 := \
 
 TEST_WEB_55 := \
 	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
@@ -308,7 +307,6 @@ TEST_INTEGRATIONS_56 := \
 
 TEST_WEB_56 := \
 	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
@@ -340,7 +338,6 @@ TEST_INTEGRATIONS_70 := \
 TEST_WEB_70 := \
 	test_metrics \
 	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
@@ -372,7 +369,6 @@ TEST_INTEGRATIONS_71 := \
 TEST_WEB_71 := \
 	test_metrics \
 	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -409,7 +405,6 @@ TEST_INTEGRATIONS_72 := \
 
 TEST_WEB_72 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -450,7 +445,6 @@ TEST_INTEGRATIONS_73 :=\
 
 TEST_WEB_73 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
@@ -487,7 +481,6 @@ TEST_INTEGRATIONS_74 := \
 
 TEST_WEB_74 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
@@ -525,7 +518,6 @@ TEST_INTEGRATIONS_80 := \
 
 TEST_WEB_80 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_8x \
 	test_web_slim_312 \
 	test_web_slim_4 \
@@ -630,8 +622,6 @@ test_integrations_predis1:
 test_web_cakephp_28:
 	$(COMPOSER) --working-dir=tests/Frameworks/CakePHP/Version_2_8 update
 	$(call run_tests,--testsuite=cakephp-28-test)
-test_web_codeigniter_22:
-	$(call run_tests,--testsuite=codeigniter-22-test)
 test_web_laravel_42:
 	$(COMPOSER) --working-dir=tests/Frameworks/Laravel/Version_4_2 update
 	php tests/Frameworks/Laravel/Version_4_2/artisan optimize

@@ -37,7 +37,6 @@ const ENVS = [
     'DD_TRACE_SAMPLE_RATE' => ['0.3'],
     // Integrations
     'DD_TRACE_CAKEPHP_ENABLED' => ['false'],
-    'DD_TRACE_CODEIGNITER_ENABLED' => ['false'],
     'DD_TRACE_CURL_ENABLED' => ['false'],
     'DD_TRACE_ELASTICSEARCH_ENABLED' => ['false'],
     'DD_TRACE_ELOQUENT_ENABLED' => ['false'],
