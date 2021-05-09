@@ -304,8 +304,7 @@ TEST_INTEGRATIONS_56 := \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
-	test_integrations_predis1 \
-	test_opentracing_beta5
+	test_integrations_predis1
 
 TEST_WEB_56 := \
 	test_web_cakephp_28 \
@@ -336,8 +335,7 @@ TEST_INTEGRATIONS_70 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5
+	test_integrations_predis1
 
 TEST_WEB_70 := \
 	test_metrics \
@@ -369,10 +367,7 @@ TEST_INTEGRATIONS_71 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_71 := \
 	test_metrics \
@@ -410,10 +405,7 @@ TEST_INTEGRATIONS_72 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_72 := \
 	test_metrics \
@@ -454,10 +446,7 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_73 := \
 	test_metrics \
@@ -494,10 +483,7 @@ TEST_INTEGRATIONS_74 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_74 := \
 	test_metrics \
@@ -535,8 +521,7 @@ TEST_INTEGRATIONS_80 := \
 	test_integrations_pdo \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
-	test_integrations_predis1 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_80 := \
 	test_metrics \
@@ -600,18 +585,6 @@ test_distributed_tracing:
 
 test_metrics:
 	$(call run_tests,--testsuite=metrics $(TESTS))
-
-test_opentracing_beta5:
-	$(MAKE) test_scenario_opentracing_beta5
-	$(call run_tests,tests/OpenTracerUnit)
-
-test_opentracing_beta6:
-	$(MAKE) test_scenario_opentracing_beta6
-	$(call run_tests,tests/OpenTracerUnit)
-
-test_opentracing_10:
-	$(MAKE) test_scenario_opentracing10
-	$(call run_tests,tests/OpenTracer1Unit)
 
 test_integrations: $(TEST_INTEGRATIONS_$(PHP_MAJOR_MINOR))
 test_web: $(TEST_WEB_$(PHP_MAJOR_MINOR))
