@@ -5,6 +5,7 @@ namespace DDTrace\Tests\Integrations\Symfony\V5_1;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
+use DDTrace\Tag;
 
 class CommonScenariosTest extends WebFrameworkTestCase
 {
@@ -18,7 +19,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
     {
         return array_merge(parent::getEnvs(), [
             'DD_TRACE_DEBUG' => 'true',
-            'DD_SERVICE' => 'test_symfony_51',
+            'SIGNALFX_SERVICE' => 'test_symfony_51',
         ]);
     }
 
@@ -45,7 +46,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_51',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple'
                     )->withExactTags([
                         'symfony.route.action' => 'App\Controller\CommonScenariosController@simpleAction',
@@ -53,6 +54,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')
                         ->withChildren([
@@ -67,9 +69,12 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                     SpanAssertion::build(
                                         'symfony.controller',
                                         'test_symfony_51',
-                                        'web',
+                                        SpanAssertion::NOT_TESTED,
                                         'App\Controller\CommonScenariosController::simpleAction'
                                     )
+                                    ->withExactTags([
+                                        'component' => 'symfony',
+                                    ])
                                 ]),
                         ]),
                         SpanAssertion::exists('symfony.kernel.terminate'),
@@ -79,7 +84,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_51',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'simple_view'
                     )->withExactTags([
                         'symfony.route.action' => 'App\Controller\CommonScenariosController@simpleViewAction',
@@ -87,6 +92,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -98,15 +104,19 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 SpanAssertion::build(
                                     'symfony.controller',
                                     'test_symfony_51',
-                                    'web',
+                                    SpanAssertion::NOT_TESTED,
                                     'App\Controller\CommonScenariosController::simpleViewAction'
-                                )->withChildren([
+                                )
+                                ->withExactTags([
+                                    'component' => 'symfony',
+                                ])
+                                ->withChildren([
                                     SpanAssertion::build(
                                         'symfony.templating.render',
                                         'test_symfony_51',
-                                        'web',
+                                        SpanAssertion::NOT_TESTED,
                                         'Twig\Environment twig_template.html.twig'
-                                    )->withExactTags([]),
+                                    )->withExactTags(['component' => 'symfony']),
                                 ]),
                                 SpanAssertion::exists('symfony.kernel.response'),
                                 SpanAssertion::exists('symfony.kernel.finish_request'),
@@ -118,7 +128,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_51',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'error'
                     )->withExactTags([
                         'symfony.route.action' => 'App\Controller\CommonScenariosController@errorAction',
@@ -126,14 +136,15 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error',
                         'http.status_code' => '500',
+                        'component' => 'symfony',
                     ])
                     ->setError('Exception', 'An exception occurred')
-                    ->withExistingTagsNames(['error.stack'])
+                    ->withExistingTagsNames([Tag::ERROR_STACK])
                     ->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')
                         ->setError('Exception', 'An exception occurred')
-                        ->withExistingTagsNames(['error.stack'])
+                        ->withExistingTagsNames([Tag::ERROR_STACK])
                         ->withChildren([
                             SpanAssertion::exists('symfony.httpkernel.kernel.boot'),
                             SpanAssertion::exists('symfony.kernel.handle')->withChildren([
@@ -143,11 +154,12 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 SpanAssertion::build(
                                     'symfony.controller',
                                     'test_symfony_51',
-                                    'web',
+                                    SpanAssertion::NOT_TESTED,
                                     'App\Controller\CommonScenariosController::errorAction'
                                 )
+                                ->withExactTags(['component' => 'symfony'])
                                 ->setError('Exception', 'An exception occurred')
-                                ->withExistingTagsNames(['error.stack']),
+                                ->withExistingTagsNames([Tag::ERROR_STACK]),
                                 SpanAssertion::exists('symfony.kernel.handleException')->withChildren([
                                     SpanAssertion::exists('symfony.kernel.exception'),
                                     SpanAssertion::exists('symfony.kernel.response')->withChildren([
@@ -163,12 +175,13 @@ class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'symfony.request',
                         'test_symfony_51',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /does_not_exist'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/does_not_exist',
                         'http.status_code' => '404',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -186,7 +199,10 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         'Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException',
                                         'No route found for "GET /does_not_exist"'
                                     )
-                                    ->withExistingTagsNames(['error.stack']),
+                                    ->withExactTags([
+                                        'component' => 'symfony',
+                                    ])
+                                    ->withExistingTagsNames([Tag::ERROR_STACK]),
                             ]),
                         ]),
                     ]),
