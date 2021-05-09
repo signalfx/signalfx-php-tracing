@@ -5,6 +5,7 @@ namespace DDTrace\Tests\Integrations\PHPRedis\V5;
 use DDTrace\Integrations\PHPRedis\PHPRedisIntegration;
 use DDTrace\Tests\Common\IntegrationTestCase;
 use DDTrace\Tests\Common\SpanAssertion;
+use DDTrace\Tag;
 use Exception;
 
 // Note: PHPRedis 5 has many deprecated methodsd (comapred to 4) that we still want to test
@@ -112,7 +113,7 @@ class PHPRedisTest extends IntegrationTestCase
                 'out.host' => $host,
                 'out.port' => $port ?: $this->port,
             ])
-            ->withExistingTagsNames(['error.msg', 'error.stack']),
+            ->withExistingTagsNames([Tag::ERROR_MSG, Tag::ERROR_STACK]),
         ]);
     }
 
@@ -2098,7 +2099,7 @@ class PHPRedisTest extends IntegrationTestCase
                 "Redis.connect"
             )
             ->setError()
-            ->withExistingTagsNames(['error.msg', 'error.stack'])
+            ->withExistingTagsNames([Tag::ERROR_MSG, Tag::ERROR_STACK])
             ->withExactTags([
                 'out.host' => 'non-existing-host',
                 'out.port' => $this->port,
