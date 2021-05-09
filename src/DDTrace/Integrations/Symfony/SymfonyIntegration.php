@@ -53,6 +53,7 @@ class SymfonyIntegration extends Integration
                         $span->resource = \get_class($this);
                         $span->type = Type::WEB_SERVLET;
                         $span->service = \ddtrace_config_app_name('symfony');
+                        $span->meta[Tag::COMPONENT] = 'symfony';
                     }
                 );
 
@@ -64,6 +65,7 @@ class SymfonyIntegration extends Integration
                         $span->resource = \get_class($this);
                         $span->type = Type::WEB_SERVLET;
                         $span->service = \ddtrace_config_app_name('symfony');
+                        $span->meta[Tag::COMPONENT] = 'symfony';
                     }
                 );
             }
@@ -100,6 +102,7 @@ class SymfonyIntegration extends Integration
     {
         $integration->appName = \ddtrace_config_app_name('symfony');
         $integration->symfonyRequestSpan->overwriteOperationName('symfony.request');
+        $integration->symfonyRequestSpan->setTag(Tag::COMPONENT, 'symfony');
         $integration->symfonyRequestSpan->setTag(Tag::SERVICE_NAME, $integration->appName);
         $integration->addTraceAnalyticsIfEnabledLegacy($integration->symfonyRequestSpan);
 
@@ -137,6 +140,7 @@ class SymfonyIntegration extends Integration
                             $span->resource = "{$class}::{$methodname}";
                             $span->type = Type::WEB_SERVLET;
                             $span->service = \ddtrace_config_app_name('doctrine');
+                            $span->meta[Tag::COMPONENT] = 'symfony';
                         }
                     );
                 }
@@ -154,6 +158,7 @@ class SymfonyIntegration extends Integration
                 $span->name = $span->resource = 'symfony.kernel.handle';
                 $span->service = $integration->appName;
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'symfony';
 
                 $integration->symfonyRequestSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
                 $integration->symfonyRequestSpan->setTag(
@@ -217,6 +222,7 @@ class SymfonyIntegration extends Integration
                                                 $span->resource = $controllerName;
                                                 $span->type = Type::WEB_SERVLET;
                                                 $span->service = $integration->appName;
+                                                $span->meta[Tag::COMPONENT] = 'symfony';
                                             }
                                         );
                                     }
@@ -228,6 +234,7 @@ class SymfonyIntegration extends Integration
                                             $span->resource = $controllerName;
                                             $span->type = Type::WEB_SERVLET;
                                             $span->service = $integration->appName;
+                                            $span->meta[Tag::COMPONENT] = 'symfony';
                                         }
                                     );
                                 }
@@ -249,6 +256,7 @@ class SymfonyIntegration extends Integration
         $exceptionHandlingTracer = function (SpanData $span, $args, $retval) use ($integration) {
             $span->name = $span->resource = 'symfony.kernel.handleException';
             $span->service = $integration->appName;
+            $span->meta[Tag::COMPONENT] = 'symfony';
             if (!(isset($retval) && \method_exists($retval, 'getStatusCode') && $retval->getStatusCode() < 500)) {
                 $integration->symfonyRequestSpan->setError($args[0]);
             }
@@ -263,6 +271,7 @@ class SymfonyIntegration extends Integration
             $span->name = 'symfony.templating.render';
             $span->service = $integration->appName;
             $span->type = Type::WEB_SERVLET;
+            $span->meta[Tag::COMPONENT] = 'symfony';
 
             $resourceName = count($args) > 0 ? get_class($this) . ' ' . $args[0] : get_class($this);
             $span->resource = $resourceName;
