@@ -649,12 +649,12 @@
     <providesextension>signalfx_tracing</providesextension>
     <extsrcrelease>
         <filelist>
-            <install as="datadog_trace/bridge/_generated.php" name="bridge/_generated.php" />
-            <install as="datadog_trace/bridge/autoload.php" name="bridge/autoload.php" />
-            <install as="datadog_trace/bridge/curl_inject.php" name="bridge/curl_inject.php" />
-            <install as="datadog_trace/bridge/dd_init.php" name="bridge/dd_init.php" />
-            <install as="datadog_trace/bridge/dd_register_optional_deps_autoloader.php" name="bridge/dd_register_optional_deps_autoloader.php" />
-            <install as="datadog_trace/bridge/dd_wrap_autoloader.php" name="bridge/dd_wrap_autoloader.php" />
+            <install as="signalfx_tracing/bridge/_generated.php" name="bridge/_generated.php" />
+            <install as="signalfx_tracing/bridge/autoload.php" name="bridge/autoload.php" />
+            <install as="signalfx_tracing/bridge/curl_inject.php" name="bridge/curl_inject.php" />
+            <install as="signalfx_tracing/bridge/dd_init.php" name="bridge/dd_init.php" />
+            <install as="signalfx_tracing/bridge/dd_register_optional_deps_autoloader.php" name="bridge/dd_register_optional_deps_autoloader.php" />
+            <install as="signalfx_tracing/bridge/dd_wrap_autoloader.php" name="bridge/dd_wrap_autoloader.php" />
         </filelist>
     </extsrcrelease>
 </package>
