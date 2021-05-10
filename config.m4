@@ -54,6 +54,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     dnl ddtrace.c comes first, then everything else alphabetically
     DD_TRACE_PHP_SOURCES="ext/php5/ddtrace.c \
       ext/php5/arrays.c \
+      ext/php5/auto_flush.c \
       ext/php5/circuit_breaker.c \
       ext/php5/comms_php.c \
       ext/php5/compat_string.c \
@@ -74,7 +75,6 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       ext/php5/integrations/integrations.c \
       ext/php5/logging.c \
       ext/php5/memory_limit.c \
-      ext/php5/php5_4/auto_flush.c \
       ext/php5/php5_4/dispatch.c \
       ext/php5/php5_4/engine_hooks.c \
       ext/php5/random.c \
