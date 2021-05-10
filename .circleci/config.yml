@@ -402,6 +402,7 @@ jobs:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
       HTTPBIN_HOSTNAME: httpbin_integration
+      DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
       docker_image: datadog/dd-trace-ci:php-<< parameters.php_major_minor >>_buster
@@ -492,9 +493,6 @@ jobs:
       xfail_list:
         type: string
         default: none
-      php_src_dir:
-        type: string
-        default: /usr/src/php
     working_directory: ~/datadog
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
@@ -510,18 +508,16 @@ jobs:
       - run:
           name: Run tests
           command: |
-            mkdir -p <<parameters.php_src_dir>>
-            docker-php-source extract
+            sudo rm -f /opt/php/debug/conf.d/memcached.ini
             if [[ ! "<<parameters.xfail_list>>" == "none" ]]; then
-              cp "<<parameters.xfail_list>>" <<parameters.php_src_dir>>/xfail_tests.list
+              cp "<<parameters.xfail_list>>" /usr/local/src/php/xfail_tests.list
               (
-                cd <<parameters.php_src_dir>>
-                cat xfail_tests.list | xargs -n 1 grep -L '\-\-SKIPIF\-\-' | xargs -n 1 -r sed -i -e $'s/\(--FILE.*--\)/--SKIPIF--\\\n\\1/g' || true
-                cat xfail_tests.list | xargs -n 1 sed -i -e $'s/\(--SKIPIF--\)/\\1\\\nskip Unreliable output or flaky test/g'
+                cd /usr/local/src/php
+                cat xfail_tests.list | xargs -n 1 rm -f || true
               )
             fi
-            cd <<parameters.php_src_dir>>
-            export SIGNALFX_TRACING_CLI_ENABLED=true
+            cd /usr/local/src/php
+            export SIGNALFX_TRACE_CLI_ENABLED=true
             export DD_TRACE_STARTUP_LOGS=0
             export DD_TRACE_WARN_CALL_STACK_DEPTH=0
             export DD_TRACE_WARN_LEGACY_DD_TRACE=0
@@ -534,7 +530,7 @@ jobs:
               -d ddtrace.request_init_hook=/home/circleci/datadog/bridge/dd_wrap_autoloader.php
       - run:
           command: |
-            cd <<parameters.php_src_dir>>
+            cd /usr/local/src/php
             mkdir -p /tmp/artifacts/core_dumps
             find ./ -name "core.*" | xargs -I % -n 1 cp % /tmp/artifacts/core_dumps
             mkdir -p /tmp/artifacts/diffs
