@@ -840,7 +840,7 @@ jobs:
           command: |
             cp ./pecl/datadog_trace-*.tgz ./datadog_trace.tgz
             sudo pecl install datadog_trace.tgz
-            echo "extension=ddtrace.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/ddtrace.ini
+            echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/ddtrace.ini
             php --ri=ddtrace
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
@@ -1153,19 +1153,19 @@ jobs:
           command: |
             switch-php << parameters.php_version >>
             make all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O2 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/ddtrace-<< parameters.so_suffix >>.so
       - run:
           name: Build debug, nts configuration
           command: |
             switch-php << parameters.php_version >>-debug
             make clean all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O0 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>-debug.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/ddtrace-<< parameters.so_suffix >>-debug.so
       - run:
           name: Build zts configuration
           command: |
             switch-php << parameters.php_version >>-zts
             make clean all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O2 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>-zts.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/ddtrace-<< parameters.so_suffix >>-zts.so
       - persist_to_workspace:
           root: '.'
           paths: [ './extensions' ]
