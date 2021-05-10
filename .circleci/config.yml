@@ -835,7 +835,7 @@ jobs:
           name: Install from PECL build
           command: |
             cp ./pecl/signalfx_tracing-*.tgz ./signalfx_tracing.tgz
-            sudo pecl install .tgz
+            sudo pecl install signalfx_tracing.tgz
             echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx_tracing.ini
             php --ri=ddtrace
       - <<: *STEP_WAIT_REQUEST_REPLAYER
