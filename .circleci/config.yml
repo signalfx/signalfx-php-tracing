@@ -1337,67 +1337,6 @@ workflows:
           php_version: "7.3"
           docker_image: "datadog/dd-trace-ci:php-7.3_centos-6"
           so_suffix: "20180731"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 74"
-          lib_curl_command: yum -y install libcurl-devel
-          docker_image: "datadog/dd-trace-ci:php-7.4-centos-7"
-          so_suffix: "20190902"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 56-zts"
-          docker_image: "circleci/php:5.6-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20131106-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 70-zts"
-          docker_image: "circleci/php:7.0-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20151012-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 71-zts"
-          docker_image: "circleci/php:7.1-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20160303-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 72-zts"
-          docker_image: "circleci/php:7.2-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20170718-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 73-zts"
-          docker_image: "circleci/php:7.3-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20180731-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 74-zts"
-          docker_image: "circleci/php:7.4-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20190902-zts"
-      - "package extension":
-          requires:
-            - "Compile PHP 54"
-            - "Compile PHP 56"
-            - "Compile PHP 70"
-            - "Compile PHP 71"
-            - "Compile PHP 72"
-            - "Compile PHP 73"
-            - "Compile PHP 74"
-            - "Compile PHP 56-zts"
-            - "Compile PHP 70-zts"
-            - "Compile PHP 71-zts"
-            - "Compile PHP 72-zts"
-            - "Compile PHP 73-zts"
-            - "Compile PHP 74-zts"
-      - "package verification":
-          requires:
-            - "package extension"
-      - verify_package:
           catch_warnings: false # On debug builds: unused parameter '__zend_filename'
       - compile_extension_ex:
           requires: [ 'Prepare Code' ]
@@ -1878,19 +1817,7 @@ workflows:
           requires: [ 'Language tests' ]
           name: "PHP 73 language tests"
           xfail_list: dockerfiles/ci/xfail_tests/7.3.list
-          docker_image: "datadog/dd-trace-php:7.3-buster-debug"
-      - unit_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 74 Unit tests"
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
-          valgrind_config: 7_4_musl
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - php_language_tests:
-          requires: [ 'Language tests' ]
-          name: "PHP 74 language tests"
-          xfail_list: dockerfiles/ci/xfail_tests/7.4.list
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-buster"
-          php_src_dir: "/usr/local/src/php"
+          docker_image: "datadog/dd-trace-ci:php-7.3_buster"
       - php_language_tests:
           requires: [ 'Language tests' ]
           name: "PHP 72 language tests"
