@@ -8,7 +8,7 @@
 #include "ext/version.h"
 #include "random.h"
 
-extern zend_module_entry ddtrace_module_entry;
+extern zend_module_entry signalfx_tracing_module_entry;
 extern zend_class_entry *ddtrace_ce_span_data;
 extern zend_class_entry *ddtrace_ce_fatal_error;
 
@@ -18,7 +18,7 @@ typedef struct ddtrace_span_fci ddtrace_span_fci;
 BOOL_T ddtrace_tracer_is_limited(TSRMLS_D);
 
 // clang-format off
-ZEND_BEGIN_MODULE_GLOBALS(ddtrace)
+ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
     char *auto_prepend_file;
     zend_bool disable;
     zend_bool disable_in_current_request;
@@ -63,16 +63,16 @@ ZEND_BEGIN_MODULE_GLOBALS(ddtrace)
     int64_t compile_time_microseconds;
 
     char *cgroup_file;
-ZEND_END_MODULE_GLOBALS(ddtrace)
+ZEND_END_MODULE_GLOBALS(signalfx_tracing)
 // clang-format on
 
 #ifdef ZTS
-#define DDTRACE_G(v) TSRMG(ddtrace_globals_id, zend_ddtrace_globals *, v)
+#define DDTRACE_G(v) TSRMG(signalfx_tracing_globals_id, zend_signalfx_tracing_globals *, v)
 #else
-#define DDTRACE_G(v) (ddtrace_globals.v)
+#define DDTRACE_G(v) (signalfx_tracing_globals.v)
 #endif
 
-#define PHP_DDTRACE_EXTNAME "ddtrace"
+#define PHP_DDTRACE_EXTNAME "signalfx_tracing"
 #ifndef PHP_DDTRACE_VERSION
 #define PHP_DDTRACE_VERSION "0.0.0-unknown"
 #endif
