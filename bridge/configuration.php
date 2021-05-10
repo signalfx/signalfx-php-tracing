@@ -236,7 +236,10 @@ function sfx_trace_config_access_token()
  */
 function ddtrace_config_debug_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('SIGNALFX_TRACE_DEBUG'), false);
+    return \_ddtrace_config_bool(
+        \getenv('SIGNALFX_TRACE_DEBUG'),
+        \_ddtrace_config_bool(\getenv('DD_TRACE_DEBUG'), false)
+    );
 }
 
 /**
