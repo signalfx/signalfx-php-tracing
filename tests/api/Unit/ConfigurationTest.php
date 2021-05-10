@@ -206,12 +206,6 @@ EOD;
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
 
-    public function testServiceNameViaDDServiceNameForBackwardCompatibility()
-    {
-        $this->putEnvAndReloadConfig(['SIGNALX_SERVICE_NAME=my_app']);
-        $this->assertSame('my_app', Configuration::get()->appName('__default__'));
-    }
-
     public function testServiceNameHasPrecedenceOverDeprecatedMethods()
     {
         $this->putEnvAndReloadConfig([
