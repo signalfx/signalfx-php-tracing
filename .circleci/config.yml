@@ -809,7 +809,7 @@ jobs:
           name: Make PECL build
           command: |
             tooling/bin/pecl-build
-            mkdir -p ./pecl && cp datadog_trace-*.tgz ./pecl
+            mkdir -p ./pecl && cp signalfx_tracing-*.tgz ./pecl
       #- store_artifacts:
       #    path: pecl
       - persist_to_workspace:
@@ -834,15 +834,15 @@ jobs:
       - run:
           name: Install from PECL build
           command: |
-            cp ./pecl/datadog_trace-*.tgz ./datadog_trace.tgz
-            sudo pecl install datadog_trace.tgz
+            cp ./pecl/signalfx_tracing-*.tgz ./signalfx_tracing.tgz
+            sudo pecl install .tgz
             echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx_tracing.ini
             php --ri=ddtrace
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
           name: Run phpt tests with PECL
           command: |
-            TERM=dumb sudo pecl run-tests <<# parameters.showdiff >> --showdiff <</ parameters.showdiff >> --ini=" -d ddtrace.request_init_hook=" -p datadog_trace
+            TERM=dumb sudo pecl run-tests <<# parameters.showdiff >> --showdiff <</ parameters.showdiff >> --ini=" -d ddtrace.request_init_hook=" -p signalfx_tracing
       - run:
           name: Gather .diff files for artifacts
           command: |
