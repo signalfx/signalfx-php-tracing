@@ -166,7 +166,7 @@ bool ddtrace_config_env_bool(ddtrace_string env_name, bool default_value TSRMLS_
 }
 
 bool ddtrace_config_distributed_tracing_enabled(TSRMLS_D) {
-    ddtrace_string env_name = DDTRACE_STRING_LITERAL("DD_DISTRIBUTED_TRACING");
+    ddtrace_string env_name = DDTRACE_STRING_LITERAL("SIGNALFX_DISTRIBUTED_TRACING");
     return ddtrace_config_env_bool(env_name, true TSRMLS_CC);
 }
 
@@ -303,6 +303,6 @@ double ddtrace_config_integration_analytics_sample_rate(ddtrace_string integrati
 }
 
 bool ddtrace_config_trace_enabled(TSRMLS_D) {
-    ddtrace_string env_name = DDTRACE_STRING_LITERAL("DD_TRACE_ENABLED");
+    ddtrace_string env_name = DDTRACE_STRING_LITERAL("SIGNALFX_TRACING_ENABLED");
     return ddtrace_config_env_bool(env_name, true TSRMLS_CC);
 }

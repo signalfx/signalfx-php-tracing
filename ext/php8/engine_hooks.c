@@ -8,7 +8,7 @@
 #include "ddtrace.h"
 #include "span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static zend_op_array *(*_prev_compile_file)(zend_file_handle *file_handle, int type);
 

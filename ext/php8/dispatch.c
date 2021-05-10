@@ -14,7 +14,7 @@
 // avoid Older GCC being overly cautious over {0} struct initializer
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 extern inline void ddtrace_dispatch_copy(ddtrace_dispatch_t *dispatch);
 extern inline void ddtrace_dispatch_release(ddtrace_dispatch_t *dispatch);

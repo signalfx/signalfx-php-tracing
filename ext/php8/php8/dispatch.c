@@ -10,7 +10,7 @@
 #include "ext/php8/ddtrace.h"
 #include "ext/php8/logging.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 void ddtrace_dispatch_dtor(ddtrace_dispatch_t *dispatch) {
     zval_ptr_dtor(&dispatch->function_name);
