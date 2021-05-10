@@ -1846,15 +1846,5 @@ workflows:
           docker_image: "datadog/dd-trace-ci:php-8.0-shared-ext"
       - "Lint files":
           requires: [ 'Prepare Code' ]
-      - static_analysis:
-          requires: [ 'Prepare Code' ]
-          name: "Static Analysis 71"
-          docker_image: circleci/php:7.1
-          scenario: opentracing_beta6
-      - static_analysis:
-          requires: [ 'Prepare Code' ]
-          name: "Static Analysis 80"
-          docker_image: circleci/php:8.0
-          scenario: opentracing10
       - "Post-Install Hook":
           requires: [ 'Prepare Code' ]
