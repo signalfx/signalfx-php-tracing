@@ -26,7 +26,8 @@ final class HttpSignalFxTest extends BaseTestCase
     public function testSpanReportingFailsOnUnavailableAgent()
     {
         $httpTransport = new HttpSignalFx(new JsonZipkinV2(), [
-            'endpoint' => 'http://0.0.0.0:8127/v1/trace'
+            'endpoint' => 'http://0.0.0.0:8127/v1/trace',
+            'debug' => true,
         ]);
         $tracer = new Tracer($httpTransport);
         GlobalTracer::set($tracer);
