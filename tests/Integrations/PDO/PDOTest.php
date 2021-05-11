@@ -56,14 +56,14 @@ final class PDOTest extends IntegrationTestCase
             $this->assertEquals('Tom', $results[0]['name']);
             $stmt->closeCursor();
         });
-       
+
         $this->assertSpans($traces, [
             SpanAssertion::exists('PDO.__construct'),
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
             ])),
@@ -71,7 +71,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDOStatement.execute',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
