@@ -1,7 +1,7 @@
 --TEST--
 Request init hook is confined to open_basedir
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --INI--
 open_basedir=tests/ext/request-init-hook
 ddtrace.request_init_hook={PWD}/../includes/sanity_check.php

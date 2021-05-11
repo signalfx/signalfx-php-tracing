@@ -1,7 +1,7 @@
 --TEST--
 Gracefully handle out-of-sync spans from traced function [user][default properties]
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --SKIPIF--
 <?php if (PHP_MAJOR_VERSION !== 7) die('skip: php 7 required'); ?>
 --FILE--

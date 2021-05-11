@@ -6,7 +6,7 @@ This test can be used to test manually.
 --SKIPIF--
 <?php if (PHP_VERSION_ID >= 50500) die('skip: Test for PHP 5.4 only'); ?>
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --INI--
 ddtrace.request_init_hook={PWD}/raises_fatal_error.php
 --FILE--

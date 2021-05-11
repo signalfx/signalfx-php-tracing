@@ -1,7 +1,7 @@
 --TEST--
 Do not fail when PHP code couldn't be loaded
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --INI--
 ddtrace.request_init_hook={PWD}/this_file_doesnt_exist.php
 --FILE--

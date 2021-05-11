@@ -1,7 +1,7 @@
 --TEST--
 DDTrace\hook_method posthook error is sandboxed
 --ENV--
-DD_TRACE_DEBUG=
+SIGNALFX_TRACE_DEBUG=
 --INI--
 error_reporting=E_ALL
 --FILE--
