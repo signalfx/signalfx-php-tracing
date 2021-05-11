@@ -1080,7 +1080,7 @@ jobs:
         # Expected in the format: <major>.<minor>, e.g. 5.6
         type: string
     docker:
-      - image: datadog/dd-trace-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
+      - image: siimkallas/signalfx-tracing-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
     steps:
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
