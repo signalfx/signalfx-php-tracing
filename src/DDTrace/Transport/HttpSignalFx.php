@@ -89,7 +89,7 @@ final class HttpSignalFx implements Transport
         curl_setopt($handle, CURLOPT_HTTPHEADER, $curlHeaders);
 
         if ($this->config["debug"]) {
-            self::logDebug('Sending spans: {body}', ['body' => $body]);
+            self::logDebug('Sending spans: {body} to {url}', ['body' => $body, 'url' => $url]);
         }
 
         $resp = curl_exec($handle);
