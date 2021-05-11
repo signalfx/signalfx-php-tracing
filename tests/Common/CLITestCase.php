@@ -93,6 +93,17 @@ abstract class CLITestCase extends IntegrationTestCase
         return $this->getAllAgentRequests();
     }
 
+    public function getParsedTracesFromCommand($arguments = '', $overrideEnvs = [])
+    {
+        $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string) new IniSerializer(static::getInis());
+        $script = escapeshellarg($this->getScriptLocation());
+        $arguments = escapeshellarg($arguments);
+        $commandToExecute = "$envs php $inis $script $arguments";
+        `$commandToExecute`;
+        return $this->parseTracesFromDumpedData();
+    }
+
     /**
      * Load the last trace that was sent to the dummy agent
      *

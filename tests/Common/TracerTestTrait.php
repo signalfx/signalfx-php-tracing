@@ -223,7 +223,7 @@ trait TracerTestTrait
      * @return array
      * @throws \Exception
      */
-    private function parseTracesFromDumpedData()
+    public function parseTracesFromDumpedData()
     {
         // When tests run with the background sender enabled, there might be some delay between when a trace is flushed
         // and actually sent. While we should find a smart way to tackle this, for now we do it quick and dirty, in a

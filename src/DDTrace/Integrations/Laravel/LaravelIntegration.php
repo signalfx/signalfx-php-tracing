@@ -68,6 +68,7 @@ class LaravelIntegration extends Integration
                     $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
                 }
                 $rootSpan->setTag(Tag::SERVICE_NAME, $integration->getServiceName());
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
 
                 $span->name = 'laravel.application.handle';
                 $span->type = Type::WEB_SERVLET;
@@ -96,15 +97,14 @@ class LaravelIntegration extends Integration
                     $routeName = LaravelIntegration::UNNAMED_ROUTE;
                 }
 
-                $rootSpan->setTag(
-                    Tag::RESOURCE_NAME,
-                    $route->getActionName() . ' ' . $routeName
-                );
+                $operationName = $route->getActionName() . ' ' . $routeName;
+                $rootSpan->overwriteOperationName($operationName);
 
                 $rootSpan->setTag('laravel.route.name', $routeName);
                 $rootSpan->setTag('laravel.route.action', $route->getActionName());
                 $rootSpan->setTag('http.url', $request->url());
                 $rootSpan->setTag('http.method', $request->method());
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
 
                 return false;
             }
@@ -118,6 +118,7 @@ class LaravelIntegration extends Integration
                 $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $this->uri;
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 
@@ -146,6 +147,7 @@ class LaravelIntegration extends Integration
             $span->type = Type::WEB_SERVLET;
             $span->service = $integration->getServiceName();
             $span->resource = $this->view;
+            $span->meta[Tag::COMPONENT] = 'laravel';
         });
 
         \DDTrace\trace_method(
@@ -160,6 +162,7 @@ class LaravelIntegration extends Integration
                 if (isset($args[0]) && \is_string($args[0])) {
                     $span->resource = $args[0];
                 }
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 
