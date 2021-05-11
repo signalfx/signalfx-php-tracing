@@ -70,7 +70,7 @@ array_map(function($span) {
     if (isset($span['resource'])) {
         echo '-' . $span['resource'];
     }
-    if (isset($span['meta']['sfxerror.message'])) {
+    if (isset($span['meta']['sfx.error.message'])) {
         echo ' (' . $span['meta']['sfx.error.message'] . ')';
     }
     echo PHP_EOL;
