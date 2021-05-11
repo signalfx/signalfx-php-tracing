@@ -14,6 +14,10 @@ fi
 # Installing dd-trace-php
 apk add --no-cache $(pwd)/build/packages/*.apk --allow-untrusted
 
+ls -la /opt/
+ls -la /opt/signalfx-php-tracing
+ls -la /opt/signalfx-php-tracing/extensions
+
 # Preparing NGINX
 # Adding www-data in systems where it does not exists
 adduser -D -S -G www-data www-data || true
