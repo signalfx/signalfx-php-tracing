@@ -1345,7 +1345,6 @@ workflows:
           name: "Build PECL"
       - "package extension":
           requires:
-            - compile_alpine
             - "Compile PHP 54 nts + zts + debug"
             - "Compile PHP 55 nts + zts + debug"
             - "Compile PHP 56 nts + zts + debug"
