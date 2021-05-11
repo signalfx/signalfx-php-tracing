@@ -715,10 +715,7 @@ final class MemcachedTest extends IntegrationTestCase
             $m = new \Memcached();
             $m->addServer('memcached_server_does_not_exist', 11211);
             $m->get('foo');
-            $this->assertContains(
-                $m->getResultCode(),
-                [\Memcached::RES_HOST_LOOKUP_FAILURE, \Memcached::RES_TIMEOUT],
-            );
+            $this->assertContains($m->getResultCode(), [\Memcached::RES_HOST_LOOKUP_FAILURE, \Memcached::RES_TIMEOUT]);
         });
     }
 
