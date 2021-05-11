@@ -15,7 +15,7 @@ final class HttpSignalFxTest extends BaseTestCase
 
     public function agentUrl()
     {
-        return 'http://' . (isset($_SERVER["AGENT_HOSTNAME"]) ? $_SERVER["AGENT_HOSTNAME"] : "signalfx_agent_integration") . ':9080';
+        return 'http://signalfx_agent_integration:9080';
     }
 
     public function agentTracesUrl()
