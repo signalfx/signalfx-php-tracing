@@ -184,11 +184,9 @@ class LaravelIntegration extends Integration
             'Illuminate\Console\Application',
             '__construct',
             function () use ($rootSpan, $integration) {
-                $rootSpan->overwriteOperationName('laravel.artisan');
-                $rootSpan->setTag(
-                    Tag::RESOURCE_NAME,
-                    !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan'
-                );
+                $op = !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan';
+                $rootSpan->overwriteOperationName($op);
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
                 return false;
             }
         );
