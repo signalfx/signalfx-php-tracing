@@ -52,7 +52,7 @@ pull.centos7:
 
 tracer.local:
 	@mkdir -p ${TRACER_DOWNLOAD_PATH}
-	@cp ../../build/packages/datadog-php-tracer-*.tar.gz ${TRACER_DOWNLOAD_PATH}/ddtrace-test.tar.gz
+	@cp ../../build/packages/signalfx-tracing-*.tar.gz ${TRACER_DOWNLOAD_PATH}/ddtrace-test.tar.gz
 
 tracer.download:
 	@echo "Downloading tracer at url: $(TRACER_TEST_URL)"
