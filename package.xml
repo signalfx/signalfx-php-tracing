@@ -580,7 +580,6 @@
             <file name="tests/ext/dd_trace_send_traces_via_thread_001.phpt" role="test" />
             <file name="tests/ext/dd_trace_send_traces_via_thread_002.phpt" role="test" />
             <file name="tests/ext/dd_trace_serialize_msgpack.phpt" role="test" />
-            <file name="tests/ext/dd_trace_serialize_msgpack_error.phpt" role="test" />
             <file name="tests/ext/dd_trace_serialize_msgpack_reference.phpt" role="test" />
             <file name="tests/ext/dd_trace_tracer_is_limited_memory.phpt" role="test" />
             <file name="tests/ext/dd_trace_warning.phpt" role="test" />
