@@ -36,7 +36,7 @@ fi
 echo "PHP version: $(php -v)"
 
 # Script output
-CLI_OUTPUT=$(DD_TRACE_CLI_ENABLED=true ${DD_TRACE_PHP_BIN} /var/www/html/index.php)
+CLI_OUTPUT=$(SIGNALFX_TRACE_CLI_ENABLED=true ${DD_TRACE_PHP_BIN} /var/www/html/index.php)
 if [ ! "${CLI_OUTPUT}" == "hi" ]; then
     echo "Error: expected request output is 'hi'. Actual:\n${APACHE_OUTPUT}"
     exit 1
