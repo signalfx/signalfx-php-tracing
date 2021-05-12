@@ -681,7 +681,7 @@ jobs:
         environment:
           PHP_PACKAGE: << parameters.php_package >>
           OS_NAME: alpine
-          SIGNALFX_ENDPOINT_HOST: request-player
+          SIGNALFX_ENDPOINT_HOST: request-replayer
           SIGNALFX_ENDPOINT_PORT: 80
           VERIFY_APACHE: 'no'
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
