@@ -89,6 +89,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             SpanAssertion::NOT_TESTED,
                             'simple_view'
                         )->withExactTags([
+                            'component' => 'laravel',
                         ])->withChildren([
                             SpanAssertion::build(
                                 'laravel.view',
