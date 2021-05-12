@@ -204,7 +204,7 @@ final class Span extends DataSpan
 
         $strValue = (string)$value;
         if ($this->maxAttributeLength > 0) {
-            $strValue = mb_substr($strValue, 0, $this->maxAttributeLength);
+            $strValue = substr($strValue, 0, $this->maxAttributeLength);
         }
         $this->tags[$key] = $strValue;
     }
