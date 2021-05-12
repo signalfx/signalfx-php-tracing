@@ -33,7 +33,7 @@ class PDOIntegration extends Integration
     /**
      * @return string The truncated statement
      */
-    public static function truncate($statement, $start = 0, $length = 1024 * 64)
+    public static function truncate($statement, $start = 0, $length = 65536)
     {
         if (isset($statement) && is_string($statement) &&$statement !== '') {
             return substr($statement, $start, $length);
