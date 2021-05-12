@@ -105,7 +105,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => 'object(DDTrace\Tests\Integrations\PDO\BrokenPDOStatement)#' . $objId
             ])),
@@ -172,7 +172,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.__construct',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->withExactTags(array_merge($this->baseTags(), [
                 'db.user' => 'wrong_user',
@@ -227,7 +227,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.exec',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->setError('PDO error', 'SQL error: 42000. Driver error: 1064')
@@ -283,7 +283,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.query',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
@@ -310,7 +310,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.query',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->setError('PDO error', 'SQL error: 42000. Driver error: 1064')
@@ -338,7 +338,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.query',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->setError('PDOException', static::ERROR_QUERY, true)
@@ -397,7 +397,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDOStatement.execute',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
@@ -466,7 +466,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
             ])),
@@ -474,7 +474,7 @@ final class PDOTest extends IntegrationTestCase
                 'PDOStatement.execute',
                 SpanAssertion::NOT_TESTED,
                 'sql',
-                SpanAssertion::NOT_TESTED,
+                SpanAssertion::NOT_TESTED
             )
             ->setTraceAnalyticsCandidate()
             ->setError('PDOStatement error', 'SQL error: 42000. Driver error: 1064')
