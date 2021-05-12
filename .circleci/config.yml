@@ -1425,7 +1425,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php php-fpm
+                - php php-fpm php7-curl php7-json
               docker_image:
                 - alpine:3.8
                 - alpine:3.9
@@ -1438,7 +1438,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php7 php7-fpm php7-curl
+                - php7 php7-fpm php7-curl php7-json
               docker_image:
                 - alpine:3.7
                 - alpine:3.8
@@ -1452,7 +1452,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php5 php5-fpm php5-curl
+                - php5 php5-fpm php5-curl php5-json
               docker_image:
                 - alpine:3.5
                 - alpine:3.6
@@ -1518,7 +1518,7 @@ workflows:
                   # Sury.org no longer provides PHP packages for Jessie
                   # https://www.linuxcompatible.org/story/suryorg-has-discontinued-debian-8-support/
                   # So we just test the PHP version in the default repo (5.6)
-                - PHP_PACKAGE="php5 php5-fpm libapache2-mod-php5" PHP_FPM_BIN="php5-fpm"
+                - PHP_PACKAGE="php5 php5-curl php5-fpm libapache2-mod-php5" PHP_FPM_BIN="php5-fpm"
 
       - pecl_tests:
           requires: [ "Build PECL" ]
