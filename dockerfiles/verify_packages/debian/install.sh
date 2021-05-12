@@ -13,8 +13,7 @@ apt install -y \
     nginx \
     apache2 \
     procps \
-    gnupg \
-    php-curl
+    gnupg
 
 # Installing php
 if [ "${INSTALL_MODE}" = "native" ]; then
