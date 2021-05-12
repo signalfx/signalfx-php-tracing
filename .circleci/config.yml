@@ -1438,7 +1438,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php7 php7-fpm
+                - php7 php7-fpm php7-curl
               docker_image:
                 - alpine:3.7
                 - alpine:3.8
@@ -1452,7 +1452,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php5 php5-fpm
+                - php5 php5-fpm php5-curl
               docker_image:
                 - alpine:3.5
                 - alpine:3.6
