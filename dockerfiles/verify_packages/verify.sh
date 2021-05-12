@@ -47,8 +47,10 @@ fi
 # Trace exists
 sleep 1
 CLI_TRACES=$(curl -s -L request-replayer/replay)
+echo "CLI traces"
+echo "${CLI_TRACES}"
 # sh compatible way to do string contains
-if [ "${CLI_TRACES#*trace_id}" == "${CLI_TRACES}" ]; then
+if [ "${CLI_TRACES#*traceId}" == "${CLI_TRACES}" ]; then
     echo "Error: traces have not been sent correctly. From request replayer:\n${CLI_TRACES}"
     exit 1
 else
