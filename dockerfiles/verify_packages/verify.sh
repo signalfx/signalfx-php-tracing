@@ -77,8 +77,11 @@ fi
 # Trace exists: waiting more than DD_TRACE_AGENT_FLUSH_INTERVAL=1000
 sleep 2
 NGINX_TRACES=$(curl -s -L request-replayer/replay)
+
+echo "nginx traces"
+echo "${NGINX_TRACES}"
 # sh compatible way to do string contains
-if [ "${NGINX_TRACES#*trace_id}" == "${NGINX_TRACES}" ]; then
+if [ "${NGINX_TRACES#*traceId}" == "${NGINX_TRACES}" ]; then
     echo "Error: traces have not been sent correctly. From request replayer:\n${NGINX_TRACES}"
     exit 1
 else
@@ -108,8 +111,10 @@ if [ "${VERIFY_APACHE}" != "no" ]; then
     # Trace exists: waiting more than DD_TRACE_AGENT_FLUSH_INTERVAL=1000
     sleep 2
     APACHE_TRACES=$(curl -s -L request-replayer/replay)
+    echo "apache traces"
+    echo "${APACHE_TRACES}"
     # sh compatible way to do string contains
-    if [ "${APACHE_TRACES#*trace_id}" == "${APACHE_TRACES}" ]; then
+    if [ "${APACHE_TRACES#*traceId}" == "${APACHE_TRACES}" ]; then
         echo "Error: traces have not been sent correctly. From request replayer:\n${APACHE_TRACES}"
         exit 1
     else
