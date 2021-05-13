@@ -97,7 +97,6 @@ class PDOIntegration extends Integration
             $span->meta[Tag::COMPONENT] = 'PDO';
 
             if ($retval instanceof \PDOStatement) {
-                $span->meta['db.rowcount'] = $retval->rowCount();
                 PDOIntegration::storeStatementFromConnection($this, $retval);
             }
 
@@ -142,9 +141,6 @@ class PDOIntegration extends Integration
                 $span->type = Type::SQL;
                 $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($this->queryString);
                 $span->meta[Tag::COMPONENT] = 'PDO';
-                if ($retval === true) {
-                    $span->meta['db.rowcount'] = $this->rowCount();
-                }
                 PDOIntegration::setStatementTags($this, $span);
                 PDOIntegration::detectError($this, $span);
                 $integration->addTraceAnalyticsIfEnabled($span);

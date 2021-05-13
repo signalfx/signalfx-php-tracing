@@ -75,7 +75,6 @@ final class PDOTest extends IntegrationTestCase
             )
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
-                'db.rowcount' => 1,
                 Tag::DB_STATEMENT => $query,
             ])),
         ]);
@@ -118,7 +117,6 @@ final class PDOTest extends IntegrationTestCase
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
-                'db.rowcount' => 1,
             ])),
         ]);
     }
@@ -288,7 +286,6 @@ final class PDOTest extends IntegrationTestCase
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
-                'db.rowcount' => '1',
             ])),
         ]);
     }
@@ -401,7 +398,6 @@ final class PDOTest extends IntegrationTestCase
             )
             ->setTraceAnalyticsCandidate()
             ->withExactTags(array_merge($this->baseTags(), [
-                'db.rowcount' => 1,
                 Tag::DB_STATEMENT => $query,
             ])),
         ]);
