@@ -8,6 +8,7 @@ use DDTrace\Contracts\Tracer;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\SpanContext;
 use DDTrace\Util\HexConversion;
+use DDTrace\Log\LoggingTrait;
 
 
 /*
@@ -16,6 +17,7 @@ use DDTrace\Util\HexConversion;
 
 final class B3TextMap implements Propagator
 {
+    use LoggingTrait;
     /**
      * @var Tracer
      */
@@ -34,7 +36,6 @@ final class B3TextMap implements Propagator
      */
     public function inject(SpanContextInterface $spanContext, &$carrier)
     {
-        $tra = $spanContext->getTraceId();
         $carrier[B3_TRACE_ID_HEADER] = HexConversion::idToHex($spanContext->getTraceId());
         $carrier[B3_SPAN_ID_HEADER] = HexConversion::idToHex($spanContext->getSpanId());
         if ($spanContext->getParentId() !== null) {
@@ -92,7 +93,7 @@ final class B3TextMap implements Propagator
         }
 
         $traceId = \DDTrace\trace_id();
-        $spanId = $this->setDistributedTraceParentId($spanIdHex);
+        $spanId = dd_trace_push_span_id_hex($spanIdHex);
 
         $parentId = null === $parentSpanIdHex ? $parentSpanIdHex : sfx_trace_convert_hex_id($parentSpanIdHex);
         $spanContext = new SpanContext($traceId, $spanId, $parentId, $baggageItems, true);
@@ -124,24 +125,6 @@ final class B3TextMap implements Propagator
             );
         }
         return false;
-    }
-
-    private function setDistributedTraceParentId($spanId)
-    {
-        $pushedSpanId = dd_trace_push_span_id_hex($spanId);
-        if ($pushedSpanId === $spanId) {
-            return $spanId;
-        }
-        if (\ddtrace_config_debug_enabled()) {
-            self::logDebug(
-                'Error parsing distributed trace parent ID: {expected}; using {actual} instead.',
-                [
-                    'expected' => $spanId,
-                    'actual' => $pushedSpanId,
-                ]
-            );
-        }
-        return $pushedSpanId;
     }
 
     /**
