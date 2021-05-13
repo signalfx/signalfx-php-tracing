@@ -83,8 +83,41 @@ bool zai_sapi_execute_script(const char *file);
  */
 bool zai_sapi_last_error_message_eq(const char *msg);
 
-/* Returns true if 'error_type' equals the last error type from PHP globals. */
-bool zai_sapi_last_error_type_eq(int error_type);
+/* Removes a fake frame from the active execution context. This should be done
+ * before the parent frame closes.
+ */
+void zai_sapi_fake_frame_pop(zend_execute_data *frame);
+
+/* Returns true if 'error_type' equals the last error type and 'msg' exactly
+ * matches the last error message from PHP globals.
+ */
+bool zai_sapi_last_error_eq(int error_type, const char *msg);
+
+/* Returns true if all of the globals associated with the last error are zeroed
+ * out.
+ */
+bool zai_sapi_last_error_is_empty();
+
+/* Throws an exception using the default exception class entry and sets the
+ * 'Exception::$message' string to 'message'. Returns the class entry used for
+ * the thrown exception. An execution context (an active PHP frame stack) must
+ * exist or this will raise a fatal error and call zend_bailout. If the
+ * exception is not handled by the PHP runtime, caller must free the exception
+ * with zai_sapi_unhandled_exception_ignore() before RSHUTDOWN to prevent a ZMM
+ * leak.
+ */
+zend_class_entry *zai_sapi_throw_exception(const char *message);
+
+/* Returns true if there is an unhandled exception that matches the class entry
+ * 'ce' and the 'Exception::$message' string is equal to 'message'.
+ */
+bool zai_sapi_unhandled_exception_eq(zend_class_entry *ce, const char *message);
+
+/* Returns true if there is an unhandled exception. */
+bool zai_sapi_unhandled_exception_exists(void);
+
+/* Frees an unhandled exception from the executor globals. */
+void zai_sapi_unhandled_exception_ignore(void);
 
 /* Handling zend_bailout
  *
