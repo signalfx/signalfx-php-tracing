@@ -63,13 +63,7 @@ final class JsonZipkinV2 implements Encoder
             return "";
         }
 
-        return str_replace([
-            '"start_micro":"-"',
-            '"duration_micro":"-"',
-        ], [
-            '"timestamp":' . substr($span['start'], 0, -3),
-            '"duration":' . substr($span['duration'], 0, -3),
-        ], $json);
+        return $json;
     }
 
     /**
@@ -82,12 +76,11 @@ final class JsonZipkinV2 implements Encoder
             'traceId' => HexConversion::idToHex($span['trace_id']),
             'id' => HexConversion::idToHex($span['span_id']),
             'name' => $span['name'],
-            // This gets filled in by string substitution to avoid exponential formats.
-            'start_micro' => '-',
+            'timestamp' => intval($span['start'] / 1000),
         ];
 
         if (isset($span['duration'])) {
-            $arraySpan['duration_micro'] = '-';
+            $arraySpan['duration'] = intval($span['duration'] / 1000);
         }
 
         if (isset($span['parent_id'])) {
@@ -116,6 +109,7 @@ final class JsonZipkinV2 implements Encoder
             switch ($span['type']) {
                 case Type::HTTP_CLIENT:
                 case Type::SQL:
+                case Type::REDIS:
                 case Type::MEMCACHED:
                     $arraySpan['kind'] = "CLIENT";
                     if (!empty($span['service'])) {
