@@ -37,7 +37,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'simple@index default',
                         'unnamed-php-service',
                         SpanAssertion::NOT_TESTED,
-                        'GET /simple',
+                        'GET /simple'
                     )
                     ->withExactTags([
                         'zf1.controller' => 'simple',
