@@ -6,6 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\SpanAssertionTrait;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
+use DDTrace\Tag;
 
 class EloquentTest extends WebFrameworkTestCase
 {
@@ -31,7 +32,7 @@ class EloquentTest extends WebFrameworkTestCase
         });
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.destroy',
-            'Laravel',
+            'laravel',
             SpanAssertion::NOT_TESTED,
             'User'
         )->withExactTags([
@@ -47,7 +48,7 @@ class EloquentTest extends WebFrameworkTestCase
         });
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.get',
-            'Laravel',
+            'laravel',
             SpanAssertion::NOT_TESTED,
             'select * from `users`'
         )->withExactTags([
@@ -64,7 +65,7 @@ class EloquentTest extends WebFrameworkTestCase
         });
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.insert',
-            'Laravel',
+            'laravel',
             SpanAssertion::NOT_TESTED,
             'User'
         )->withExactTags([
