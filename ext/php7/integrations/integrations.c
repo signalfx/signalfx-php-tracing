@@ -133,7 +133,7 @@ void ddtrace_integrations_rinit(TSRMLS_D) {
     DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_YII, "yii\\di\\Container", "__construct",
                                          "DDTrace\\Integrations\\Yii\\YiiIntegration");
 
-    DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_DRUPAL, "Drupal\Core\DrupalKernel", "__construct",
+    DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_DRUPAL, "Drupal\\Core\\DrupalKernel", "__construct",
                                          "DDTrace\\Integrations\\Drupal\\DrupalIntegration");
 }
 
