@@ -17,7 +17,6 @@ class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_DEBUG' => 'true',
             'SIGNALFX_SERVICE_NAME' => 'test_symfony_40',
         ]);
     }

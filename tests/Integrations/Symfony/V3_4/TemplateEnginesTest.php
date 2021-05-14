@@ -31,7 +31,6 @@ class TemplateEnginesTest extends WebFrameworkTestCase
                 'http.method' => 'GET',
                 'http.url' => 'http://localhost:9999/alternate_templating',
                 'http.status_code' => '200',
-                'integration.name' => 'symfony',
                 'component' => 'symfony',
             ])->withChildren([
                 SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -42,17 +41,17 @@ class TemplateEnginesTest extends WebFrameworkTestCase
                         SpanAssertion::exists('symfony.kernel.controller_arguments'),
                         SpanAssertion::build(
                             'symfony.controller',
-                            'symfony',
-                            'web',
+                            'unnamed-php-service',
+                            SpanAssertion::NOT_TESTED,
                             'AppBundle\Controller\HomeController::indexAction'
-                        )->withChildren([
+                        )
+                        ->withChildren([
                             SpanAssertion::build(
                                 'symfony.templating.render',
-                                'symfony',
-                                'web',
+                                'unnamed-php-service',
+                                SpanAssertion::NOT_TESTED,
                                 'Symfony\Component\Templating\PhpEngine php_template.template.php'
                             )->withExactTags([
-                                'integration.name' => 'symfony',
                                 'component' => 'symfony',
                             ]),
                         ]),

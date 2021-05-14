@@ -18,7 +18,6 @@ class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_DEBUG' => 'true',
             'SIGNALFX_SERVICE' => 'test_symfony_44',
         ]);
     }
@@ -71,7 +70,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         'test_symfony_44',
                                         SpanAssertion::NOT_TESTED,
                                         'App\Controller\CommonScenariosController::simpleAction'
-                                    )->withExactTags(['component' => 'symfony'])
+                                    )
                                 ]),
                         ]),
                         SpanAssertion::exists('symfony.kernel.terminate'),
@@ -104,7 +103,6 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                     SpanAssertion::NOT_TESTED,
                                     'App\Controller\CommonScenariosController::simpleViewAction'
                                 )
-                                ->withExactTags(['component' => 'symfony'])
                                 ->withChildren([
                                     SpanAssertion::build(
                                         'symfony.templating.render',
@@ -152,7 +150,6 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                     SpanAssertion::NOT_TESTED,
                                     'App\Controller\CommonScenariosController::errorAction'
                                 )
-                                ->withExactTags(['component' => 'symfony'])
                                 ->setError('Exception', 'An exception occurred')
                                 ->withExistingTagsNames([Tag::ERROR_STACK]),
                                 SpanAssertion::exists('symfony.kernel.handleException')->withChildren([
