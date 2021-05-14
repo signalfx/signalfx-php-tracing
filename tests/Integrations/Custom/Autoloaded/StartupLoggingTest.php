@@ -20,9 +20,9 @@ final class StartupLoggingTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_DEBUG' => true, // Startup logs only show in debug mode
+            'SIGNALFX_TRACE_DEBUG' => true, // Startup logs only show in debug mode
             'DD_ENV' => 'my-env',
-            'DD_SERVICE' => 'my-service',
+            'SIGNALFX_SERVICE_NAME' => 'my-service',
             'DD_TRACE_SAMPLE_RATE' => '0.42',
             'DD_TAGS' => 'key1:value1,key2:value2',
             'DD_VERSION' => '4.2',
@@ -60,7 +60,6 @@ final class StartupLoggingTest extends WebFrameworkTestCase
 
         self::assertTrue($config['debug']);
         self::assertSame('my-env', $config['env']);
-        self::assertSame('my-service', $config['service']);
         self::assertSame(0.42, $config['sample_rate']);
         self::assertSame('key1:value1,key2:value2', $config['tags']);
         self::assertSame('4.2', $config['dd_version']);
