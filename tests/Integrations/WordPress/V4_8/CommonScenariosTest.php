@@ -23,7 +23,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'wordpress_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'wordpress_test_app',
         ]);
     }
 
@@ -94,24 +94,26 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'wordpress.request',
                         'wordpress_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
+                        'component' => 'web.request',
                     ])->withChildren($children),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
                         'wordpress.request',
                         'wordpress_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple_view'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
+                        'component' => 'web.request',
                     ])->withChildren([
                         SpanAssertion::exists('WP.init'),
                         SpanAssertion::exists('WP.main')
@@ -210,13 +212,15 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'wordpress.request',
                         'wordpress_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /error'
                     )->withExactTags([
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error',
                         // WordPress doesn't appear to automatically set the proper error code
                         'http.status_code' => '200',
+                        'component' => 'web.request',
+
                     ])->ifPhpVersionNotMatch('5.4', function (SpanAssertion $assertion) {
                         // Automatic error attachment to root span in case of PHP 5.4 is still under development.
                         $message = PHP_MAJOR_VERSION >= 7
@@ -224,7 +228,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             : "Uncaught exception 'Exception' with message 'Oops!' in %s:%d";
                         $assertion
                             ->setError("E_ERROR", $message)
-                            ->withExistingTagsNames(['error.stack']);
+                            ->withExistingTagsNames(['sfx.error.stack']);
                     })->withChildren([
                         SpanAssertion::exists('WP.main')
                             // There's no way to propagate this to the root span in userland yet
