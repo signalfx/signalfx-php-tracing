@@ -59,16 +59,16 @@ class YiiIntegration extends Integration
             return;
         }
         $root = $scope->getSpan();
+        $root->setTag(Tag::COMPONENT, 'yii');
         $this->addTraceAnalyticsIfEnabledLegacy($root);
-        $service = \ddtrace_config_app_name(YiiIntegration::NAME);
 
         \DDTrace\trace_method(
             'yii\web\Application',
             'run',
-            function (SpanData $span) use ($service) {
+            function (SpanData $span) {
                 $span->name = $span->resource = \get_class($this) . '.run';
                 $span->type = Type::WEB_SERVLET;
-                $span->service = $service;
+                $span->meta[Tag::COMPONENT] = 'yii';
             }
         );
 
@@ -95,7 +95,7 @@ class YiiIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = \get_class($this) . '.runAction';
                 $span->type = Type::WEB_SERVLET;
-                $span->service = $service;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->resource = YiiIntegration::extractResourceNameFromRunAction($args) ? : $span->name;
             }
         );
@@ -103,10 +103,10 @@ class YiiIntegration extends Integration
         \DDTrace\trace_method(
             'yii\base\Controller',
             'runAction',
-            function (SpanData $span, $args) use (&$firstController, $service, $root) {
+            function (SpanData $span, $args) use (&$firstController, $root) {
                 $span->name = \get_class($this) . '.runAction';
                 $span->type = Type::WEB_SERVLET;
-                $span->service = $service;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->resource = YiiIntegration::extractResourceNameFromRunAction($args) ? : $span->name;
 
                 if (
@@ -143,10 +143,10 @@ class YiiIntegration extends Integration
         \DDTrace\trace_method(
             'yii\base\View',
             'renderFile',
-            function (SpanData $span, $args) use ($service) {
+            function (SpanData $span, $args) {
                 $span->name = \get_class($this) . '.renderFile';
                 $span->type = Type::WEB_SERVLET;
-                $span->service = $service;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->resource = isset($args[0]) && \is_string($args[0]) ? $args[0] : $span->name;
             }
         );

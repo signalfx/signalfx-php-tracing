@@ -18,7 +18,7 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'yii2_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'yii2_test_app',
         ]);
     }
 
@@ -35,7 +35,7 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
                 SpanAssertion::build(
                     'web.request',
                     'yii2_test_app',
-                    Type::WEB_SERVLET,
+                    SpanAssertion::NOT_TESTED,
                     'GET /homes/?/?/?'
                 )->withExactTags([
                     Tag::HTTP_METHOD => 'GET',
@@ -43,25 +43,30 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
                     Tag::HTTP_STATUS_CODE => '200',
                     'app.route.path' => '/homes/:state/:city/:neighborhood',
                     'app.endpoint' => 'app\controllers\HomesController::actionView',
+                    'component' => 'yii',
                 ])->withChildren([
                     SpanAssertion::build(
                         'yii\web\Application.run',
                         'yii2_test_app',
-                        Type::WEB_SERVLET,
-                        'yii\web\Application.run'
-                    )->withChildren([
+                        SpanAssertion::NOT_TESTED,
+                        ''
+                    )
+                    ->withExactTags(['component' => 'yii'])
+                    ->withChildren([
                         SpanAssertion::build(
                             'yii\web\Application.runAction',
                             'yii2_test_app',
-                            Type::WEB_SERVLET,
+                            SpanAssertion::NOT_TESTED,
                             'homes/view'
-                        )->withChildren([
+                        )
+                        ->withExactTags(['component' => 'yii'])
+                        ->withChildren([
                             SpanAssertion::build(
                                 'app\controllers\HomesController.runAction',
                                 'yii2_test_app',
-                                Type::WEB_SERVLET,
+                                SpanAssertion::NOT_TESTED,
                                 'view'
-                            )
+                            )->withExactTags(['component' => 'yii'])
                         ])
                     ])
                 ])
