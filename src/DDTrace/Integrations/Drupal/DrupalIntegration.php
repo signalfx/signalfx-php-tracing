@@ -46,50 +46,44 @@ class DrupalIntegration extends Integration
 
         $integration = $this;
 
-        \DDTrace\hook_method(
+        \DDTrace\trace_method(
             'Drupal\Core\DrupalKernel',
-            '__construct',
-            function() use ($rootSpan, $integration) {
-                \DDTrace\trace_method(
-                    'Drupal\Core\DrupalKernel',
-                    'handle',
-                    function (SpanData $span, $args) use ($rootSpan) {
-                        if (!isset($args[0])) {
-                            return;
-                        }
+            'handle',
+            function (SpanData $span, $args) use ($rootSpan) {
+                if (!isset($args[0])) {
+                    return;
+                }
 
-                        $req = $args[0];
+                $req = $args[0];
 
-                        $route = $req->getPathInfo();
-                        $rootSpan->overwriteOperationName($route);
-                        $rootSpan->setTag(Tag::COMPONENT, 'drupal');
+                $route = $req->getPathInfo();
+                $rootSpan->overwriteOperationName($route);
+                $rootSpan->setTag(Tag::COMPONENT, 'drupal');
 
-                        $span->name = 'drupal.kernel.handle';
-                        $span->type = Type::WEB_SERVLET;
-                        $span->meta[Tag::COMPONENT] = 'drupal';
-                    }
-                );
+                $span->name = 'drupal.kernel.handle';
+                $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'drupal';
+            }
+        );
 
-                \DDTrace\trace_method(
-                    'Drupal\Core\DrupalKernel',
-                    'handleException',
-                    function (SpanData $span, $args, $retval) use ($rootSpan) {
-                        $span->name = $span->resource = 'drupal.kernel.handleException';
-                        $span->meta[Tag::COMPONENT] = 'drupal';
-                        if (!(isset($retval) && \method_exists($retval, 'getStatusCode') && $retval->getStatusCode() < 500)) {
-                            $rootSpan->setError($args[0]);
-                        }
-                    }
-                );
+        \DDTrace\trace_method(
+            'Drupal\Core\DrupalKernel',
+            'handleException',
+            function (SpanData $span, $args, $retval) use ($rootSpan) {
+                $span->name = $span->resource = 'drupal.kernel.handleException';
+                $span->meta[Tag::COMPONENT] = 'drupal';
+                if (!(isset($retval) && \method_exists($retval, 'getStatusCode') && $retval->getStatusCode() < 500)) {
+                    $rootSpan->setError($args[0]);
+                }
+            }
+        );
 
-                \DDTrace\trace_method(
-                    'Drupal\Core\DrupalKernel',
-                    'boot',
-                    function (SpanData $span) {
-                        $span->name = $span->resource = 'drupal.kernel.boot';
-                        $span->meta[Tag::COMPONENT] = 'drupal';
-                    }
-                );
+        \DDTrace\trace_method(
+            'Drupal\Core\DrupalKernel',
+            'boot',
+            function (SpanData $span) {
+                $span->name = $span->resource = 'drupal.kernel.boot';
+                $span->meta[Tag::COMPONENT] = 'drupal';
             }
         );
 
