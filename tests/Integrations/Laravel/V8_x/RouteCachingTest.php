@@ -36,9 +36,9 @@ class RouteCachingTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route'
+                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route',
                     'laravel_test_app',
-                    SpanAssertion::NOT_TESTED
+                    SpanAssertion::NOT_TESTED,
                     'GET /unnamed-route'
                 )
                     ->withExactTags([
@@ -68,7 +68,7 @@ class RouteCachingTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route'
+                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route',
                     'Laravel',
                     SpanAssertion::NOT_TESTED,
                     'GET /unnamed-route'
