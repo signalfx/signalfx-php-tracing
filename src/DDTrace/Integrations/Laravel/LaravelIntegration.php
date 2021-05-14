@@ -139,6 +139,7 @@ class LaravelIntegration extends Integration
                 $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $args[0];
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 

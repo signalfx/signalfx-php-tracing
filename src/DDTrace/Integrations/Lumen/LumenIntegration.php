@@ -59,6 +59,7 @@ class LumenIntegration extends Integration
                 $integration->addTraceAnalyticsIfEnabledLegacy($rootSpan);
                 $rootSpan->setTag(Tag::HTTP_URL, $request->getUri());
                 $rootSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
+                $rootSpan->setTag(Tag::COMPONENT, 'lumen');
                 return false;
             }
         );
@@ -79,8 +80,10 @@ class LumenIntegration extends Integration
                     $routeInfo = $args[0];
                     $resourceName = null;
                     if (isset($routeInfo[1]['uses'])) {
-                        $rootSpan->setTag('lumen.route.action', $routeInfo[1]['uses']);
-                        $resourceName = $routeInfo[1]['uses'];
+                        $action = $routeInfo[1]['uses'];
+                        $rootSpan->setTag('lumen.route.action', $action);
+                        $rootSpan->overwriteOperationName($action);
+                        $resourceName = $action;
                     }
                     if (isset($routeInfo[1]['as'])) {
                         $rootSpan->setTag('lumen.route.name', $routeInfo[1]['as']);
