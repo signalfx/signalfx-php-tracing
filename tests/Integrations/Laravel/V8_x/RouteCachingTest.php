@@ -69,7 +69,7 @@ class RouteCachingTest extends WebFrameworkTestCase
             [
                 SpanAssertion::build(
                     'App\Http\Controllers\RouteCachingController@unnamed unnamed_route',
-                    'Laravel',
+                    'laravel_test_app',
                     SpanAssertion::NOT_TESTED,
                     'GET /unnamed-route'
                 )
