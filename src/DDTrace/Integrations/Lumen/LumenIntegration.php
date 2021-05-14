@@ -47,15 +47,13 @@ class LumenIntegration extends Integration
         }
 
         $integration = $this;
-        $appName = \ddtrace_config_app_name(self::NAME);
 
         \DDTrace\trace_method(
             'Laravel\Lumen\Application',
             'prepareRequest',
-            function (SpanData $span, $args) use ($rootSpan, $integration, $appName) {
+            function (SpanData $span, $args) use ($rootSpan, $integration) {
                 $request = $args[0];
                 $rootSpan->overwriteOperationName('lumen.request');
-                $rootSpan->setTag(Tag::SERVICE_NAME, $appName);
                 $integration->addTraceAnalyticsIfEnabledLegacy($rootSpan);
                 $rootSpan->setTag(Tag::HTTP_URL, $request->getUri());
                 $rootSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
@@ -71,9 +69,9 @@ class LumenIntegration extends Integration
             'Laravel\Lumen\Application',
             'handleFoundRoute',
             [
-                $hook => function (SpanData $span, $args) use ($rootSpan, $appName) {
-                    $span->service = $appName;
+                $hook => function (SpanData $span, $args) use ($rootSpan) {
                     $span->type = 'web';
+                    $span->meta[Tag::COMPONENT] = 'lumen';
                     if (count($args) < 1 || !\is_array($args[0])) {
                         return;
                     }
@@ -100,9 +98,9 @@ class LumenIntegration extends Integration
             ]
         );
 
-        $exceptionRender = function (SpanData $span, $args) use ($rootSpan, $appName) {
-            $span->service = $appName;
+        $exceptionRender = function (SpanData $span, $args) use ($rootSpan) {
             $span->type = 'web';
+            $span->meta[Tag::COMPONENT] = 'lumen';
             if (count($args) < 1 || !\is_a($args[0], 'Throwable')) {
                 return;
             }
