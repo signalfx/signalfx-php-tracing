@@ -8,6 +8,7 @@ use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Type;
 use DDTrace\Util\ArrayKVStore;
+use DDTrace\Util\ObjectKVStore;
 
 /**
  * @param \DDTrace\SpanData $span
@@ -27,6 +28,8 @@ final class CurlIntegration extends Integration
 {
 
     const NAME = 'curl';
+
+    private $weakMap = null;
 
     public function getName()
     {
@@ -78,7 +81,7 @@ final class CurlIntegration extends Integration
                  * See https://docs.datadoghq.com/logs/processing/attributes_naming_convention/
                  */
                 $span->meta[Tag::HTTP_URL] = $sanitizedUrl;
-                $span->meta[Tag::HTTP_METHOD] = ArrayKVStore::getForResource($ch, Tag::HTTP_METHOD, 'GET');
+                $span->meta[Tag::HTTP_METHOD] = $integration->fetchCurlValue($ch, Tag::HTTP_METHOD, 'GET');
                 $span->meta[Tag::COMPONENT] = 'curl';
 
                 addSpanDataTagFromCurlInfo($span, $info, Tag::HTTP_STATUS_CODE, 'http_code');
@@ -121,24 +124,57 @@ final class CurlIntegration extends Integration
 
               switch ($option) {
                   case CURLOPT_POST:
-                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'POST');
+                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'POST');
                       break;
                   case CURLOPT_CUSTOMREQUEST:
-                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, $value);
+                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, $value);
                       break;
                   case CURLOPT_PUT:
-                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'PUT');
+                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'PUT');
                       break;
                   case CURLOPT_HTTPGET:
-                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'GET');
+                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'GET');
                       break;
                   case CURLOPT_NOBODY:
-                      ArrayKVStore::putForResource($ch, Tag::HTTP_METHOD, 'HEAD');
+                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'HEAD');
                       break;
               }
         });
 
 
         return Integration::LOADED;
+    }
+
+    private function getWeakStorage($ch)
+    {
+        if (null == $this->weakMap) {
+          $this->weakMap = new \WeakMap();
+        }
+
+        if (!isset($this->weakMap[$ch])) {
+            $this->weakMap[$ch] = [];
+        }
+
+        return $this->weakMap;
+    }
+
+    public function storeCurlValue($ch, $key, $value)
+    {
+        if (PHP_MAJOR_VERSION < 8) {
+            ArrayKVStore::putForResource($ch, $key, $value);
+        }
+
+        $wm = $this->getWeakStorage($ch);
+        $wm[$ch][$key] = $value;
+    }
+
+    public function fetchCurlValue($ch, $key, $default)
+    {
+        if (PHP_MAJOR_VERSION < 8) {
+          return ArrayKVStore::getForResource($ch, $key, $default);
+        }
+
+        $wm = $this->getWeakStorage($ch);
+        return isset($wm[$ch][$key]) ? $wm[$ch][$key] : $default;
     }
 }
