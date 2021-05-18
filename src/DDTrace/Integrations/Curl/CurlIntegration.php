@@ -8,7 +8,6 @@ use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Type;
 use DDTrace\Util\ArrayKVStore;
-use DDTrace\Util\ObjectKVStore;
 
 /**
  * @param \DDTrace\SpanData $span
@@ -114,31 +113,31 @@ final class CurlIntegration extends Integration
         ]);
 
         \DDTrace\hook_function('curl_setopt', null, function ($args) use ($integration) {
-              if (!isset($args[0])) {
-                  return;
-              }
+            if (!isset($args[0])) {
+                return;
+            }
 
-              $ch = $args[0];
-              $option = $args[1];
-              $value = $args[2];
+            $ch = $args[0];
+            $option = $args[1];
+            $value = $args[2];
 
-              switch ($option) {
-                  case CURLOPT_POST:
-                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'POST');
-                      break;
-                  case CURLOPT_CUSTOMREQUEST:
-                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, $value);
-                      break;
-                  case CURLOPT_PUT:
-                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'PUT');
-                      break;
-                  case CURLOPT_HTTPGET:
-                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'GET');
-                      break;
-                  case CURLOPT_NOBODY:
-                      $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'HEAD');
-                      break;
-              }
+            switch ($option) {
+                case CURLOPT_POST:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'POST');
+                    break;
+                case CURLOPT_CUSTOMREQUEST:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, $value);
+                    break;
+                case CURLOPT_PUT:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'PUT');
+                    break;
+                case CURLOPT_HTTPGET:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'GET');
+                    break;
+                case CURLOPT_NOBODY:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'HEAD');
+                    break;
+            }
         });
 
 
@@ -148,7 +147,7 @@ final class CurlIntegration extends Integration
     private function getWeakStorage($ch)
     {
         if (null == $this->weakMap) {
-          $this->weakMap = new \WeakMap();
+            $this->weakMap = new \WeakMap();
         }
 
         if (!isset($this->weakMap[$ch])) {
@@ -162,6 +161,7 @@ final class CurlIntegration extends Integration
     {
         if (PHP_MAJOR_VERSION < 8) {
             ArrayKVStore::putForResource($ch, $key, $value);
+            return;
         }
 
         $wm = $this->getWeakStorage($ch);
@@ -171,7 +171,7 @@ final class CurlIntegration extends Integration
     public function fetchCurlValue($ch, $key, $default)
     {
         if (PHP_MAJOR_VERSION < 8) {
-          return ArrayKVStore::getForResource($ch, $key, $default);
+            return ArrayKVStore::getForResource($ch, $key, $default);
         }
 
         $wm = $this->getWeakStorage($ch);
