@@ -2,10 +2,13 @@
 
 namespace DDTrace;
 
-use DDTrace\Encoders\JsonZipkinV2;
+use DDTrace\Contracts\Scope as ScopeInterface;
+use DDTrace\Contracts\Span as SpanInterface;
+use DDTrace\Contracts\SpanContext as SpanContextInterface;
+use DDTrace\Contracts\Tracer as TracerInterface;
+use DDTrace\Encoders\MessagePack;
 use DDTrace\Encoders\SpanEncoder;
-use DDTrace\Http\Urls;
-use DDTrace\Integrations\Integration;
+use DDTrace\Exceptions\UnsupportedFormat;
 use DDTrace\Log\LoggingTrait;
 use DDTrace\Processing\TraceAnalyticsProcessor;
 use DDTrace\Propagators\B3CurlHeadersMap;
@@ -16,11 +19,6 @@ use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Sampling\Sampler;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\Transport\Noop as NoopTransport;
-use DDTrace\Exceptions\UnsupportedFormat;
-use DDTrace\Contracts\Scope as ScopeInterface;
-use DDTrace\Contracts\Span as SpanInterface;
-use DDTrace\Contracts\SpanContext as SpanContextInterface;
-use DDTrace\Contracts\Tracer as TracerInterface;
 
 final class Tracer implements TracerInterface
 {
@@ -107,8 +105,9 @@ final class Tracer implements TracerInterface
      */
     public function __construct(Transport $transport = null, array $propagators = null, array $config = [])
     {
-        $this->transport = $transport ?: new HttpSignalFx(new JsonZipkinV2());
-        $textMapPropagator = new B3TextMap($this);
+        $encoder = new MessagePack();
+        $this->transport = $transport ?: new Http($encoder);
+        $textMapPropagator = new TextMap($this);
         $this->propagators = $propagators ?: [
             Format::TEXT_MAP => $textMapPropagator,
             Format::HTTP_HEADERS => $textMapPropagator,
