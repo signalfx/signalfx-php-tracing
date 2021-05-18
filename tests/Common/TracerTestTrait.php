@@ -240,7 +240,7 @@ trait TracerTestTrait
                 \usleep(
                     'fpm-fcgi' === \getenv('DD_TRACE_TEST_SAPI')
                     ? 500 * 1000// 500 ms for PHP-FPM
-                    : 50 * 1000// 50 ms for other SAPIs
+                    : 500 * 1000// 50 ms for other SAPIs
                 );
                 continue;
             } else {
