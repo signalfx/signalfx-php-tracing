@@ -19,7 +19,6 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
     {
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_SERVICE' => 'yii2_test_app',
-            'SIGNALFX_TRACE_DEBUG' => true,
         ]);
     }
 
@@ -34,7 +33,7 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'web.request',
+                    '/site/index',
                     'yii2_test_app',
                     SpanAssertion::NOT_TESTED,
                     'GET /site/index'

@@ -43,7 +43,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 [
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/simple',
                         'yii2_test_app',
                         SpanAssertion::NOT_TESTED,
                         'GET /simple'
@@ -78,7 +78,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/simple_view',
                         'yii2_test_app',
                         SpanAssertion::NOT_TESTED,
                         'GET /simple_view'
@@ -119,7 +119,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/error',
                         'yii2_test_app',
                         SpanAssertion::NOT_TESTED,
                         'GET /error'

@@ -33,7 +33,7 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'web.request',
+                    '/homes/:state/:city/:neighborhood',
                     'yii2_test_app',
                     SpanAssertion::NOT_TESTED,
                     'GET /homes/?/?/?'

@@ -60,7 +60,6 @@ class YiiIntegration extends Integration
         }
         $root = $scope->getSpan();
         $root->setTag(Tag::COMPONENT, 'yii');
-        $this->addTraceAnalyticsIfEnabledLegacy($root);
 
         \DDTrace\trace_method(
             'yii\web\Application',
@@ -92,7 +91,7 @@ class YiiIntegration extends Integration
         \DDTrace\trace_method(
             'yii\base\Module',
             'runAction',
-            function (SpanData $span, $args) use ($service) {
+            function (SpanData $span, $args) {
                 $span->name = \get_class($this) . '.runAction';
                 $span->type = Type::WEB_SERVLET;
                 $span->meta[Tag::COMPONENT] = 'yii';
@@ -132,6 +131,7 @@ class YiiIntegration extends Integration
                     }
 
                     $routePath = \urldecode(Url::toRoute($namedParams));
+                    $root->overwriteOperationName($routePath);
                     $root->setTag('app.route.path', $routePath);
 
                     $resourceName = \urldecode(Url::toRoute($placeholders));
