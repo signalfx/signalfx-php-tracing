@@ -261,8 +261,8 @@ TEST_INTEGRATIONS_54 := \
 	test_integrations_predis1
 
 TEST_WEB_54 := \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_yii_2 \
 	test_web_zend_1 \
 	test_web_custom
@@ -280,8 +280,8 @@ TEST_INTEGRATIONS_55 := \
 	test_integrations_predis1
 
 TEST_WEB_55 := \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -307,8 +307,8 @@ TEST_INTEGRATIONS_56 := \
 	test_integrations_predis1
 
 TEST_WEB_56 := \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -338,8 +338,8 @@ TEST_INTEGRATIONS_70 := \
 
 TEST_WEB_70 := \
 	test_metrics \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -369,8 +369,8 @@ TEST_INTEGRATIONS_71 := \
 
 TEST_WEB_71 := \
 	test_metrics \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_lumen_52 \
