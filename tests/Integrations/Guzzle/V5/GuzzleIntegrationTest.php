@@ -253,11 +253,11 @@ class GuzzleIntegrationTest extends IntegrationTestCase
     {
         self::assertSame(
             (string) $span['span_id'],
-            sfx_trace_convert_hex_id($headers['X-B3-Spanid']),
+            sfx_trace_convert_hex_id($headers['X-B3-Spanid'])
         );
         self::assertSame(
             (string) $span['trace_id'],
-            sfx_trace_convert_hex_id($headers['X-B3-Traceid']),
+            sfx_trace_convert_hex_id($headers['X-B3-Traceid'])
         );
         self::assertSame('preserved_value', $headers['Honored']);
     }
