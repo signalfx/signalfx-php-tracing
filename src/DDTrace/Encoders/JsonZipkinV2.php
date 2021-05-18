@@ -111,6 +111,9 @@ final class JsonZipkinV2 implements Encoder
                 case Type::SQL:
                 case Type::REDIS:
                 case Type::MEMCACHED:
+                case Type::ELASTICSEARCH:
+                case Type::CASSANDRA:
+                case Type::MONGO:
                     $arraySpan['kind'] = "CLIENT";
                     if (!empty($span['service'])) {
                       $arraySpan['remoteEndpoint'] = [
