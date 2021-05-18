@@ -21,7 +21,7 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->inCli($this->getScriptLocation(), self::getEnvs());
+        $traces = $this->getParsedTracesFromCommand();
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -37,7 +37,7 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithArgument()
     {
-        $traces = $this->inCli($this->getScriptLocation(), self::getEnvs(), [], 'command_list');
+        $traces = $this->getParsedTracesFromCommand('command_list');
 
         $this->assertSpans($traces, [
             SpanAssertion::build(

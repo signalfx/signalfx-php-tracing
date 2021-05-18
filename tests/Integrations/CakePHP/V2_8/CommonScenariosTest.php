@@ -17,7 +17,6 @@ class CommonScenariosTest extends WebFrameworkTestCase
     {
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_SERVICE_NAME' => 'cakephp_test_app',
-            'SIGNALFX_TRACE_DEBUG' => true,
         ]);
     }
 
