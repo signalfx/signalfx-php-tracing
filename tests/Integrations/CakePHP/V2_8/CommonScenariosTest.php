@@ -17,6 +17,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
     {
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_SERVICE_NAME' => 'cakephp_test_app',
+            'SIGNALFX_TRACE_DEBUG' => true,
         ]);
     }
 
@@ -103,10 +104,10 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'Foo error'
                     )->withChildren([
                         SpanAssertion::exists('Controller.invokeAction')
-                        ->withExistingTagsNames([
-                            'sfx.error.stack',
-                            'sfx.error.kind',
-                        ])->setError(null, 'Foo error'),
+                            ->withExistingTagsNames([
+                                'sfx.error.stack',
+                                'sfx.error.kind',
+                            ])->setError(null, 'Foo error'),
                         SpanAssertion::build(
                             'cakephp.view',
                             'cakephp_test_app',
