@@ -195,6 +195,7 @@ trait TracerTestTrait
     {
         $curl = curl_init(self::$agentRequestDumperUrl . '/clear-dumped-data');
         curl_exec($curl);
+        curl_close($curl);
     }
 
     /**
