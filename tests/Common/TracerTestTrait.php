@@ -269,6 +269,10 @@ trait TracerTestTrait
 
         $rawTraces = [json_decode($uniqueRequest['body'], true)];
 
+        return $this->parseRawTraces($rawTraces);
+    }
+
+    public function parseRawTraces($rawTraces) {
         $traces = [];
 
         foreach ($rawTraces as $spansInTrace) {
@@ -323,6 +327,7 @@ trait TracerTestTrait
             }
             $traces[] = $spans;
         }
+
         return $traces;
     }
 

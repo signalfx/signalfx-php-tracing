@@ -82,6 +82,17 @@ abstract class CLITestCase extends IntegrationTestCase
         return $this->getLastAgentRequest();
     }
 
+    public function getParsedAgentRequestFromCommand($arguments = '', $overrideEnvs = []) {
+        $lastReq = $this->getAgentRequestFromCommand($arguments, $overrideEnvs);
+
+        if (!isset($lastReq['body'])) {
+            return [];
+        }
+
+        $rawTraces = [json_decode($lastReq['body'], true)];
+        return $this->parseRawTraces($rawTraces);
+    }
+
     public function getAllAgentRequestsFromCommand($arguments = '', $overrideEnvs = [])
     {
         $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
