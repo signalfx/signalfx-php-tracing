@@ -205,7 +205,7 @@ final class SpanChecker
         }
         // PHP 5.6 and 7.* handle differently the way a foreach is done while removing in the loop items
         // from the array itself. As a quick fix, we iterate over keys instead of elements themselves.
-        $spanIds = \array_map('strval', \array_keys($byId));
+        $spanIds = \array_keys($byId);
 
         do {
             $lastCount = count($byId);
@@ -221,7 +221,7 @@ final class SpanChecker
                         continue;
                     }
                     $candidateSpan = $candidateData['span'];
-                    if (!empty($candidateSpan['parent_id']) && $candidateSpan['parent_id'] === $id) {
+                    if (!empty($candidateSpan['parent_id']) && (int) $candidateSpan['parent_id'] === $id) {
                         $hasPendingChildren = true;
                         break;
                     }
