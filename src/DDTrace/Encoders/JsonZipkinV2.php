@@ -40,7 +40,7 @@ final class JsonZipkinV2 implements Encoder
                 return implode(',', array_filter(array_map(function ($span) {
                     return $this->encodeSpan($span);
                 }, $trace)));
-            }, $traces)) . ']';
+        }, $traces)) . ']';
     }
 
     /**

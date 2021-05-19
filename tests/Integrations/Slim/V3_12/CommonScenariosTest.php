@@ -170,7 +170,8 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                     'slim.route.controller',
                                     'slim_test_app',
                                     SpanAssertion::NOT_TESTED,
-                                    'Closure::__invoke')
+                                    'Closure::__invoke'
+                                )
                                     ->withExactTags(['component' => 'slim'])
                                     ->withExistingTagsNames([
                                         'sfx.error.stack'
