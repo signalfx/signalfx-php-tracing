@@ -445,7 +445,6 @@ TEST_INTEGRATIONS_73 :=\
 
 TEST_WEB_73 := \
 	test_metrics \
-	test_web_drupal_89 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
@@ -482,7 +481,6 @@ TEST_INTEGRATIONS_74 := \
 
 TEST_WEB_74 := \
 	test_metrics \
-	test_web_drupal_89 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
