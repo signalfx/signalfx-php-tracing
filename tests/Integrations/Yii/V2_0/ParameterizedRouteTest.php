@@ -25,7 +25,7 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
     public function testGet()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $spec  = GetSpec::create('homes get', '/homes/new-york/new-york/manhattan');
+            $spec = GetSpec::create('homes get', '/homes/new-york/new-york/manhattan');
             $this->call($spec);
         });
 
@@ -51,24 +51,24 @@ class ParameterizedRouteTest extends WebFrameworkTestCase
                         SpanAssertion::NOT_TESTED,
                         ''
                     )
-                    ->withExactTags(['component' => 'yii'])
-                    ->withChildren([
-                        SpanAssertion::build(
-                            'yii\web\Application.runAction',
-                            'yii2_test_app',
-                            SpanAssertion::NOT_TESTED,
-                            'homes/view'
-                        )
                         ->withExactTags(['component' => 'yii'])
                         ->withChildren([
                             SpanAssertion::build(
-                                'app\controllers\HomesController.runAction',
+                                'yii\web\Application.runAction',
                                 'yii2_test_app',
                                 SpanAssertion::NOT_TESTED,
-                                'view'
-                            )->withExactTags(['component' => 'yii'])
+                                'homes/view'
+                            )
+                                ->withExactTags(['component' => 'yii'])
+                                ->withChildren([
+                                    SpanAssertion::build(
+                                        'app\controllers\HomesController.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'view'
+                                    )->withExactTags(['component' => 'yii'])
+                                ])
                         ])
-                    ])
                 ])
             ]
         );

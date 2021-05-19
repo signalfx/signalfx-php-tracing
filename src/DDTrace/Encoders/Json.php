@@ -17,12 +17,12 @@ final class Json implements Encoder
     {
         $traces = $tracer->getTracesAsArray();
 
-        foreach($traces as &$trace) {
-            foreach($trace as &$span) {
-                $span['trace_id'] = (int) $span['trace_id'];
-                $span['span_id'] = (int) $span['span_id'];
+        foreach ($traces as &$trace) {
+            foreach ($trace as &$span) {
+                $span['trace_id'] = (int)$span['trace_id'];
+                $span['span_id'] = (int)$span['span_id'];
                 if (isset($span['parent_id'])) {
-                    $span['parent_id'] = (int) $span['parent_id'];
+                    $span['parent_id'] = (int)$span['parent_id'];
                 }
             }
         }

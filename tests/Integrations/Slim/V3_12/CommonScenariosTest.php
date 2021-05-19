@@ -165,17 +165,17 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'http.status_code' => '500',
                             'component' => 'slim',
                         ])->setError(null, null)
-                        ->withChildren([
-                            SpanAssertion::build(
-                                'slim.route.controller',
-                                'slim_test_app',
-                                SpanAssertion::NOT_TESTED,
-                                'Closure::__invoke')
-                            ->withExactTags(['component' => 'slim'])
-                            ->withExistingTagsNames([
-                                'sfx.error.stack'
-                            ])->setError(null, 'Foo error')
-                        ])
+                            ->withChildren([
+                                SpanAssertion::build(
+                                    'slim.route.controller',
+                                    'slim_test_app',
+                                    SpanAssertion::NOT_TESTED,
+                                    'Closure::__invoke')
+                                    ->withExactTags(['component' => 'slim'])
+                                    ->withExistingTagsNames([
+                                        'sfx.error.stack'
+                                    ])->setError(null, 'Foo error')
+                            ])
                     ],
                 ]
             );

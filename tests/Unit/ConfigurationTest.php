@@ -240,10 +240,10 @@ EOD;
     public function testEndpointURLMadeFromOverriddenParts()
     {
         $this->putEnvAndReloadConfig([
-          'SIGNALFX_ENDPOINT_HTTPS=true',
-          'SIGNALFX_ENDPOINT_HOST=example.com',
-          'SIGNALFX_ENDPOINT_PORT=500',
-          'SIGNALFX_ENDPOINT_PATH=/asdf',
+            'SIGNALFX_ENDPOINT_HTTPS=true',
+            'SIGNALFX_ENDPOINT_HOST=example.com',
+            'SIGNALFX_ENDPOINT_PORT=500',
+            'SIGNALFX_ENDPOINT_PATH=/asdf',
         ]);
         $this->assertSame("https://example.com:500/asdf", \sfx_trace_config_endpoint_url());
     }

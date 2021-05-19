@@ -41,10 +41,10 @@ class CommonScenariosTest extends WebFrameworkTestCase
             [
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
-                      'laravel.request',
-                      'unnamed-php-service',
-                      SpanAssertion::NOT_TESTED,
-                      'GET /simple'
+                        'laravel.request',
+                        'unnamed-php-service',
+                        SpanAssertion::NOT_TESTED,
+                        'GET /simple'
                     )->withExactTags([
                         'laravel.route.name' => 'simple_route',
                         'laravel.route.action' => 'HomeController@simple',
@@ -55,36 +55,36 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'some.key2' => 'value2',
                         'component' => 'laravel',
                     ])
-                    ->withChildren([
-                        SpanAssertion::exists('laravel.application.handle')
-                            ->withChildren([
-                                SpanAssertion::build('laravel.action', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'simple')
-                                    ->withExactTags([
-                                        'some.key1' => 'value',
-                                        'some.key2' => 'value2',
-                                        'component' => 'laravel'
-                                    ]),
+                        ->withChildren([
+                            SpanAssertion::exists('laravel.application.handle')
+                                ->withChildren([
+                                    SpanAssertion::build('laravel.action', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'simple')
+                                        ->withExactTags([
+                                            'some.key1' => 'value',
+                                            'some.key2' => 'value2',
+                                            'component' => 'laravel'
+                                        ]),
+                                    SpanAssertion::exists('laravel.event.handle'),
+                                    SpanAssertion::exists('laravel.event.handle'),
+                                    SpanAssertion::exists('laravel.event.handle'),
+                                    SpanAssertion::exists('laravel.event.handle'),
+                                ]),
+                            SpanAssertion::exists(
+                                'laravel.provider.load',
+                                'Illuminate\Foundation\ProviderRepository::load'
+                            )->withChildren([
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
                                 SpanAssertion::exists('laravel.event.handle'),
                                 SpanAssertion::exists('laravel.event.handle'),
                                 SpanAssertion::exists('laravel.event.handle'),
                                 SpanAssertion::exists('laravel.event.handle'),
                             ]),
-                        SpanAssertion::exists(
-                            'laravel.provider.load',
-                            'Illuminate\Foundation\ProviderRepository::load'
-                        )->withChildren([
-                            SpanAssertion::exists('laravel.event.handle'),
-                            SpanAssertion::exists('laravel.event.handle'),
-                            SpanAssertion::exists('laravel.event.handle'),
-                            SpanAssertion::exists('laravel.event.handle'),
                             SpanAssertion::exists('laravel.event.handle'),
                             SpanAssertion::exists('laravel.event.handle'),
                             SpanAssertion::exists('laravel.event.handle'),
                         ]),
-                        SpanAssertion::exists('laravel.event.handle'),
-                        SpanAssertion::exists('laravel.event.handle'),
-                        SpanAssertion::exists('laravel.event.handle'),
-                    ]),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::exists('laravel.request')

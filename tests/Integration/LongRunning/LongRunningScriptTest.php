@@ -22,12 +22,11 @@ final class LongRunningScriptTest extends CLITestCase
             'DD_TRACE_GENERATE_ROOT_SPAN' => 'false',
             'DD_TRACE_BGS_TIMEOUT' => 3000,
         ]);
-        
+
         $traces = [];
 
-        foreach ($agentRequests as $req)
-        {
-          $traces[] = json_decode($req['body'], true);
+        foreach ($agentRequests as $req) {
+            $traces[] = json_decode($req['body'], true);
         }
 
         $this->assertCount(3, $traces);

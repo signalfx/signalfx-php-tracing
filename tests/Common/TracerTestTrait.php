@@ -162,7 +162,7 @@ trait TracerTestTrait
     public function inCli($scriptPath, $customEnvs = [], $customInis = [], $arguments = '')
     {
         $this->resetRequestDumper();
-        $envs = (string) new EnvSerializer(array_merge(
+        $envs = (string)new EnvSerializer(array_merge(
             [
                 'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'SIGNALFX_ENDPOINT_HOST' => 'request-replayer',
@@ -173,7 +173,7 @@ trait TracerTestTrait
             ],
             $customEnvs
         ));
-        $inis = (string) new IniSerializer(array_merge(
+        $inis = (string)new IniSerializer(array_merge(
             [
                 'ddtrace.request_init_hook' => __DIR__ . '/../../bridge/dd_wrap_autoloader.php',
             ],
@@ -239,8 +239,8 @@ trait TracerTestTrait
                 // Temporary workaround until we get a proper test runner
                 \usleep(
                     'fpm-fcgi' === \getenv('DD_TRACE_TEST_SAPI')
-                    ? 500 * 1000// 500 ms for PHP-FPM
-                    : 500 * 1000// 50 ms for other SAPIs
+                        ? 500 * 1000// 500 ms for PHP-FPM
+                        : 500 * 1000// 50 ms for other SAPIs
                 );
                 continue;
             } else {
@@ -272,7 +272,8 @@ trait TracerTestTrait
         return $this->parseRawTraces($rawTraces);
     }
 
-    public function parseRawTraces($rawTraces) {
+    public function parseRawTraces($rawTraces)
+    {
         $traces = [];
 
         foreach ($rawTraces as $spansInTrace) {
@@ -286,9 +287,9 @@ trait TracerTestTrait
                 $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
 
                 if (isset($rawSpan['remoteEndpoint']['serviceName'])) {
-                  $service = $rawSpan['remoteEndpoint']['serviceName'];
+                    $service = $rawSpan['remoteEndpoint']['serviceName'];
                 } else {
-                  $service = $rawSpan['localEndpoint']['serviceName'];
+                    $service = $rawSpan['localEndpoint']['serviceName'];
                 }
 
                 $span = new Span(

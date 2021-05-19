@@ -100,24 +100,24 @@ class DrupalIntegration extends Integration
             'Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher',
             'dispatch',
             function (SpanData $span, $args) {
-							if (!empty($args[0]) && is_string($args[0])) {
-								$name = $args[0];
-              } else if (!empty($args[1]) && is_string($args[1])) {
-								$name = $args[1];
-              } else if (isset($args[1]) && is_object($args[1])) {
-								$event = $args[1];
+                if (!empty($args[0]) && is_string($args[0])) {
+                    $name = $args[0];
+                } else if (!empty($args[1]) && is_string($args[1])) {
+                    $name = $args[1];
+                } else if (isset($args[1]) && is_object($args[1])) {
+                    $event = $args[1];
 
-								if (property_exists($event, 'name')) {
-                    $name = $event->name;
+                    if (property_exists($event, 'name')) {
+                        $name = $event->name;
+                    } else {
+                        $name = \get_class($event);
+                    }
                 } else {
-								    $name = \get_class($event);
+                    $name = 'unknown';
                 }
-							} else {
-                  $name = 'unknown';
-              }
 
-							$span->name = 'drupal.event.' . $name;
-							$span->meta[Tag::COMPONENT] = 'drupal';
+                $span->name = 'drupal.event.' . $name;
+                $span->meta[Tag::COMPONENT] = 'drupal';
             }
         );
 

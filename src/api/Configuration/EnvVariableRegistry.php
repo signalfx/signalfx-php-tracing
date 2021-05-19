@@ -42,7 +42,7 @@ class EnvVariableRegistry implements Registry
 
         $value = getenv($this->convertKeyToEnvVariableName($key, 'SIGNALFX_'));
         if (false !== $value) {
-        		return trim($value);
+            return trim($value);
         }
 
         return null;

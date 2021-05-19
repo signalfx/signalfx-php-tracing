@@ -66,13 +66,13 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                 'http',
                 SpanAssertion::NOT_TESTED
             )
-            ->setTraceAnalyticsCandidate()
-            ->withExactTags([
-                'http.method' => strtoupper($method),
-                'http.url' => 'http://example.com/',
-                'http.status_code' => '200',
-                'component' => 'guzzle',
-            ]),
+                ->setTraceAnalyticsCandidate()
+                ->withExactTags([
+                    'http.method' => strtoupper($method),
+                    'http.url' => 'http://example.com/',
+                    'http.status_code' => '200',
+                    'component' => 'guzzle',
+                ]),
         ]);
     }
 
@@ -157,12 +157,12 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         }
 
         self::assertSame(
-            (string) $span['span_id'],
+            (string)$span['span_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
 
         self::assertSame(
-            (string) $span['trace_id'],
+            (string)$span['trace_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
         );
 
@@ -252,11 +252,11 @@ class GuzzleIntegrationTest extends IntegrationTestCase
     private static function assertDistributedTracingSpan($span, $headers)
     {
         self::assertSame(
-            (string) $span['span_id'],
+            (string)$span['span_id'],
             sfx_trace_convert_hex_id($headers['X-B3-Spanid'])
         );
         self::assertSame(
-            (string) $span['trace_id'],
+            (string)$span['trace_id'],
             sfx_trace_convert_hex_id($headers['X-B3-Traceid'])
         );
         self::assertSame('preserved_value', $headers['Honored']);
@@ -299,12 +299,12 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
         // trace is: custom
         self::assertSame(
-          (string) $traces[0][0]['span_id'],
-          sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
+            (string)$traces[0][0]['span_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
         self::assertSame(
-          (string) $traces[0][0]['trace_id'],
-          sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
+            (string)$traces[0][0]['trace_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
         );
 
         // existing headers are honored

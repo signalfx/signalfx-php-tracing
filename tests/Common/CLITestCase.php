@@ -73,8 +73,8 @@ abstract class CLITestCase extends IntegrationTestCase
      */
     public function getAgentRequestFromCommand($arguments = '', $overrideEnvs = [])
     {
-        $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
-        $inis = (string) new IniSerializer(static::getInis());
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
         $script = escapeshellarg($this->getScriptLocation());
         $arguments = escapeshellarg($arguments);
         $commandToExecute = "$envs php $inis $script $arguments";
@@ -82,7 +82,8 @@ abstract class CLITestCase extends IntegrationTestCase
         return $this->getLastAgentRequest();
     }
 
-    public function getParsedAgentRequestFromCommand($arguments = '', $overrideEnvs = []) {
+    public function getParsedAgentRequestFromCommand($arguments = '', $overrideEnvs = [])
+    {
         $lastReq = $this->getAgentRequestFromCommand($arguments, $overrideEnvs);
 
         if (!isset($lastReq['body'])) {
@@ -95,8 +96,8 @@ abstract class CLITestCase extends IntegrationTestCase
 
     public function getAllAgentRequestsFromCommand($arguments = '', $overrideEnvs = [])
     {
-        $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
-        $inis = (string) new IniSerializer(static::getInis());
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
         $script = escapeshellarg($this->getScriptLocation());
         $arguments = escapeshellarg($arguments);
         $commandToExecute = "$envs php $inis $script $arguments";
@@ -106,8 +107,8 @@ abstract class CLITestCase extends IntegrationTestCase
 
     public function getParsedTracesFromCommand($arguments = '', $overrideEnvs = [])
     {
-        $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
-        $inis = (string) new IniSerializer(static::getInis());
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
         $script = escapeshellarg($this->getScriptLocation());
         $arguments = escapeshellarg($arguments);
         $commandToExecute = "$envs php $inis $script $arguments";

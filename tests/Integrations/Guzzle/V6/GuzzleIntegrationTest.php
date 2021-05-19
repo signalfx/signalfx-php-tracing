@@ -148,8 +148,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
         // trace is: custom
         self::assertSame(
-          (string) $traces[0][0]['trace_id'],
-          sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
+            (string)$traces[0][0]['trace_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
         );
 
         // parent is: curl_exec, used under the hood
@@ -162,7 +162,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         }
         self::assertNotNull($curl_exec, 'Unable to find curl_exec in spans!');
         self::assertSame(
-            (string) $curl_exec['span_id'],
+            (string)$curl_exec['span_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
 
@@ -297,12 +297,12 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
         // trace is: custom
         self::assertSame(
-          (string) $traces[0][0]['trace_id'],
-          sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
+            (string)$traces[0][0]['trace_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
         );
         self::assertSame(
-          (string) $traces[0][0]['span_id'],
-          sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
+            (string)$traces[0][0]['span_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
         self::assertEquals(1, sizeof($traces[0]));
 

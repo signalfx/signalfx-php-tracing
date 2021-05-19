@@ -128,7 +128,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/error',
                         'http.status_code' => '500',
                         'component' => 'symfony',
-                      ])
+                    ])
                         ->setError('Exception', 'An exception occurred')
                         ->withExistingTagsNames(['sfx.error.stack'])
                         ->withChildren([
@@ -144,8 +144,8 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         SpanAssertion::NOT_TESTED,
                                         'AppBundle\Controller\CommonScenariosController::errorAction'
                                     )
-                                    ->setError('Exception', 'An exception occurred')
-                                    ->withExistingTagsNames(['sfx.error.stack']),
+                                        ->setError('Exception', 'An exception occurred')
+                                        ->withExistingTagsNames(['sfx.error.stack']),
                                     SpanAssertion::exists('symfony.kernel.handleException')->withChildren([
                                         SpanAssertion::exists('symfony.kernel.exception')->withChildren([
                                             SpanAssertion::exists('symfony.templating.render'),
@@ -181,11 +181,11 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                     ]),
                                 ]),
                                 SpanAssertion::exists('symfony.kernel.request')
-                                ->setError(
-                                    'Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException',
-                                    'No route found for "GET /does_not_exist"'
-                                )
-                                ->withExistingTagsNames(['sfx.error.stack']),
+                                    ->setError(
+                                        'Symfony\\Component\\HttpKernel\\Exception\\NotFoundHttpException',
+                                        'No route found for "GET /does_not_exist"'
+                                    )
+                                    ->withExistingTagsNames(['sfx.error.stack']),
                             ]),
                         ])->withExactTags(['component' => 'symfony']),
                         SpanAssertion::exists('symfony.kernel.terminate'),

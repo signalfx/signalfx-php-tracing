@@ -183,13 +183,13 @@ function ddtrace_config_service_version()
 
 function sfx_trace_config_endpoint_url()
 {
-	  $endpoint = \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_URL'), '');
+    $endpoint = \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_URL'), '');
     if ($endpoint === '') {
         $parts = [
-          "scheme" => \sfx_trace_config_endpoint_https() === true ? "https" : "http",
-          "host" => \sfx_trace_config_endpoint_host(),
-          "port" => \sfx_trace_config_endpoint_port(),
-          "path" => \sfx_trace_config_endpoint_path(),
+            "scheme" => \sfx_trace_config_endpoint_https() === true ? "https" : "http",
+            "host" => \sfx_trace_config_endpoint_host(),
+            "port" => \sfx_trace_config_endpoint_port(),
+            "path" => \sfx_trace_config_endpoint_path(),
         ];
     } else {
         $parts = parse_url($endpoint);
@@ -206,27 +206,27 @@ function sfx_trace_config_endpoint_url()
 
 function sfx_trace_config_endpoint_host()
 {
-	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_HOST'), 'localhost');
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_HOST'), 'localhost');
 }
 
 function sfx_trace_config_endpoint_port()
 {
-	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PORT'), '9080');
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PORT'), '9080');
 }
 
 function sfx_trace_config_endpoint_path()
 {
-	return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PATH'), '/v1/trace');
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PATH'), '/v1/trace');
 }
 
 function sfx_trace_config_endpoint_https()
 {
-	return \_ddtrace_config_bool(\getenv('SIGNALFX_ENDPOINT_HTTPS'), false);
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_ENDPOINT_HTTPS'), false);
 }
 
 function sfx_trace_config_access_token()
 {
-	return \_ddtrace_config_string(\getenv('SIGNALFX_ACCESS_TOKEN'), '');
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ACCESS_TOKEN'), '');
 }
 
 /**
@@ -425,5 +425,5 @@ function ddtrace_config_http_headers()
 
 function sfx_trace_config_max_attribute_length()
 {
-	return (int)\_ddtrace_config_float(\getenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH'), 1200);
+    return (int)\_ddtrace_config_float(\getenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH'), 1200);
 }

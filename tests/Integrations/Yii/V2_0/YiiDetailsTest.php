@@ -25,7 +25,7 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
     public function testRootIndexRoute()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $spec  = GetSpec::create('root', '/');
+            $spec = GetSpec::create('root', '/');
             $this->call($spec);
         });
 
@@ -54,15 +54,15 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
                                 SpanAssertion::NOT_TESTED,
                                 'index'
                             )
-                            ->withExactTags(['component' => 'yii'])
-                            ->withChildren([
-                                SpanAssertion::build(
-                                    'app\controllers\SiteController.runAction',
-                                    'yii2_test_app',
-                                    SpanAssertion::NOT_TESTED,
-                                    'index'
-                                )->withExactTags(['component' => 'yii'])
-                            ]),
+                                ->withExactTags(['component' => 'yii'])
+                                ->withChildren([
+                                    SpanAssertion::build(
+                                        'app\controllers\SiteController.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'index'
+                                    )->withExactTags(['component' => 'yii'])
+                                ]),
                         ])
                 ])
             ]

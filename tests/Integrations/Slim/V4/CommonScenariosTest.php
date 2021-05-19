@@ -44,26 +44,26 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 SpanAssertion::NOT_TESTED,
                 'Slim\\Middleware\\ErrorMiddleware'
             )->withExactTags(['component' => 'slim'])
-            ->withChildren([
-                SpanAssertion::build(
-                    'slim.middleware',
-                    'slim_test_app',
-                    SpanAssertion::NOT_TESTED,
-                    'Slim\Middleware\RoutingMiddleware'
-                )->withExactTags(['component' => 'slim'])
                 ->withChildren([
                     SpanAssertion::build(
                         'slim.middleware',
                         'slim_test_app',
                         SpanAssertion::NOT_TESTED,
-                        'Slim\\Views\\TwigMiddleware'
-                    )
-                    ->withExactTags(['component' => 'slim'])
-                    ->withChildren($children)
-                    ->withExistingTagsNames(['sfx.error.stack'])
-                    ->setError(...$setError)
-                ])->withExistingTagsNames(['sfx.error.stack'])->setError(...$setError),
-            ])/* ->setError(...$setError) ; no error on ErrorMiddleware*/;
+                        'Slim\Middleware\RoutingMiddleware'
+                    )->withExactTags(['component' => 'slim'])
+                        ->withChildren([
+                            SpanAssertion::build(
+                                'slim.middleware',
+                                'slim_test_app',
+                                SpanAssertion::NOT_TESTED,
+                                'Slim\\Views\\TwigMiddleware'
+                            )
+                                ->withExactTags(['component' => 'slim'])
+                                ->withChildren($children)
+                                ->withExistingTagsNames(['sfx.error.stack'])
+                                ->setError(...$setError)
+                        ])->withExistingTagsNames(['sfx.error.stack'])->setError(...$setError),
+                ])/* ->setError(...$setError) ; no error on ErrorMiddleware*/ ;
         } else {
             return SpanAssertion::build(
                 'slim.middleware',
@@ -71,23 +71,23 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                 SpanAssertion::NOT_TESTED,
                 'Slim\\Middleware\\ErrorMiddleware'
             )->withExactTags(['component' => 'slim'])
-            ->withChildren([
-                SpanAssertion::build(
-                    'slim.middleware',
-                    'slim_test_app',
-                    SpanAssertion::NOT_TESTED,
-                    'Slim\Middleware\RoutingMiddleware'
-                )->withExactTags(['component' => 'slim'])
                 ->withChildren([
                     SpanAssertion::build(
                         'slim.middleware',
                         'slim_test_app',
                         SpanAssertion::NOT_TESTED,
-                        'Slim\\Views\\TwigMiddleware'
-                    )->withChildren($children)
-                    ->withExactTags(['component' => 'slim'])
-                ]),
-            ]);
+                        'Slim\Middleware\RoutingMiddleware'
+                    )->withExactTags(['component' => 'slim'])
+                        ->withChildren([
+                            SpanAssertion::build(
+                                'slim.middleware',
+                                'slim_test_app',
+                                SpanAssertion::NOT_TESTED,
+                                'Slim\\Views\\TwigMiddleware'
+                            )->withChildren($children)
+                                ->withExactTags(['component' => 'slim'])
+                        ]),
+                ]);
         }
     }
 
@@ -142,17 +142,17 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                 SpanAssertion::NOT_TESTED,
                                 'Closure::__invoke'
                             )->withExactTags(['component' => 'slim'])
-                            ->withChildren([
-                                SpanAssertion::build(
-                                    'slim.view',
-                                    'slim_test_app',
-                                    SpanAssertion::NOT_TESTED,
-                                    'simple_view.phtml'
-                                )->withExactTags([
-                                    'slim.view' => 'simple_view.phtml',
-                                    'component' => 'slim',
+                                ->withChildren([
+                                    SpanAssertion::build(
+                                        'slim.view',
+                                        'slim_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'simple_view.phtml'
+                                    )->withExactTags([
+                                        'slim.view' => 'simple_view.phtml',
+                                        'component' => 'slim',
+                                    ]),
                                 ]),
-                            ]),
                         ]),
                     ]),
                 ],
@@ -169,23 +169,23 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.status_code' => '500',
                         'component' => 'slim',
                     ])
-                    ->setError(null, null)
-                    ->withChildren([
-                        $this->wrapMiddleware(
-                            [
-                                SpanAssertion::build(
-                                    'slim.route',
-                                    'slim_test_app',
-                                    SpanAssertion::NOT_TESTED,
-                                    'Closure::__invoke'
-                                )->withExactTags(['component' => 'slim'])
-                                ->withExistingTagsNames([
-                                    'sfx.error.stack'
-                                ])->setError(null, 'Foo error')
-                            ],
-                            [null, 'Foo error']
-                        )
-                    ]),
+                        ->setError(null, null)
+                        ->withChildren([
+                            $this->wrapMiddleware(
+                                [
+                                    SpanAssertion::build(
+                                        'slim.route',
+                                        'slim_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'Closure::__invoke'
+                                    )->withExactTags(['component' => 'slim'])
+                                        ->withExistingTagsNames([
+                                            'sfx.error.stack'
+                                        ])->setError(null, 'Foo error')
+                                ],
+                                [null, 'Foo error']
+                            )
+                        ]),
                 ],
             ]
         );

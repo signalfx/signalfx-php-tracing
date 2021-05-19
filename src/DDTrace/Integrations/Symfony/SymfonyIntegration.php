@@ -82,7 +82,7 @@ class SymfonyIntegration extends Integration
 
                 if (
                     defined('\Symfony\Component\HttpKernel\Kernel::VERSION')
-                        && Versions::versionMatches('2', \Symfony\Component\HttpKernel\Kernel::VERSION)
+                    && Versions::versionMatches('2', \Symfony\Component\HttpKernel\Kernel::VERSION)
                 ) {
                     $integration->loadSymfony2($integration);
                     return;
@@ -168,7 +168,7 @@ class SymfonyIntegration extends Integration
 
                     if (null !== $route) {
                         $integration->symfonyRequestSpan->setTag(Tag::RESOURCE_NAME, $route);
-												$integration->symfonyRequestSpan->setTag('symfony.route.name', $route);
+                        $integration->symfonyRequestSpan->setTag('symfony.route.name', $route);
                     }
                 }
             }

@@ -40,7 +40,7 @@ final class JsonZipkinV2 implements Encoder
                 return implode(',', array_filter(array_map(function ($span) {
                     return $this->encodeSpan($span);
                 }, $trace)));
-        }, $traces)) . ']';
+            }, $traces)) . ']';
     }
 
     /**
@@ -116,9 +116,9 @@ final class JsonZipkinV2 implements Encoder
                 case Type::MONGO:
                     $arraySpan['kind'] = "CLIENT";
                     if (!empty($span['service'])) {
-                      $arraySpan['remoteEndpoint'] = [
-                        'serviceName' => $span['service'],
-                      ];
+                        $arraySpan['remoteEndpoint'] = [
+                            'serviceName' => $span['service'],
+                        ];
                     }
                     break;
                 case Type::CLI:

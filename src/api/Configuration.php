@@ -67,19 +67,19 @@ class Configuration extends AbstractConfiguration
             && $this->boolValue('priority.sampling', true);
     }
 
- 		/**
-		 * Maximum size span attribute values can have. Attribute values larger than this size
-		 * are truncated to fit the rule.
-		 *
+    /**
+     * Maximum size span attribute values can have. Attribute values larger than this size
+     * are truncated to fit the rule.
+     *
      * -1 means no limit
      *
-		 * @return int
-		 */
-	  public function getMaxAttributeLength()
-		{
-			return (int)$this->floatValue('recorded.value.max.length', 1200);
-		}
- 
+     * @return int
+     */
+    public function getMaxAttributeLength()
+    {
+        return (int)$this->floatValue('recorded.value.max.length', 1200);
+    }
+
     /**
      * Whether or not also unfinished spans should be finished (and thus sent) when tracer is flushed.
      * Motivation: We had users reporting that in some cases they have manual end-points that `echo` some content and
@@ -219,9 +219,9 @@ class Configuration extends AbstractConfiguration
 
     /**
      * Whether or not sandboxed tracing closures are enabled.
+     * @return bool
      * @deprecated 0.48.0 Sandoxing is always enabled.
      *
-     * @return bool
      */
     public function isSandboxEnabled()
     {
@@ -242,7 +242,7 @@ class Configuration extends AbstractConfiguration
         return $service;
     }
 
-		public function getEndpointURL()
+    public function getEndpointURL()
     {
         $endpoint = $this->stringValue("endpoint.url", '');
         if ($endpoint === "") {
@@ -266,7 +266,7 @@ class Configuration extends AbstractConfiguration
         return "${parts['scheme']}://${parts['host']}${portPart}${parts['path']}";
     }
 
-		private function getEndpointHost()
+    private function getEndpointHost()
     {
         return $this->stringValue("endpoint.host", 'localhost');
     }
