@@ -320,25 +320,6 @@ jobs:
           name: Running phpstan
           command: composer scenario << parameters.scenario >> ; PATH=$PATH:~/.composer/vendor/bin composer static-analyze
 
-  "Post-Install Hook":
-    working_directory: ~/datadog
-    docker:
-      - image: datadog/dd-trace-ci:php-nginx-apache2
-    steps:
-      - <<: *STEP_ATTACH_WORKSPACE
-      - run:
-          name: Start Supervisor
-          command: supervisord
-          background: true
-      - run:
-          name: Copy post-install script
-          command: |
-              mkdir -p /src/ddtrace-scripts
-              cp package/post-install.sh /src/ddtrace-scripts
-      - run:
-          name: Test post-install hook
-          command: bash tests/PostInstallHook/run-tests.sh
-
   opcache_tests:
     parameters:
       docker_image:
@@ -1840,6 +1821,4 @@ workflows:
           ext_name: "curl"
           docker_image: "datadog/dd-trace-ci:php-8.0-shared-ext"
       - "Lint files":
-          requires: [ 'Prepare Code' ]
-      - "Post-Install Hook":
           requires: [ 'Prepare Code' ]
