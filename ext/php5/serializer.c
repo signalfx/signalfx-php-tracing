@@ -493,8 +493,7 @@ static zval *dd_fatal_error_msg(const char *format, va_list args) {
         if (newline) {
             *newline = '\0';
             size_t linelen = newline - buffer;
-            // +1 for null terminator
-            ZVAL_STRINGL(msg, buffer, linelen + 1, 1);
+            ZVAL_STRINGL(msg, buffer, linelen, 1);
         } else {
             // This is suspect; there is always a newline in these messages
             ZVAL_STRING(msg, "Unknown uncaught exception", 1);
