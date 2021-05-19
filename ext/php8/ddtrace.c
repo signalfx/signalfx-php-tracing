@@ -57,8 +57,9 @@ PHP_INI_BEGIN()
 STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_signalfx_tracing_globals,
                     signalfx_tracing_globals)
 #if _BUILD_FROM_PECL_
-STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/signalfx_tracing/bridge/dd_wrap_autoloader.php", PHP_INI_SYSTEM,
-                  OnUpdateString, request_init_hook, zend_signalfx_tracing_globals, signalfx_tracing_globals)
+STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/signalfx_tracing/bridge/dd_wrap_autoloader.php",
+                  PHP_INI_SYSTEM, OnUpdateString, request_init_hook, zend_signalfx_tracing_globals,
+                  signalfx_tracing_globals)
 #else
 STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "", PHP_INI_SYSTEM, OnUpdateString, request_init_hook,
                   zend_signalfx_tracing_globals, signalfx_tracing_globals)
@@ -1430,7 +1431,7 @@ static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_FE(dd_trace_peek_span_id, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_pop_span_id, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_push_span_id, arginfo_dd_trace_push_span_id),
-		DDTRACE_FE(dd_trace_push_span_id_hex, arginfo_dd_trace_push_span_id_hex),
+    DDTRACE_FE(dd_trace_push_span_id_hex, arginfo_dd_trace_push_span_id_hex),
     DDTRACE_FE(sfx_trace_convert_hex_id, arginfo_sfx_trace_convert_hex_id),
     DDTRACE_FE(dd_trace_dec_hex, arginfo_dd_trace_dec_hex),
     DDTRACE_FE(dd_trace_hex_dec, arginfo_dd_trace_hex_dec),
@@ -1440,7 +1441,7 @@ static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_FE(dd_trace_serialize_closed_spans, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack),
     DDTRACE_FE(dd_trace_set_trace_id, arginfo_dd_trace_set_trace_id),
-		DDTRACE_FE(dd_trace_set_trace_id_hex, arginfo_dd_trace_set_trace_id_hex),
+    DDTRACE_FE(dd_trace_set_trace_id_hex, arginfo_dd_trace_set_trace_id_hex),
     DDTRACE_FE(dd_trace_tracer_is_limited, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_can_try, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_info, arginfo_ddtrace_void),
@@ -1469,19 +1470,19 @@ static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_FE_END};
 
 zend_module_entry signalfx_tracing_module_entry = {STANDARD_MODULE_HEADER,
-                                          PHP_DDTRACE_EXTNAME,
-                                          signalfx_tracing_functions,
-                                          PHP_MINIT(signalfx_tracing),
-                                          PHP_MSHUTDOWN(signalfx_tracing),
-                                          PHP_RINIT(signalfx_tracing),
-                                          PHP_RSHUTDOWN(signalfx_tracing),
-                                          PHP_MINFO(signalfx_tracing),
-                                          PHP_DDTRACE_VERSION,
-                                          PHP_MODULE_GLOBALS(signalfx_tracing),
-                                          PHP_GINIT(signalfx_tracing),
-                                          NULL,
-                                          NULL,
-                                          STANDARD_MODULE_PROPERTIES_EX};
+                                                   PHP_DDTRACE_EXTNAME,
+                                                   signalfx_tracing_functions,
+                                                   PHP_MINIT(signalfx_tracing),
+                                                   PHP_MSHUTDOWN(signalfx_tracing),
+                                                   PHP_RINIT(signalfx_tracing),
+                                                   PHP_RSHUTDOWN(signalfx_tracing),
+                                                   PHP_MINFO(signalfx_tracing),
+                                                   PHP_DDTRACE_VERSION,
+                                                   PHP_MODULE_GLOBALS(signalfx_tracing),
+                                                   PHP_GINIT(signalfx_tracing),
+                                                   NULL,
+                                                   NULL,
+                                                   STANDARD_MODULE_PROPERTIES_EX};
 
 #ifdef COMPILE_DL_SIGNALFX_TRACING
 ZEND_GET_MODULE(signalfx_tracing)

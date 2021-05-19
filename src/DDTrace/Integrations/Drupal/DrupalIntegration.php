@@ -102,9 +102,9 @@ class DrupalIntegration extends Integration
             function (SpanData $span, $args) {
                 if (!empty($args[0]) && is_string($args[0])) {
                     $name = $args[0];
-                } else if (!empty($args[1]) && is_string($args[1])) {
+                } elseif (!empty($args[1]) && is_string($args[1])) {
                     $name = $args[1];
-                } else if (isset($args[1]) && is_object($args[1])) {
+                } elseif (isset($args[1]) && is_object($args[1])) {
                     $event = $args[1];
 
                     if (property_exists($event, 'name')) {

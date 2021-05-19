@@ -73,7 +73,7 @@ size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length, c
         return 0;
     }
 
-		if (snprintf(envname, envname_length + sizeof('\0'), "%.*s%s", (int)prefix_length, prefix, id) <= 0) {
+    if (snprintf(envname, envname_length + sizeof('\0'), "%.*s%s", (int)prefix_length, prefix, id) <= 0) {
         free(envname);
         return 0;
     }
