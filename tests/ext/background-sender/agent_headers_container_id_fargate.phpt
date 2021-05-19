@@ -1,9 +1,11 @@
 --TEST--
 The Fargate 1.4+ container ID is sent via HTTP headers to the Agent
+--SKIPIF--
+<?php include __DIR__ . '/../includes/skipif_no_dev_env.inc'; ?>
 --INI--
 ddtrace.cgroup_file={PWD}/stubs/cgroup.fargate.1.4
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_BGS_ENABLED=1
 DD_AGENT_HOST=request-replayer
 DD_TRACE_AGENT_PORT=80

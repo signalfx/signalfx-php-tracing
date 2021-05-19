@@ -12,7 +12,7 @@
 
 extern int ddtrace_resource;
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 void ddtrace_engine_hooks_minit(void);
 void ddtrace_engine_hooks_rinit(TSRMLS_D);

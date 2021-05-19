@@ -4,7 +4,7 @@ deferred loading only happens once, even if dispatch is not overwritten
 <?php if (PHP_VERSION_ID < 70000) die('skip: Prehook not supported on PHP 5'); ?>
 --ENV--
 _DD_LOAD_TEST_INTEGRATIONS=1
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --INI--
 ddtrace.request_init_hook={PWD}/deferred_loading_helper.php
 --FILE--

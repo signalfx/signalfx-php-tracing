@@ -36,8 +36,8 @@ try {
 
 array_map(function($span) {
     echo $span['name'];
-    if (isset($span['meta']['error.msg'])) {
-        echo ' with exception: ' . $span['meta']['error.msg'];
+    if (isset($span['meta']['sfx.error.message'])) {
+        echo ' with exception: ' . $span['meta']['sfx.error.message'];
     }
     echo PHP_EOL;
 }, dd_trace_serialize_closed_spans());

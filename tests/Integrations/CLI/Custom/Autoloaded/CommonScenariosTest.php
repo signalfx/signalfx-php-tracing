@@ -21,7 +21,7 @@ final class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedTracesFromCommand();
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -30,8 +30,7 @@ final class CommonScenariosTest extends CLITestCase
                 SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags([
-                'integration.name' => 'web',
-                'component' => 'console_test_app',
+                'component' => 'web.request',
             ])
         ]);
     }

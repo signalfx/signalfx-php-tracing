@@ -1,7 +1,7 @@
 --TEST--
 Request init hook ignores exceptions
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --INI--
 ddtrace.request_init_hook={PWD}/throws_exception.php
 --FILE--

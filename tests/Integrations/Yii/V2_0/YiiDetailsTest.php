@@ -18,15 +18,14 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'yii2_test_app',
-            'DD_TRACE_DEBUG' => true,
+            'SIGNALFX_SERVICE' => 'yii2_test_app',
         ]);
     }
 
     public function testRootIndexRoute()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $spec  = GetSpec::create('root', '/');
+            $spec = GetSpec::create('root', '/');
             $this->call($spec);
         });
 
@@ -34,9 +33,9 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'web.request',
+                    '/site/index',
                     'yii2_test_app',
-                    Type::WEB_SERVLET,
+                    SpanAssertion::NOT_TESTED,
                     'GET /site/index'
                 )->withExactTags([
                     Tag::HTTP_METHOD => 'GET',
@@ -44,27 +43,27 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
                     Tag::HTTP_STATUS_CODE => '200',
                     'app.route.path' => '/site/index',
                     'app.endpoint' => 'app\controllers\SiteController::actionIndex',
+                    'component' => 'yii',
                 ])->withChildren([
-                    SpanAssertion::build(
-                        'yii\web\Application.run',
-                        'yii2_test_app',
-                        Type::WEB_SERVLET,
-                        'yii\web\Application.run'
-                    )->withChildren([
-                        SpanAssertion::build(
-                            'yii\web\Application.runAction',
-                            'yii2_test_app',
-                            Type::WEB_SERVLET,
-                            'index'
-                        )->withChildren([
+                    SpanAssertion::exists('yii\web\Application.run')
+                        ->withExactTags(['component' => 'yii'])
+                        ->withChildren([
                             SpanAssertion::build(
-                                'app\controllers\SiteController.runAction',
+                                'yii\web\Application.runAction',
                                 'yii2_test_app',
-                                Type::WEB_SERVLET,
+                                SpanAssertion::NOT_TESTED,
                                 'index'
-                            ),
-                        ]),
-                    ])
+                            )
+                                ->withExactTags(['component' => 'yii'])
+                                ->withChildren([
+                                    SpanAssertion::build(
+                                        'app\controllers\SiteController.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'index'
+                                    )->withExactTags(['component' => 'yii'])
+                                ]),
+                        ])
                 ])
             ]
         );

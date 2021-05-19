@@ -31,8 +31,8 @@ bool ddtrace_config_env_bool(ddtrace_string env_name, bool default_value TSRMLS_
 bool ddtrace_config_distributed_tracing_enabled(TSRMLS_D);
 bool ddtrace_config_trace_enabled(TSRMLS_D);
 
-#define DDTRACE_LONGEST_INTEGRATION_ENV_PREFIX_LEN 9   // "DD_TRACE_" FTW!
-#define DDTRACE_LONGEST_INTEGRATION_ENV_SUFFIX_LEN 22  // "_ANALYTICS_SAMPLE_RATE" FTW!
+#define DDTRACE_LONGEST_INTEGRATION_ENV_PREFIX_LEN 15  // "SIGNALFX_TRACE_"
+#define DDTRACE_LONGEST_INTEGRATION_ENV_SUFFIX_LEN 22  // "_ANALYTICS_SAMPLE_RATE"
 #define DDTRACE_LONGEST_INTEGRATION_ENV_LEN                                              \
     (DDTRACE_LONGEST_INTEGRATION_ENV_PREFIX_LEN + DDTRACE_LONGEST_INTEGRATION_NAME_LEN + \
      DDTRACE_LONGEST_INTEGRATION_ENV_SUFFIX_LEN)
@@ -85,22 +85,22 @@ void ddtrace_config_shutdown(void);
 #define DD_CONFIGURATION                                                                                             \
     CHAR(get_dd_trace_agent_url, "DD_TRACE_AGENT_URL", "")                                                           \
     CHAR(get_dd_agent_host, "DD_AGENT_HOST", "localhost")                                                            \
-    BOOL(get_dd_distributed_tracing, "DD_DISTRIBUTED_TRACING", true)                                                 \
+    BOOL(get_dd_distributed_tracing, "SIGNALFX_DISTRIBUTED_TRACING", true)                                           \
     CHAR(get_dd_dogstatsd_port, "DD_DOGSTATSD_PORT", "8125")                                                         \
     CHAR(get_dd_env, "DD_ENV", "")                                                                                   \
     CHAR(get_dd_integrations_disabled, "DD_INTEGRATIONS_DISABLED", "")                                               \
     BOOL(get_dd_priority_sampling, "DD_PRIORITY_SAMPLING", true)                                                     \
-    CHAR(get_dd_service, "DD_SERVICE", "")                                                                           \
+    CHAR(get_dd_service, "SIGNALFX_SERVICE", "")                                                                     \
     CHAR(get_dd_service_mapping, "DD_SERVICE_MAPPING", "")                                                           \
-    CHAR(get_dd_service_name, "DD_SERVICE_NAME", "")                                                                 \
+    CHAR(get_dd_service_name, "SIGNALFX_SERVICE_NAME", "")                                                           \
     CHAR(get_dd_tags, "DD_TAGS", "")                                                                                 \
     INT(get_dd_trace_agent_port, "DD_TRACE_AGENT_PORT", 8126)                                                        \
     BOOL(get_dd_trace_analytics_enabled, "DD_TRACE_ANALYTICS_ENABLED", false)                                        \
     BOOL(get_dd_trace_auto_flush_enabled, "DD_TRACE_AUTO_FLUSH_ENABLED", false)                                      \
-    BOOL(get_dd_trace_cli_enabled, "DD_TRACE_CLI_ENABLED", false)                                                    \
+    BOOL(get_dd_trace_cli_enabled, "SIGNALFX_TRACE_CLI_ENABLED", false)                                              \
     BOOL(get_dd_trace_measure_compile_time, "DD_TRACE_MEASURE_COMPILE_TIME", true)                                   \
-    BOOL(get_dd_trace_debug, "DD_TRACE_DEBUG", false)                                                                \
-    BOOL(get_dd_trace_enabled, "DD_TRACE_ENABLED", true)                                                             \
+    BOOL(get_dd_trace_debug, "SIGNALFX_TRACE_DEBUG", false)                                                          \
+    BOOL(get_dd_trace_enabled, "SIGNALFX_TRACING_ENABLED", true)                                                     \
     CHAR(get_dd_trace_global_tags, "DD_TRACE_GLOBAL_TAGS", "")                                                       \
     BOOL(get_dd_trace_heath_metrics_enabled, "DD_TRACE_HEALTH_METRICS_ENABLED", false)                               \
     DOUBLE(get_dd_trace_heath_metrics_heartbeat_sample_rate, "DD_TRACE_HEALTH_METRICS_HEARTBEAT_SAMPLE_RATE", 0.001) \

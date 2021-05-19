@@ -21,25 +21,31 @@ class EnvVariableRegistry implements Registry
     /**
      * @param string $prefix
      */
-    public function __construct($prefix = 'SIGNALFX_')
+    public function __construct($prefix = 'DD_')
     {
         $this->prefix = $prefix;
         $this->registry = [];
     }
 
     /**
-     * Return an env variable that starts with "SIGNALFX_".
+     * Return an env variable that starts with "DD_".
      *
      * @param string $key
      * @return string|null
      */
     protected function get($key)
     {
-        $value = getenv($this->convertKeyToEnvVariableName($key));
-        if (false === $value) {
-            return null;
+        $value = getenv($this->convertKeyToEnvVariableName($key, $this->prefix));
+        if (false !== $value) {
+            return trim($value);
         }
-        return trim($value);
+
+        $value = getenv($this->convertKeyToEnvVariableName($key, 'SIGNALFX_'));
+        if (false !== $value) {
+            return trim($value);
+        }
+
+        return null;
     }
 
     /**
@@ -179,13 +185,13 @@ class EnvVariableRegistry implements Registry
     /**
      * Given a dot separated key, it converts it to an expected variable name.
      *
-     * e.g.: 'distributed_tracing' -> 'SIGNALFX_DISTRIBUTED_TRACING'
+     * e.g.: 'distributed_tracing' -> 'DD_DISTRIBUTED_TRACING'
      *
      * @param string $key
      * @return string
      */
-    private function convertKeyToEnvVariableName($key)
+    private function convertKeyToEnvVariableName($key, $prefix)
     {
-        return $this->prefix . strtoupper(str_replace('.', '_', trim($key)));
+        return $prefix . strtoupper(str_replace('.', '_', trim($key)));
     }
 }

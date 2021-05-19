@@ -18,7 +18,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'yii2_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'yii2_test_app',
         ]);
     }
 
@@ -39,13 +39,13 @@ final class CommonScenariosTest extends WebFrameworkTestCase
 
     public function provideSpecs()
     {
-            return $this->buildDataProvider(
-                [
+        return $this->buildDataProvider(
+            [
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/simple',
                         'yii2_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple'
                     )->withExactTags([
                         Tag::HTTP_METHOD => 'GET',
@@ -53,34 +53,34 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         Tag::HTTP_STATUS_CODE => '200',
                         'app.endpoint' => 'app\controllers\SimpleController::actionIndex',
                         'app.route.path' => '/simple',
+                        'component' => 'yii',
                     ])->withChildren([
-                        SpanAssertion::build(
-                            'yii\web\Application.run',
-                            'yii2_test_app',
-                            Type::WEB_SERVLET,
-                            'yii\web\Application.run'
-                        )->withChildren([
-                            SpanAssertion::build(
-                                'yii\web\Application.runAction',
-                                'yii2_test_app',
-                                Type::WEB_SERVLET,
-                                'simple/index'
-                            )->withChildren([
+                        SpanAssertion::exists('yii\web\Application.run')
+                            ->withExactTags(['component' => 'yii'])
+                            ->withChildren([
                                 SpanAssertion::build(
-                                    'app\controllers\SimpleController.runAction',
+                                    'yii\web\Application.runAction',
                                     'yii2_test_app',
-                                    Type::WEB_SERVLET,
-                                    'index'
-                                ),
+                                    SpanAssertion::NOT_TESTED,
+                                    'simple/index'
+                                )->withExactTags([
+                                    'component' => 'yii',
+                                ])->withChildren([
+                                    SpanAssertion::build(
+                                        'app\controllers\SimpleController.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'index'
+                                    )->withExactTags(['component' => 'yii']),
+                                ]),
                             ]),
-                        ]),
                     ]),
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/simple_view',
                         'yii2_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /simple_view'
                     )->withExactTags([
                         Tag::HTTP_METHOD => 'GET',
@@ -88,37 +88,40 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         Tag::HTTP_STATUS_CODE => '200',
                         'app.endpoint' => 'app\controllers\SimpleController::actionView',
                         'app.route.path' => '/simple_view',
+                        'component' => 'yii',
                     ])->withChildren([
-                        SpanAssertion::build(
-                            'yii\web\Application.run',
-                            'yii2_test_app',
-                            Type::WEB_SERVLET,
-                            'yii\web\Application.run'
-                        )->withChildren([
-                            SpanAssertion::build(
-                                'yii\web\Application.runAction',
-                                'yii2_test_app',
-                                Type::WEB_SERVLET,
-                                'simple/view'
-                            )->withChildren([
+                        SpanAssertion::exists('yii\web\Application.run')
+                            ->withExactTags([
+                                'component' => 'yii',
+                            ])->withChildren([
                                 SpanAssertion::build(
-                                    'app\controllers\SimpleController.runAction',
+                                    'yii\web\Application.runAction',
                                     'yii2_test_app',
-                                    Type::WEB_SERVLET,
-                                    'view'
-                                )->withChildren([
-                                    SpanAssertion::exists('yii\web\View.renderFile'),
-                                    SpanAssertion::exists('yii\web\View.renderFile'),
+                                    SpanAssertion::NOT_TESTED,
+                                    'simple/view'
+                                )->withExactTags([
+                                    'component' => 'yii',
+                                ])->withChildren([
+                                    SpanAssertion::build(
+                                        'app\controllers\SimpleController.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'view'
+                                    )->withExactTags([
+                                        'component' => 'yii',
+                                    ])->withChildren([
+                                        SpanAssertion::exists('yii\web\View.renderFile'),
+                                        SpanAssertion::exists('yii\web\View.renderFile'),
+                                    ]),
                                 ]),
                             ]),
-                        ]),
                     ]),
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
-                        'web.request',
+                        '/error',
                         'yii2_test_app',
-                        'web',
+                        SpanAssertion::NOT_TESTED,
                         'GET /error'
                     )->withExactTags([
                         Tag::HTTP_METHOD => 'GET',
@@ -126,50 +129,57 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         Tag::HTTP_STATUS_CODE => '500',
                         'app.endpoint' => 'app\controllers\SimpleController::actionError',
                         'app.route.path' => '/error',
+                        'component' => 'yii',
                     ])
                         ->setError()
                         ->withChildren([
                             SpanAssertion::build(
                                 'yii\web\Application.runAction',
                                 'yii2_test_app',
-                                Type::WEB_SERVLET,
+                                SpanAssertion::NOT_TESTED,
                                 'site/error'
-                            )->withChildren([
+                            )->withExactTags([
+                                'component' => 'yii',
+                            ])->withChildren([
                                 SpanAssertion::build(
                                     'app\controllers\SiteController.runAction',
                                     'yii2_test_app',
-                                    Type::WEB_SERVLET,
+                                    SpanAssertion::NOT_TESTED,
                                     'error'
-                                )->withChildren([
+                                )->withExactTags([
+                                    'component' => 'yii'
+                                ])->withChildren([
                                     SpanAssertion::exists('yii\web\View.renderFile'),
                                     SpanAssertion::exists('yii\web\View.renderFile'),
                                 ]),
                             ]),
-                            SpanAssertion::build(
-                                'yii\web\Application.run',
-                                'yii2_test_app',
-                                Type::WEB_SERVLET,
-                                'yii\web\Application.run'
-                            )->setError('Exception', 'datadog', true)
+                            SpanAssertion::exists('yii\web\Application.run')
+                                ->withExactTags([
+                                    'component' => 'yii',
+                                ])->setError('Exception', 'datadog', true)
                                 ->withChildren([
-                                SpanAssertion::build(
-                                    'yii\web\Application.runAction',
-                                    'yii2_test_app',
-                                    Type::WEB_SERVLET,
-                                    'simple/error'
-                                )->setError('Exception', 'datadog', true)
-                                    ->withChildren([
-                                        SpanAssertion::build(
-                                            'app\controllers\SimpleController.runAction',
-                                            'yii2_test_app',
-                                            Type::WEB_SERVLET,
-                                            'error'
-                                        )->setError('Exception', 'datadog', true),
-                                    ]),
+                                    SpanAssertion::build(
+                                        'yii\web\Application.runAction',
+                                        'yii2_test_app',
+                                        SpanAssertion::NOT_TESTED,
+                                        'simple/error'
+                                    )->withExactTags([
+                                        'component' => 'yii',
+                                    ])->setError('Exception', 'datadog', true)
+                                        ->withChildren([
+                                            SpanAssertion::build(
+                                                'app\controllers\SimpleController.runAction',
+                                                'yii2_test_app',
+                                                SpanAssertion::NOT_TESTED,
+                                                'error'
+                                            )->withExactTags([
+                                                'component' => 'yii',
+                                            ])->setError('Exception', 'datadog', true),
+                                        ]),
                                 ]),
                         ]),
                 ],
-                ]
-            );
+            ]
+        );
     }
 }

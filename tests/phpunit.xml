@@ -29,9 +29,6 @@
             <directory>./Integrations/CakePHP/V2_8</directory>
             <directory>./Integrations/CLI/CakePHP/V2_8</directory>
         </testsuite>
-        <testsuite name="codeigniter-22-test">
-            <directory>./Integrations/CodeIgniter/V2_2</directory>
-        </testsuite>
         <testsuite name="composer-tests">
             <directory>./Composer</directory>
         </testsuite>

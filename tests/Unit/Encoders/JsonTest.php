@@ -22,7 +22,6 @@ final class JsonTest extends BaseTestCase
     {
         parent::ddSetUp();
         putenv('DD_AUTOFINISH_SPANS=true');
-        putenv('SIGNALFX_AUTOFINISH_SPANS=true');
         $this->tracer = new Tracer(
             new DebugTransport(),
             null,
@@ -37,7 +36,7 @@ final class JsonTest extends BaseTestCase
     protected function ddTearDown()
     {
         parent::ddTearDown();
-        putenv('SIGNALFX_AUTOFINISH_SPANS=');
+        putenv('DD_AUTOFINISH_SPANS=');
     }
 
     public function testEncodeTracesSuccess()

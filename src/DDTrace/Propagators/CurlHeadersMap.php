@@ -7,7 +7,6 @@ use DDTrace\Propagator;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Contracts\SpanContext;
 use DDTrace\Contracts\Tracer;
-use DDTrace\Util\HexConversion;
 
 /**
  * A propagator that inject distributed tracing context in curl like indexed headers arrays:
@@ -45,8 +44,8 @@ final class CurlHeadersMap implements Propagator
             }
         }
 
-        $carrier[] = Propagator::DEFAULT_TRACE_ID_HEADER . ': ' . HexConversion::hexToInt($spanContext->getTraceId());
-        $carrier[] = Propagator::DEFAULT_PARENT_ID_HEADER . ': ' . HexConversion::hexToInt($spanContext->getSpanId());
+        $carrier[] = Propagator::DEFAULT_TRACE_ID_HEADER . ': ' . $spanContext->getTraceId();
+        $carrier[] = Propagator::DEFAULT_PARENT_ID_HEADER . ': ' . $spanContext->getSpanId();
 
         foreach ($spanContext as $key => $value) {
             $carrier[] = Propagator::DEFAULT_BAGGAGE_HEADER_PREFIX . $key . ': ' . $value;

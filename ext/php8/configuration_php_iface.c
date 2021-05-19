@@ -12,9 +12,13 @@
 
 // forward declarations
 BOOL_T get_configuration(zval *return_value, char *env_name, size_t env_name_len);
-size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length);
+size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length, const char *prefix,
+                                 size_t prefix_length);
 
 // implementations
+
+#define ID_TO_ENV_PREFIX "DD_"
+#define ID_TO_ENV_PREFIX_SFX "SIGNALFX_"
 
 void ddtrace_php_get_configuration(zval *return_value, zval *zenv_name) {
     char *env_name = Z_STRVAL_P(zenv_name);
@@ -28,32 +32,40 @@ void ddtrace_php_get_configuration(zval *return_value, zval *zenv_name) {
 
     if (get_configuration(return_value, env_name, env_name_len)) {
         return;
-    } else {
-        char *tmp_envname = NULL;
-        size_t tmp_envname_len = convert_cfg_id_to_envname(&tmp_envname, env_name, env_name_len);
-        if (env_name_len > 0 && tmp_envname) {
-            if (!get_configuration(return_value, tmp_envname, tmp_envname_len)) {
-                RETVAL_NULL();
-            }
-            free(tmp_envname);
-            return;
-        } else {
-            if (tmp_envname) {
-                free(tmp_envname);
-            }
-            RETURN_NULL();
-        }
     }
+
+    char *tmp_envname = NULL;
+    size_t tmp_envname_len =
+        convert_cfg_id_to_envname(&tmp_envname, env_name, env_name_len, ID_TO_ENV_PREFIX, sizeof(ID_TO_ENV_PREFIX) - 1);
+    if (tmp_envname) {
+        if (!get_configuration(return_value, tmp_envname, tmp_envname_len)) {
+            RETVAL_NULL();
+        }
+        free(tmp_envname);
+        return;
+    }
+
+    tmp_envname_len = convert_cfg_id_to_envname(&tmp_envname, env_name, env_name_len, ID_TO_ENV_PREFIX_SFX,
+                                                sizeof(ID_TO_ENV_PREFIX_SFX) - 1);
+
+    if (tmp_envname) {
+        if (!get_configuration(return_value, tmp_envname, tmp_envname_len)) {
+            RETVAL_NULL();
+        }
+        free(tmp_envname);
+        return;
+    }
+
+    RETURN_NULL();
 }
 
-#define ID_TO_ENV_PREFIX "DD_"
-
-size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length) {
+size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length, const char *prefix,
+                                 size_t prefix_length) {
     if (id_length == 0) {
         return 0;
     }
 
-    size_t envname_length = id_length + sizeof(ID_TO_ENV_PREFIX) - 1;
+    size_t envname_length = id_length + prefix_length;
     char *envname = calloc(1, envname_length + sizeof('\0'));
     *envname_p = envname;
 
@@ -61,7 +73,7 @@ size_t convert_cfg_id_to_envname(char **envname_p, char *id, size_t id_length) {
         return 0;
     }
 
-    if (snprintf(envname, envname_length + sizeof('\0'), ID_TO_ENV_PREFIX "%s", id) <= 0) {
+    if (snprintf(envname, envname_length + sizeof('\0'), "%.*s%s", (int)prefix_length, prefix, id) <= 0) {
         free(envname);
         return 0;
     }

@@ -26,9 +26,9 @@ try {
 
     $span = $spans[0];
     echo 'error: ' . $span['error'] . PHP_EOL;
-    echo 'error.type: ' . $span['meta']['error.type'] . PHP_EOL;
-    echo 'error.msg: ' . $span['meta']['error.msg'] . PHP_EOL;
-    echo 'Has error.stack: ' . isset($span['meta']['error.stack']) . PHP_EOL;
+    echo 'error.type: ' . $span['meta']['sfx.error.kind'] . PHP_EOL;
+    echo 'error.msg: ' . $span['meta']['sfx.error.message'] . PHP_EOL;
+    echo 'Has error.stack: ' . isset($span['meta']['sfx.error.stack']) . PHP_EOL;
 }
 ?>
 --EXPECT--

@@ -25,8 +25,8 @@ class Tracer
             if (!empty($values)) {
                 echo ' (' . implode(', ', $values) . ')';
             }
-            if (isset($span['meta']['error.msg'])) {
-                echo ' (error: ' . $span['meta']['error.msg'] . ')';
+            if (isset($span['meta']['sfx.error.message'])) {
+                echo ' (error: ' . $span['meta']['sfx.error.message'] . ')';
             }
             echo PHP_EOL;
         }, dd_trace_serialize_closed_spans());

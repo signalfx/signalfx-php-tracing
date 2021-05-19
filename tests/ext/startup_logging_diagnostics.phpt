@@ -11,9 +11,9 @@ $args = [
     '-dddtrace.request_init_hook=' . __DIR__ . '/includes/request_init_hook.inc',
 ];
 $env = [
-    'DD_TRACE_DEBUG=1',
+    'SIGNALFX_TRACE_DEBUG=1',
     'DD_AGENT_HOST=invalid_host',
-    'DD_SERVICE_NAME=foo_service',
+    'SIGNALFX_SERVICE_NAME=foo_service',
     'DD_TRACE_GLOBAL_TAGS=foo_tag',
     'DD_TRACE_RESOURCE_URI_MAPPING=/foo',
 ];
@@ -35,7 +35,6 @@ dd_dump_startup_logs($logs, [
 agent_error: "%s"
 open_basedir_init_hook_allowed: false
 open_basedir_container_tagging_allowed: false
-DD_SERVICE_NAME: "'DD_SERVICE_NAME=foo_service' is deprecated, use DD_SERVICE instead."
 DD_TRACE_GLOBAL_TAGS: "'DD_TRACE_GLOBAL_TAGS=foo_tag' is deprecated, use DD_TAGS instead."
 DD_TRACE_RESOURCE_URI_MAPPING: "'DD_TRACE_RESOURCE_URI_MAPPING=/foo' is deprecated, use DD_TRACE_RESOURCE_URI_MAPPING_INCOMING and DD_TRACE_RESOURCE_URI_MAPPING_OUTGOING instead."
 agent_url: "http://invalid_host:8126"

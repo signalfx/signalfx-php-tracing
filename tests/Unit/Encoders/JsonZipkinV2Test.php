@@ -7,7 +7,7 @@ use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
 use DDTrace\Tests\DebugTransport;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Type;
@@ -21,38 +21,39 @@ final class JsonZipkinV2Test extends BaseTestCase
      */
     private $tracer;
 
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
-        putenv('SIGNALFX_AUTOFINISH_SPANS=true');
+        parent::ddSetUp();
+        putenv('DD_AUTOFINISH_SPANS=true');
         $this->tracer = new Tracer(new DebugTransport());
         GlobalTracer::set($this->tracer);
     }
 
-    protected function tearDown()
+    protected function ddTearDown()
     {
-        parent::tearDown();
-        putenv('SIGNALFX_AUTOFINISH_SPANS=');
+        parent::ddTearDown();
+        putenv('DD_AUTOFINISH_SPANS=');
     }
 
-    public function testEncodeTracesSuccess()
+    public function testEncodeClientSpanTracesSuccess()
     {
+        $context = SpanContext::createAsRoot();
+        $traceId = HexConversion::idToHex($context->getTraceId());
+        $parentId = HexConversion::idToHex($context->getSpanId());
         $expectedPayload = <<<JSON
-[{"traceId":"160e7072ff7bd5f1","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"160e7072ff7bd5f2",
+[{"traceId":"$traceId","id":"%s","name":"test_name","timestamp":%d,"duration":%d,"parentId":"$parentId",
 JSON
             .   <<<JSON
-"tags":{"component":"cli"},"kind":"CLIENT",
+"tags":{"component":"icurl"},"kind":"CLIENT",
 JSON
             .   <<<JSON
-"localEndpoint":{"serviceName":"unnamed-php-service"}}]
+"remoteEndpoint":{"serviceName":"remote-service"},"localEndpoint":{"serviceName":"unnamed-php-service"}}]
 JSON;
 
-        $context = new SpanContext(
-            HexConversion::idToHex('1589331357723252209'),
-            HexConversion::idToHex('1589331357723252210')
-        );
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         $span->setTag(Tag::SPAN_TYPE, Type::HTTP_CLIENT);
+        $span->setTag(Tag::COMPONENT, 'icurl');
+        $span->service = 'remote-service';
 
         $logger = $this->prophesize('DDTrace\Log\LoggerInterface');
         $logger->debug(Argument::any())->shouldNotBeCalled();
@@ -74,7 +75,7 @@ JSON;
 
         $expectedPayload = '[]';
 
-        $context = new SpanContext('160e7072ff7bd5f1', '160e7072ff7bd5f2');
+        $context = SpanContext::createAsRoot();
         $span = $this->tracer->startSpan('test_name', ['child_of' => $context]);
         // this will generate a malformed UTF-8 string
         $span->setTag('invalid', hex2bin('37f2bef0ab085308'));

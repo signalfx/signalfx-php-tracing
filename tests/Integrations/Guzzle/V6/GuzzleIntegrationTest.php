@@ -43,9 +43,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
     protected function ddTearDown()
     {
         parent::ddTearDown();
-        putenv('DD_DISTRIBUTED_TRACING');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
         putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN');
-        putenv('DD_DISTRIBUTED_TRACING');
     }
 
     /**
@@ -63,6 +62,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => strtoupper($method),
                     'http.url' => 'http://example.com/',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ]),
         ]);
     }
@@ -92,6 +92,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => 'PUT',
                     'http.url' => 'http://example.com',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ])
                 ->withChildren([
                     SpanAssertion::build('GuzzleHttp\Client.transfer', 'guzzle', 'http', 'transfer')
@@ -100,6 +101,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                             'http.method' => 'PUT',
                             'http.url' => 'http://example.com',
                             'http.status_code' => '200',
+                            'component' => 'guzzle',
                         ]),
                 ])
         ]);
@@ -117,6 +119,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://example.com',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ]),
         ]);
     }
@@ -142,15 +145,11 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             $span->finish();
         });
 
-        // trace is: some_operation
-        $this->assertSame(
-            $traces[0][0]['trace_id'],
-            $found['headers']['X-B3-Traceid']
-        );
-        // parent is: curl_exec, used under the hood
-        $this->assertSame(
-            $traces[0][2]['span_id'],
-            $found['headers']['X-B3-Spanid']
+
+        // trace is: custom
+        self::assertSame(
+            (string)$traces[0][0]['trace_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
         );
 
         // parent is: curl_exec, used under the hood
@@ -162,6 +161,10 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             }
         }
         self::assertNotNull($curl_exec, 'Unable to find curl_exec in spans!');
+        self::assertSame(
+            (string)$curl_exec['span_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
+        );
 
         // existing headers are honored
         self::assertSame('preserved_value', $found['headers']['Honored']);
@@ -169,7 +172,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
     public function testDistributedTracingIsNotPropagatedIfDisabled()
     {
-        putenv('DD_DISTRIBUTED_TRACING=false');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING=false');
         $client = $this->getRealClient();
         $found = [];
 
@@ -187,7 +190,6 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
         self::assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
         self::assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
-        self::assertArrayNotHasKey('X-Datadog-Sampling-Priority', $found['headers']);
     }
 
     public function testDistributedTracingIsPropagatedForMultiHandler()
@@ -250,15 +252,11 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             $rootSpan = $traces[0][0];
             self::assertSame(
                 $rootSpan['span_id'],
-                (int) $data['headers']['X-Datadog-Parent-Id']
+                sfx_trace_convert_hex_id($data['headers']['X-B3-Spanid'])
             );
             self::assertSame(
                 $rootSpan['trace_id'],
-                (int) $data['headers']['X-Datadog-Trace-Id']
-            );
-            self::assertSame(
-                (float) $rootSpan['metrics']['_sampling_priority_v1'],
-                (float) $data['headers']['X-Datadog-Sampling-Priority']
+                sfx_trace_convert_hex_id($data['headers']['X-B3-Traceid'])
             );
             self::assertSame('preserved_value', $data['headers']['Honored']);
         }
@@ -298,8 +296,14 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         });
 
         // trace is: custom
-        self::assertSame($traces[0][0]['trace_id'], $found['headers']['X-B3-Traceid']);
-        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-B3-Spanid']);
+        self::assertSame(
+            (string)$traces[0][0]['trace_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
+        );
+        self::assertSame(
+            (string)$traces[0][0]['span_id'],
+            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
+        );
         self::assertEquals(1, sizeof($traces[0]));
 
         // existing headers are honored
@@ -308,7 +312,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
     public function testAppendHostnameToServiceName()
     {
-        putenv('SIGNALFX_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
+        putenv('DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN=true');
 
         $traces = $this->isolateTracer(function () {
             $this->getMockedClient()->get('http://example.com');
@@ -320,6 +324,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://example.com',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ]),
         ]);
     }
@@ -332,21 +337,22 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             },
             __DIR__ . '/guzzle_in_web_request.php',
             [
-                'DD_SERVICE' => 'top_level_app',
+                'SIGNALFX_SERVICE' => 'top_level_app',
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'top_level_app', 'web', 'GET /guzzle_in_web_request.php')
-                ->withExistingTagsNames(['http.method', 'http.url', 'http.status_code'])
+            SpanAssertion::build('web.request', 'top_level_app', SpanAssertion::NOT_TESTED, 'GET /guzzle_in_web_request.php')
+                ->withExistingTagsNames(['http.method', 'http.url', 'http.status_code', 'component'])
                 ->withChildren([
-                    SpanAssertion::build('GuzzleHttp\Client.send', 'guzzle', 'http', 'send')
+                    SpanAssertion::build('GuzzleHttp\Client.send', 'guzzle', SpanAssertion::NOT_TESTED, 'send')
                         ->setTraceAnalyticsCandidate()
                         ->withExactTags([
                             'http.method' => 'GET',
                             'http.url' => self::URL . '/status/200',
                             'http.status_code' => '200',
+                            'component' => 'guzzle',
                         ])
                         ->withChildren([
                             SpanAssertion::exists('GuzzleHttp\Client.transfer')

@@ -10,9 +10,6 @@ final class DefaultIntegrationConfigurationTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED');
-        putenv('DD_DUMMY_ANALYTICS_ENABLED');
-        putenv('DD_DUMMY_ANALYTICS_SAMPLE_RATE');
         putenv('DD_TRACE_ANALYTICS_ENABLED');
         putenv('DD_TRACE_PDO_ANALYTICS_ENABLED');
         putenv('DD_TRACE_PDO_ANALYTICS_SAMPLE_RATE');
@@ -50,14 +47,14 @@ final class DefaultIntegrationConfigurationTest extends BaseTestCase
 
     public function testTraceAnalyticsGlobalEnabledAndNotRequiresExplicit()
     {
-        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED=true');
+        putenv('DD_TRACE_ANALYTICS_ENABLED=true');
         $conf = new DefaultIntegrationConfiguration('pdo', false);
         self::assertTrue($conf->isTraceAnalyticsEnabled());
     }
 
     public function testTraceAnalyticsGlobalEnabledAndRequiresExplicit()
     {
-        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED=true');
+        putenv('DD_TRACE_ANALYTICS_ENABLED=true');
         $conf = new DefaultIntegrationConfiguration('pdo');
         self::assertFalse($conf->isTraceAnalyticsEnabled());
     }
@@ -72,7 +69,7 @@ final class DefaultIntegrationConfigurationTest extends BaseTestCase
 
     public function testTraceAnalyticsGlobalDisabledIntegrationEnabledRequiresExplicitDeprecated()
     {
-        putenv('SIGNALFX_TRACE_ANALYTICS_ENABLED=false');
+        putenv('DD_TRACE_ANALYTICS_ENABLED=false');
         putenv('DD_PDO_ANALYTICS_ENABLED=true');
         $conf = new DefaultIntegrationConfiguration('pdo');
         self::assertTrue($conf->isTraceAnalyticsEnabled());

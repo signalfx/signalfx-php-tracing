@@ -6,7 +6,7 @@ Calls to curl_inject_distributed_headers() are sandboxed
 --INI--
 ddtrace.request_init_hook={PWD}/distributed_tracing_curl_inject_exception.inc
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_TRACED_INTERNAL_FUNCTIONS=curl_exec
 --FILE--
 <?php

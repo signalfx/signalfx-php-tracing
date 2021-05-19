@@ -30,7 +30,7 @@ static struct sigaction ddtrace_sigaction;
 
 #define MAX_STACK_SIZE 1024
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static void ddtrace_sigsegv_handler(int sig) {
     TSRMLS_FETCH();

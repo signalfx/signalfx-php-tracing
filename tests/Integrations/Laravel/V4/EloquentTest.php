@@ -6,6 +6,7 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\SpanAssertionTrait;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
+use DDTrace\Tag;
 
 class EloquentTest extends WebFrameworkTestCase
 {
@@ -32,9 +33,11 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.destroy',
             'laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'User'
-        )->withExactTags([]));
+        )->withExactTags([
+            'component' => 'eloquent',
+        ]));
     }
 
     public function testGet()
@@ -46,10 +49,11 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.get',
             'laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'select * from `users`'
         )->withExactTags([
-            'sql.query' => 'select * from `users`',
+            Tag::DB_STATEMENT => 'select * from `users`',
+            'component' => 'eloquent',
         ]));
     }
 
@@ -62,9 +66,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.insert',
             'laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -78,9 +83,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.update',
             'laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -94,9 +100,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.delete',
             'laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 

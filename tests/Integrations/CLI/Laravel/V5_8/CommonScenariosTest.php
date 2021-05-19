@@ -15,22 +15,21 @@ class CommonScenariosTest extends CLITestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'APP_NAME' => 'artisan_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'artisan_test_app',
         ]);
     }
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedTracesFromCommand();
 
         $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
             ])->withChildren([
                 SpanAssertion::exists(
@@ -43,16 +42,15 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithArgument()
     {
-        $traces = $this->getTracesFromCommand('route:list');
+        $traces = $this->getParsedTracesFromCommand('route:list');
 
         $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan route:list',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
             ])->withChildren([
                 SpanAssertion::exists(
@@ -65,16 +63,15 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithError()
     {
-        $traces = $this->getTracesFromCommand('foo:error');
+        $traces = $this->getParsedTracesFromCommand('foo:error');
 
         $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan foo:error',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
             ])->withExistingTagsNames([
                 'sfx.error.message',

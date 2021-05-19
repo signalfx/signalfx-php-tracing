@@ -284,9 +284,8 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
                              "with the PHP tracer due to a bug in OPcache: https://bugs.php.net/bug.php?id=79825");
     }
 
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_SERVICE_NAME"), ZEND_STRL("DD_SERVICE"));
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_APP_NAME"), ZEND_STRL("DD_SERVICE"));
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("DD_SERVICE"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_TRACE_APP_NAME"), ZEND_STRL("SIGNALFX_SERVICE_NAME"));
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("SIGNALFX_SERVICE_NAME"));
 
     _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_GLOBAL_TAGS"), ZEND_STRL("DD_TAGS"));
     _dd_check_for_deprecated_env(

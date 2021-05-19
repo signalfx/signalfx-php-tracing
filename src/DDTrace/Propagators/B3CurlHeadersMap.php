@@ -6,6 +6,7 @@ use DDTrace\Propagator;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Contracts\SpanContext;
 use DDTrace\Contracts\Tracer;
+use DDTrace\Util\HexConversion;
 
 const B3_TRACE_ID_HEADER = "x-b3-traceid";
 const B3_SPAN_ID_HEADER = "x-b3-spanid";
@@ -58,10 +59,10 @@ final class B3CurlHeadersMap implements Propagator
             }
         }
 
-        $carrier[] = B3_TRACE_ID_HEADER . ': ' . $spanContext->getTraceId();
-        $carrier[] = B3_SPAN_ID_HEADER . ': ' . $spanContext->getSpanId();
+        $carrier[] = B3_TRACE_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getTraceId());
+        $carrier[] = B3_SPAN_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getSpanId());
         if ($spanContext->getParentId() !== null) {
-            $carrier[] = B3_PARENT_SPAN_ID_HEADER . ': ' . $spanContext->getParentId();
+            $carrier[] = B3_PARENT_SPAN_ID_HEADER . ': ' . HexConversion::idToHex($spanContext->getParentId());
         }
 
         $prioritySampling = $this->tracer->getPrioritySampling();
@@ -84,6 +85,6 @@ final class B3CurlHeadersMap implements Propagator
     public function extract($carrier)
     {
         // This use case is not implemented as we haven't found any framework returning headers in curl style so far.
-        return null;
+        return NoopSpanContext::create();
     }
 }

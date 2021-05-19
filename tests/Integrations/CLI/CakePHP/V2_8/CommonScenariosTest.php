@@ -21,7 +21,7 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedAgentRequestFromCommand();
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -30,7 +30,6 @@ class CommonScenariosTest extends CLITestCase
                 SpanAssertion::NOT_TESTED,
                 'cake_console'
             )->withExactTags([
-                'integration.name' => 'cakephp',
                 'component' => 'cakephp',
             ])
         ]);
@@ -38,7 +37,7 @@ class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithArgument()
     {
-        $traces = $this->getTracesFromCommand('command_list');
+        $traces = $this->getParsedAgentRequestFromCommand('command_list');
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -47,7 +46,6 @@ class CommonScenariosTest extends CLITestCase
                 SpanAssertion::NOT_TESTED,
                 'cake_console command_list'
             )->withExactTags([
-                'integration.name' => 'cakephp',
                 'component' => 'cakephp',
             ])
         ]);
@@ -68,17 +66,9 @@ class CommonScenariosTest extends CLITestCase
                 'cake_console_test_app',
                 'cli',
                 'cake_console foo_error'
-<<<<<<< HEAD
-            )->withExactTags([
-                'integration.name' => 'cakephp',
-            ])->withExistingTagsNames([
+            )->withExistingTagsNames([
                 'sfx.error.message',
                 'sfx.error.stack'
-=======
-            )->withExistingTagsNames([
-                'error.msg',
-                'error.stack'
->>>>>>> dd-upstream/master
             ])->setError()
         ]);
     }

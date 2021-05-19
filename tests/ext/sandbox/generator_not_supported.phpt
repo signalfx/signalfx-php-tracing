@@ -5,7 +5,7 @@ Generators are not supported on PHP versions < 7.1
 <?php if (PHP_VERSION_ID < 70000) die('skip: Requires unaltered VM dispatch'); /* Remove when unaltered VM dispatch added in PHP 5 */ ?>
 <?php if (PHP_VERSION_ID >= 70100) die('skip: Test is for PHP versions less than 7.1'); ?>
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 use DDTrace\SpanData;

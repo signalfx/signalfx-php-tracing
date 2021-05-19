@@ -46,57 +46,39 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'App\Http\Controllers\ExampleController@simpleView',
                         'lumen_test_app',
                         SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
+                        'GET App\Http\Controllers\ExampleController@simpleView'
                     )->withExactTags([
                         'lumen.route.action' => 'App\Http\Controllers\ExampleController@simpleView',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
-                        'integration.name' => 'lumen',
-                        'component' => 'lumen',
-                    ]),
-                    SpanAssertion::build(
-                        'lumen.view',
-                        'lumen_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
-                    )->withExactTags([
-                        'integration.name' => 'lumen',
                         'component' => 'lumen',
                     ])->withChildren([
-                        SpanAssertion::build(
-                            'Laravel\Lumen\Application.handleFoundRoute',
-                            'lumen_test_app',
-                            'web',
-                            'Laravel\Lumen\Application.handleFoundRoute'
-                        )->withExactTags([])
+                        SpanAssertion::exists('Laravel\Lumen\Application.handleFoundRoute')
+                        ->withExactTags(['component' => 'laravel'])
                         ->withChildren([
-                            SpanAssertion::build(
-                                'laravel.view.render',
-                                'lumen_test_app',
-                                'web',
-                                'simple_view'
-                            )->withExactTags([])
+                            SpanAssertion::exists('laravel.view.render')
+                            ->withExactTags(['component' => 'laravel'])
                             ->withChildren([
                                 SpanAssertion::build(
                                     'lumen.view',
                                     'lumen_test_app',
-                                    'web',
+                                    SpanAssertion::NOT_TESTED,
                                     '*/resources/views/simple_view.blade.php'
-                                )->withExactTags([]),
+                                )->withExactTags(['component' => 'laravel']),
                                 SpanAssertion::build(
                                     'laravel.event.handle',
                                     'lumen_test_app',
-                                    'web',
+                                    SpanAssertion::NOT_TESTED,
                                     'composing: simple_view'
-                                )->withExactTags([]),
+                                )->withExactTags(['component' => 'laravel']),
                             ]),
                             SpanAssertion::build(
                                 'laravel.event.handle',
                                 'lumen_test_app',
-                                'web',
+                                SpanAssertion::NOT_TESTED,
                                 'creating: simple_view'
-                            )->withExactTags([])
+                            )->withExactTags(['component' => 'laravel']),
                         ])
                     ]),
                 ],
@@ -105,33 +87,23 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'App\Http\Controllers\ExampleController@error',
                         'lumen_test_app',
                         SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
+                        'GET App\Http\Controllers\ExampleController@error'
                     )->withExactTags([
                         'lumen.route.action' => 'App\Http\Controllers\ExampleController@error',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error',
                         'http.status_code' => '500',
-                        'integration.name' => 'lumen',
                         'component' => 'lumen',
                     ])->withExistingTagsNames(\PHP_MAJOR_VERSION === 5 ? [] : ['sfx.error.stack'])
                     ->setError(
                         \PHP_MAJOR_VERSION === 5 ? 'Internal Server Error' : 'Exception',
                         \PHP_MAJOR_VERSION === 5 ? null : 'Controller error'
                     )->withChildren([
-                        SpanAssertion::build(
-                            'Laravel\Lumen\Application.handleFoundRoute',
-                            'lumen_test_app',
-                            'web',
-                            'Laravel\Lumen\Application.handleFoundRoute'
-                        )->withExistingTagsNames([
+                        SpanAssertion::exists('Laravel\Lumen\Application.handleFoundRoute')
+                        ->withExistingTagsNames([
                             'sfx.error.stack'
                         ])->setError('Exception', 'Controller error'),
-                        SpanAssertion::build(
-                            'Laravel\Lumen\Application.sendExceptionToHandler',
-                            'lumen_test_app',
-                            'web',
-                            'Laravel\Lumen\Application.sendExceptionToHandler'
-                        ),
+                        SpanAssertion::exists('Laravel\Lumen\Application.sendExceptionToHandler'),
                     ]),
                 ],
             ]
@@ -142,9 +114,9 @@ class CommonScenariosTest extends WebFrameworkTestCase
     {
         return [
             SpanAssertion::build(
-                'lumen.request',
+                'App\Http\Controllers\ExampleController@simple',
                 'lumen_test_app',
-                'web',
+                SpanAssertion::NOT_TESTED,
                 'GET simple_route'
             )->withExactTags([
                 'lumen.route.name' => 'simple_route',
@@ -152,15 +124,9 @@ class CommonScenariosTest extends WebFrameworkTestCase
                 'http.method' => 'GET',
                 'http.url' => 'http://localhost:9999/simple',
                 'http.status_code' => '200',
-                'integration.name' => 'lumen',
                 'component' => 'lumen',
             ])->withChildren([
-                SpanAssertion::build(
-                    'Laravel\Lumen\Application.handleFoundRoute',
-                    'lumen_test_app',
-                    'web',
-                    'Laravel\Lumen\Application.handleFoundRoute'
-                ),
+                SpanAssertion::exists('Laravel\Lumen\Application.handleFoundRoute'),
             ]),
         ];
     }

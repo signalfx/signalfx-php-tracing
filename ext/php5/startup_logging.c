@@ -282,9 +282,9 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
     //_dd_add_assoc_string(ht, ZEND_STRL("uri_mapping_incoming_error"), ""); // TODO Parse at C level
     //_dd_add_assoc_string(ht, ZEND_STRL("uri_mapping_outgoing_error"), ""); // TODO Parse at C level
 
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_SERVICE_NAME"), ZEND_STRL("DD_SERVICE") TSRMLS_CC);
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_APP_NAME"), ZEND_STRL("DD_SERVICE") TSRMLS_CC);
-    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("DD_SERVICE") TSRMLS_CC);
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("SIGNALFX_TRACE_APP_NAME"),
+                                 ZEND_STRL("SIGNALFX_SERVICE_NAME") TSRMLS_CC);
+    _dd_check_for_deprecated_env(ht, ZEND_STRL("ddtrace_app_name"), ZEND_STRL("SIGNALFX_SERVICE_NAME") TSRMLS_CC);
 
     _dd_check_for_deprecated_env(ht, ZEND_STRL("DD_TRACE_GLOBAL_TAGS"), ZEND_STRL("DD_TAGS") TSRMLS_CC);
     _dd_check_for_deprecated_env(

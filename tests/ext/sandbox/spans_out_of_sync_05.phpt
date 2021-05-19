@@ -1,7 +1,7 @@
 --TEST--
 Gracefully handle out-of-sync spans in closure itself [user]
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 

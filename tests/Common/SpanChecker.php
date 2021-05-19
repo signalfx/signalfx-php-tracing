@@ -221,7 +221,7 @@ final class SpanChecker
                         continue;
                     }
                     $candidateSpan = $candidateData['span'];
-                    if (!empty($candidateSpan['parent_id']) && $candidateSpan['parent_id'] === $id) {
+                    if (!empty($candidateSpan['parent_id']) && (int) $candidateSpan['parent_id'] === $id) {
                         $hasPendingChildren = true;
                         break;
                     }

@@ -3,7 +3,7 @@
 --SKIPIF--
 <?php if (PHP_VERSION_ID >= 70000) die('skip: PHP 5 only test'); ?>
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 use DDTrace\SpanData;

@@ -33,7 +33,6 @@ class RouteNameTest extends WebFrameworkTestCase
                 'http.method' => 'GET',
                 'http.url' => '/app.php',
                 'http.status_code' => '200',
-                'integration.name' => 'symfony',
                 'component' => 'web.request',
             ])->withChildren([
                 SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([

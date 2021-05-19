@@ -7,7 +7,7 @@
 --INI--
 ddtrace.request_init_hook={PWD}/distributed_tracing_curl_inject.inc
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 include 'distributed_tracing.inc';

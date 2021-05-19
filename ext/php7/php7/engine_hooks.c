@@ -17,7 +17,7 @@
 #include "ext/php7/logging.h"
 #include "ext/php7/span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 int ddtrace_resource = -1;
 

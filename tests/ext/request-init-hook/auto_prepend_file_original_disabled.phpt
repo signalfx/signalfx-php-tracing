@@ -5,7 +5,7 @@ Note: this should have the same expected output as the auto_prepend_file_origina
 test. Once the enable/disable functionality is refactored, this test should fail with the same
 output as the other test and can be updated.
 --ENV--
-DD_TRACE_ENABLED=0
+SIGNALFX_TRACING_ENABLED=0
 --INI--
 auto_prepend_file={PWD}/auto_prepend_file.inc
 ddtrace.request_init_hook={PWD}/../includes/request_init_hook.inc

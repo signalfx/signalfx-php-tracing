@@ -8,12 +8,12 @@ if [ -z "${PHP_INSTALL_DIR}" ]; then
 fi
 
 for phpVer in $(ls ${PHP_INSTALL_DIR}); do
-    echo "Installing ddtrace on PHP ${phpVer}..."
+    echo "Installing signalfx-php-tracing on PHP ${phpVer}..."
     switch-php $phpVer
     rpm -Uvh /build_src/build/packages/*.rpm
-    php --ri=ddtrace
+    php --ri=signalfx_tracing
 
     # Uninstall the tracer
-    rpm -e datadog-php-tracer
-    rm -f /opt/datadog-php/etc/ddtrace.ini
+    rpm -e signalfx-tracing
+    rm -f /opt/signalfx-php-tracing/etc/ddtrace.ini
 done

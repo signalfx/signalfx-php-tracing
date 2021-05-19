@@ -70,8 +70,8 @@ array_map(function($span) {
     if (isset($span['resource'])) {
         echo '-' . $span['resource'];
     }
-    if (isset($span['meta']['error.msg'])) {
-        echo ' (' . $span['meta']['error.msg'] . ')';
+    if (isset($span['meta']['sfx.error.message'])) {
+        echo ' (' . $span['meta']['sfx.error.message'] . ')';
     }
     echo PHP_EOL;
 }, dd_trace_serialize_closed_spans());

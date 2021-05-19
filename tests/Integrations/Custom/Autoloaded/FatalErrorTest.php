@@ -17,9 +17,9 @@ final class FatalErrorTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'autoload',
-            'DD_TRACE_DEBUG' => true,
-            'DD_TRACE_ENABLED' => true,
+            'SIGNALFX_SERVICE_NAME' => 'autoload',
+            'SIGNALFX_TRACE_DEBUG' => true,
+            'SIGNALFX_TRACING_ENABLED' => true,
             'DD_TRACE_GENERATE_ROOT_SPAN' => true,
         ]);
     }
@@ -40,15 +40,16 @@ final class FatalErrorTest extends WebFrameworkTestCase
                 SpanAssertion::build(
                     'web.request',
                     'autoload',
-                    'web',
+                    SpanAssertion::NOT_TESTED,
                     'GET /fatal'
                 )->withExactTags([
                     'http.method' => 'GET',
                     'http.url' => '/fatal',
                     'http.status_code' => '200',
+                    'component' => 'web.request',
                 ])
                 ->setError("E_ERROR", "Intentional E_ERROR")
-                ->withExistingTagsNames(['error.stack']),
+                ->withExistingTagsNames(['sfx.error.stack']),
             ]
         );
     }

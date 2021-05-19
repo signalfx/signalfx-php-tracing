@@ -5,7 +5,7 @@
 #include "logging.h"
 #include "mpack/mpack.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 bool ddtrace_send_traces_via_thread(size_t num_traces, char *payload, size_t payload_len) {
     if (num_traces != 1) {

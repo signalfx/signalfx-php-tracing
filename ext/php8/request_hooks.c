@@ -12,7 +12,7 @@
 #include "env_config.h"
 #include "logging.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 int dd_execute_php_file(const char *filename TSRMLS_DC) {
     int filename_len = strlen(filename);

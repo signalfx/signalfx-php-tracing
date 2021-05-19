@@ -15,7 +15,7 @@ final class AgentUrlEnvVarInvalidTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_AGENT_URL' => 'http://invalid_hostname:1337',
+            'SIGNALFX_ENDPOINT_URL' => 'http://invalid_hostname:1337',
         ]);
     }
 

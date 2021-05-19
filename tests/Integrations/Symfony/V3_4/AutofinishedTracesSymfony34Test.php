@@ -16,7 +16,7 @@ class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_AUTOFINISH_SPANS' => 'true',
+            'DD_AUTOFINISH_SPANS' => 'true',
         ]);
     }
 
@@ -38,7 +38,6 @@ class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
                 'http.method' => 'GET',
                 'http.url' => 'http://localhost:9999/terminated_by_exit',
                 'http.status_code' => '200',
-                'integration.name' => 'symfony',
                 'component' => 'symfony',
             ])->withChildren([
                 SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -49,8 +48,8 @@ class AutofinishedTracesSymfony34Test extends WebFrameworkTestCase
                         SpanAssertion::exists('symfony.kernel.controller_arguments'),
                         SpanAssertion::build(
                             'symfony.controller',
-                            'symfony',
-                            'web',
+                            'unnamed-php-service',
+                            SpanAssertion::NOT_TESTED,
                             'AppBundle\Controller\HomeController::actionBeingTerminatedByExit'
                         ),
                     ]),

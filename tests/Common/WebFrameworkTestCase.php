@@ -58,10 +58,6 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
     {
         $envs = [
             'DD_TEST_INTEGRATION' => 'true',
-            'DD_TRACE_ENCODER' => 'json',
-            'DD_TRACE_AGENT_TIMEOUT' => '10000',
-            'DD_TRACE_AGENT_CONNECT_TIMEOUT' => '10000',
-            'SIGNALFX_TRACE_URL_AS_RESOURCE_NAMES_ENABLED' => 'true',
             'DD_TRACE_AGENT_FLUSH_AFTER_N_REQUESTS' => 1,
             // Short flush interval by default or our tests will take all day
             'DD_TRACE_AGENT_FLUSH_INTERVAL' => static::FLUSH_INTERVAL_MS,
@@ -138,7 +134,7 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
      */
     protected function sendRequest($method, $url, $headers = [])
     {
-        for ($i = 0; $i < 10; ++$i) {
+        for ($i = 0; $i < 20; ++$i) {
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);

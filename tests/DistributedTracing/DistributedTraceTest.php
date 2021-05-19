@@ -36,18 +36,19 @@ class DistributedTraceTest extends WebFrameworkTestCase
                 'GET',
                 '/index.php',
                 [
-                    'x-datadog-trace-id: 1042',
-                    'x-datadog-parent-id: 1000',
+                    'x-b3-traceid: 160e7072ff7bd5fa',
+                    'x-b3-spanid: af5db7ff2707e061',
                 ]
             );
             $this->call($spec);
         });
 
-        $this->assertSame(1042, $traces[0][0]['trace_id']);
-        $this->assertSame(1000, $traces[0][0]['parent_id']);
+        $this->assertSame('1589331357723252218', $traces[0][0]['trace_id']);
+        $this->assertSame('12636458435970850913', $traces[0][0]['parent_id']);
     }
 
     // Synthetics requests have "0" as the parent ID
+    // SFX: Don't care for synthetics, a new span id is generated
     public function testDistributedTraceWithNoParent()
     {
         $traces = $this->tracesFromWebRequest(function () {
@@ -56,15 +57,15 @@ class DistributedTraceTest extends WebFrameworkTestCase
                 'GET',
                 '/index.php',
                 [
-                    'x-datadog-trace-id: 6017420907356617206',
-                    'x-datadog-parent-id: 0',
+                    'x-b3-traceid: 160e7072ff7bd5fa',
+                    'x-b3-spanid: 0',
                 ]
             );
             $this->call($spec);
         });
 
-        $this->assertSame(6017420907356617206, $traces[0][0]['trace_id']);
-        $this->assertArrayNotHasKey('parent_id', $traces[0][0]);
+        $this->assertSame('1589331357723252218', $traces[0][0]['trace_id']);
+        $this->assertArrayHasKey('parent_id', $traces[0][0]);
     }
 
     public function testInvalidTraceId()
@@ -75,8 +76,8 @@ class DistributedTraceTest extends WebFrameworkTestCase
                 'GET',
                 '/index.php',
                 [
-                    'x-datadog-trace-id: this-is-not-valid',
-                    'x-datadog-parent-id: 42',
+                    'x-b3-traceid: this-is-not-valid',
+                    'x-b3-spanid: af5db7ff2707e061',
                 ]
             );
             $this->call($spec);
@@ -95,14 +96,14 @@ class DistributedTraceTest extends WebFrameworkTestCase
                 'GET',
                 '/index.php',
                 [
-                    'x-datadog-trace-id: 42',
-                    'x-datadog-parent-id: this-is-not-valid',
+                    'x-b3-traceid: af5db7ff2707e061',
+                    'x-b3-spanid: this-is-not-valid',
                 ]
             );
             $this->call($spec);
         });
-
-        $this->assertNotSame(42, $traces[0][0]['trace_id']);
-        $this->assertArrayNotHasKey('parent_id', $traces[0][0]);
+        $this->assertSame('12636458435970850913', $traces[0][0]['trace_id']);
+        // SFX: new span id
+        $this->assertArrayHasKey('parent_id', $traces[0][0]);
     }
 }

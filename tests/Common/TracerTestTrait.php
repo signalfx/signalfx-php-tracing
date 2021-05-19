@@ -15,7 +15,7 @@ use DDTrace\Tests\WebServer;
 use DDTrace\Tracer;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\Configuration;
-use DDTrace\Transport\Http;
+use DDTrace\Util\HexConversion;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -101,10 +101,10 @@ trait TracerTestTrait
         // Clearing existing dumped file
         $this->resetRequestDumper();
 
-        $transport = new HttpSignalFx(new JsonZipkinV2(), ['endpoint' => self::$agentRequestDumperUrl]);
-
         // Reset the current C-level array of generated spans
         dd_trace_serialize_closed_spans();
+
+        $transport = new HttpSignalFx(new JsonZipkinV2(), ['endpoint' => self::$agentRequestDumperUrl]);
 
         /* Disable Expect: 100-Continue that automatically gets added by curl,
          * as it adds a 1s delay, causing tests to sometimes fail.
@@ -162,17 +162,18 @@ trait TracerTestTrait
     public function inCli($scriptPath, $customEnvs = [], $customInis = [], $arguments = '')
     {
         $this->resetRequestDumper();
-        $envs = (string) new EnvSerializer(array_merge(
+        $envs = (string)new EnvSerializer(array_merge(
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
-                'DD_AGENT_HOST' => 'request-replayer',
-                'DD_TRACE_AGENT_PORT' => '80',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_ENDPOINT_HOST' => 'request-replayer',
+                'SIGNALFX_ENDPOINT_PORT' => '80',
+                'SIGNALFX_ENDPOINT_PATH' => '/',
                 // Uncomment to see debug-level messages
-                //'DD_TRACE_DEBUG' => 'true',
+                'SIGNALFX_TRACE_DEBUG' => 'true',
             ],
             $customEnvs
         ));
-        $inis = (string) new IniSerializer(array_merge(
+        $inis = (string)new IniSerializer(array_merge(
             [
                 'ddtrace.request_init_hook' => __DIR__ . '/../../bridge/dd_wrap_autoloader.php',
             ],
@@ -194,6 +195,7 @@ trait TracerTestTrait
     {
         $curl = curl_init(self::$agentRequestDumperUrl . '/clear-dumped-data');
         curl_exec($curl);
+        curl_close($curl);
     }
 
     /**
@@ -222,7 +224,7 @@ trait TracerTestTrait
      * @return array
      * @throws \Exception
      */
-    private function parseTracesFromDumpedData()
+    public function parseTracesFromDumpedData()
     {
         // When tests run with the background sender enabled, there might be some delay between when a trace is flushed
         // and actually sent. While we should find a smart way to tackle this, for now we do it quick and dirty, in a
@@ -237,8 +239,8 @@ trait TracerTestTrait
                 // Temporary workaround until we get a proper test runner
                 \usleep(
                     'fpm-fcgi' === \getenv('DD_TRACE_TEST_SAPI')
-                    ? 500 * 1000// 500 ms for PHP-FPM
-                    : 50 * 1000// 50 ms for other SAPIs
+                        ? 500 * 1000// 500 ms for PHP-FPM
+                        : 500 * 1000// 50 ms for other SAPIs
                 );
                 continue;
             } else {
@@ -265,31 +267,39 @@ trait TracerTestTrait
             return [];
         }
 
-        $rawTraces = json_decode($uniqueRequest['body'], true);
+        $rawTraces = [json_decode($uniqueRequest['body'], true)];
 
+        return $this->parseRawTraces($rawTraces);
+    }
+
+    public function parseRawTraces($rawTraces)
+    {
         $traces = [];
 
-        foreach ($jsonTraces as $spansInTrace) {
+        foreach ($rawTraces as $spansInTrace) {
             $spans = [];
             foreach ($spansInTrace as $rawSpan) {
                 $spanContext = new SpanContext(
-                    $rawSpan['traceId'],
-                    $rawSpan['id'],
-                    isset($rawSpan['parentId']) ? $rawSpan['parentId'] : null
+                    sfx_trace_convert_hex_id($rawSpan['traceId']),
+                    sfx_trace_convert_hex_id($rawSpan['id']),
+                    isset($rawSpan['parentId']) ? sfx_trace_convert_hex_id($rawSpan['parentId']) : null
                 );
                 $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
-                if (empty($rawSpan['resource'])) {
-                    TestCase::fail(sprintf("Span '%s' has empty resource name", $rawSpan['name']));
-                    return;
+
+                if (isset($rawSpan['remoteEndpoint']['serviceName'])) {
+                    $service = $rawSpan['remoteEndpoint']['serviceName'];
+                } else {
+                    $service = $rawSpan['localEndpoint']['serviceName'];
                 }
 
                 $span = new Span(
                     $rawSpan['name'],
                     $spanContext,
-                    $rawSpan['localEndpoint']['serviceName'],
+                    $service,
                     $resource,
                     $rawSpan['timestamp']
                 );
+
                 unset($rawSpan['tags'][Tag::RESOURCE_NAME]);
                 if (isset($rawSpan['tags'][Tag::SPAN_TYPE])) {
                     $rawSpan['type'] = $rawSpan['tags'][Tag::SPAN_TYPE];
@@ -318,6 +328,7 @@ trait TracerTestTrait
             }
             $traces[] = $spans;
         }
+
         return $traces;
     }
 

@@ -37,7 +37,7 @@ static void (*dd_curl_multi_remove_handle_handler)(INTERNAL_FUNCTION_PARAMETERS)
 static void (*dd_curl_setopt_array_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 static void (*dd_curl_setopt_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static bool dd_load_curl_integration(TSRMLS_D) {
     if (!dd_ext_curl_loaded || DDTRACE_G(disable_in_current_request)) {

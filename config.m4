@@ -1,7 +1,8 @@
 PHP_ARG_ENABLE(signalfx-tracing, whether to enable Datadog tracing support,
   [  --enable-signalfx-tracing   Enable SignalFx tracing support])
 
-PHP_ARG_WITH(signalfx-tracing-sanitize, whether to enable AddressSanitizer for ddtrace,[  --with-signalfx-tracing-sanitize Build Datadog tracing with AddressSanitizer support], no, no)
+PHP_ARG_WITH(signalfx-tracing-sanitize, whether to enable AddressSanitizer for ddtrace,
+  [  --with-signalfx-tracing-sanitize Build Datadog tracing with AddressSanitizer support], no, no)
 
 if test "$PHP_SIGNALFX_TRACING" != "no"; then
   AC_CHECK_SIZEOF([long])
@@ -12,9 +13,12 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
   ],[
     AC_MSG_RESULT([yes])
   ])
+
   m4_include([m4/polyfill.m4])
   m4_include([m4/ax_execinfo.m4])
+
   AX_EXECINFO
+
   AS_IF([test x"$ac_cv_header_execinfo_h" = xyes],
     dnl This duplicates some of AX_EXECINFO's work, but AX_EXECINFO puts the
     dnl library into LIBS, which we don't use anywhere else and am worried that
@@ -22,16 +26,18 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     PHP_CHECK_LIBRARY(execinfo, backtrace,
       [PHP_ADD_LIBRARY(execinfo, , EXTRA_LDFLAGS)])
   )
+
   if test "$PHP_SIGNALFX_TRACING_SANITIZE" != "no"; then
     EXTRA_LDFLAGS="-fsanitize=address"
     EXTRA_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
     PHP_SUBST(EXTRA_CFLAGS)
-	  PHP_SUBST(EXTRA_LDFLAGS)
+    PHP_SUBST(EXTRA_LDFLAGS)
   fi
 
   DD_TRACE_VENDOR_SOURCES="\
     ext/vendor/mpack/mpack.c \
     ext/vendor/mt19937/mt19937-64.c \
+    ext/vendor/hex_utils.c \
     src/dogstatsd/client.c \
   "
 
@@ -216,6 +222,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/zai_sapi/zai_sapi_io.c \
     "
   fi
+
   PHP_NEW_EXTENSION(signalfx_tracing, $DD_TRACE_COMPONENT_SOURCES $ZAI_SOURCES $DD_TRACE_VENDOR_SOURCES $DD_TRACE_PHP_SOURCES, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -Wall -std=gnu11)
   PHP_ADD_BUILD_DIR($ext_builddir/ext, 1)
 

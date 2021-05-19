@@ -19,6 +19,13 @@ class RouteCachingTest extends WebFrameworkTestCase
         $this->routeClear();
     }
 
+    protected static function getEnvs()
+    {
+        return array_merge(parent::getEnvs(), [
+            'SIGNALFX_SERVICE_NAME' => 'laravel_test_app',
+        ]);
+    }
+
     public function testNotCached()
     {
         $traces = $this->tracesFromWebRequest(function () {
@@ -29,10 +36,10 @@ class RouteCachingTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'laravel.request',
-                    'Laravel',
-                    'web',
-                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route'
+                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route',
+                    'laravel_test_app',
+                    SpanAssertion::NOT_TESTED,
+                    'GET /unnamed-route'
                 )
                     ->withExactTags([
                         'laravel.route.name' => 'unnamed_route',
@@ -40,6 +47,7 @@ class RouteCachingTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/unnamed-route',
                         'http.status_code' => '200',
+                        'component' => 'laravel',
                     ])
                     ->withChildren([
                         SpanAssertion::exists('laravel.action'),
@@ -60,10 +68,10 @@ class RouteCachingTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'laravel.request',
-                    'Laravel',
-                    'web',
-                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route'
+                    'App\Http\Controllers\RouteCachingController@unnamed unnamed_route',
+                    'laravel_test_app',
+                    SpanAssertion::NOT_TESTED,
+                    'GET /unnamed-route'
                 )
                     ->withExactTags([
                         'laravel.route.name' => 'unnamed_route',
@@ -71,6 +79,7 @@ class RouteCachingTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/unnamed-route',
                         'http.status_code' => '200',
+                        'component' => 'laravel',
                     ])
                     ->withChildren([
                         SpanAssertion::exists('laravel.action'),

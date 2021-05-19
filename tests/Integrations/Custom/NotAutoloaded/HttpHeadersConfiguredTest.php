@@ -16,7 +16,7 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'my-service',
+            'SIGNALFX_SERVICE_NAME' => 'my-service',
             'DD_TRACE_HEADER_TAGS' => '  fIrSt-HEADER   ,  SECOND-header  , third-HEADER , FORTH-HEADER',
         ]);
     }
@@ -41,7 +41,7 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
                 SpanAssertion::build(
                     'web.request',
                     'my-service',
-                    'web',
+                    SpanAssertion::NOT_TESTED,
                     'GET /'
                 )->withExactTags([
                     'http.method' => 'GET',
@@ -50,6 +50,7 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
                     'http.request.headers.first-header' => 'some value: with colon',
                     'http.request.headers.forth-header' => '123',
                     'http.response.headers.third-header' => 'separated: with  : colon',
+                    'component' => 'web.request',
                 ]),
             ]
         );

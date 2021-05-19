@@ -2,7 +2,6 @@
 
 namespace DDTrace\Encoders;
 
-use DDTrace\Configuration;
 use DDTrace\Contracts\Span;
 use DDTrace\Contracts\Tracer;
 use DDTrace\Encoder;
@@ -11,6 +10,7 @@ use DDTrace\Log\Logger;
 use DDTrace\Log\LoggerInterface;
 use DDTrace\Tag;
 use DDTrace\Type;
+use DDTrace\Util\HexConversion;
 
 /**
  * This converts from the DD span format to the Zipkin V2 JSON span format.
@@ -27,8 +27,7 @@ final class JsonZipkinV2 implements Encoder
     public function __construct(LoggerInterface $logger = null)
     {
         $this->logger = $logger ?: Logger::get();
-        $config = Configuration::get();
-        $this->serviceName = $config->appName("unnamed-php-service");
+        $this->serviceName = \ddtrace_config_app_name("unnamed-php-service");
     }
 
     /**
@@ -64,13 +63,7 @@ final class JsonZipkinV2 implements Encoder
             return "";
         }
 
-        return str_replace([
-            '"start_micro":"-"',
-            '"duration_micro":"-"',
-        ], [
-            '"timestamp":' . substr($span['start'], 0, -3),
-            '"duration":' . substr($span['duration'], 0, -3),
-        ], $json);
+        return $json;
     }
 
     /**
@@ -80,19 +73,18 @@ final class JsonZipkinV2 implements Encoder
     private function spanToArray(array $span)
     {
         $arraySpan = [
-            'traceId' => $span['trace_id'],
-            'id' => $span['span_id'],
+            'traceId' => HexConversion::idToHex($span['trace_id']),
+            'id' => HexConversion::idToHex($span['span_id']),
             'name' => $span['name'],
-            // This gets filled in by string substitution to avoid exponential formats.
-            'start_micro' => '-',
+            'timestamp' => intval($span['start'] / 1000),
         ];
 
         if (isset($span['duration'])) {
-            $arraySpan['duration_micro'] = '-';
+            $arraySpan['duration'] = intval($span['duration'] / 1000);
         }
 
         if (isset($span['parent_id'])) {
-            $arraySpan['parentId'] = $span['parent_id'];
+            $arraySpan['parentId'] = HexConversion::idToHex($span['parent_id']);
         }
 
         $span['tags'] = [];
@@ -103,7 +95,7 @@ final class JsonZipkinV2 implements Encoder
             }
         }
 
-        if (!isset($span['meta']['component'])) {
+        if (!isset($span['meta']['component']) && !empty($span['service'])) {
             $arraySpan['tags']['component'] = $span['service'];
         }
 
@@ -116,7 +108,18 @@ final class JsonZipkinV2 implements Encoder
         if (isset($span['type'])) {
             switch ($span['type']) {
                 case Type::HTTP_CLIENT:
+                case Type::SQL:
+                case Type::REDIS:
+                case Type::MEMCACHED:
+                case Type::ELASTICSEARCH:
+                case Type::CASSANDRA:
+                case Type::MONGO:
                     $arraySpan['kind'] = "CLIENT";
+                    if (!empty($span['service'])) {
+                        $arraySpan['remoteEndpoint'] = [
+                            'serviceName' => $span['service'],
+                        ];
+                    }
                     break;
                 case Type::CLI:
                 case Type::WEB_SERVLET:
@@ -125,7 +128,8 @@ final class JsonZipkinV2 implements Encoder
             }
         }
 
-        if (isset($span['error']) && $span['error']) {
+        // Integrations set their error via SpanData which does not contain an error field.
+        if (isset($span['meta'][Tag::ERROR_KIND])) {
             $arraySpan['tags'][Tag::ERROR] = "true";
         }
 

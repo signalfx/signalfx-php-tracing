@@ -30,7 +30,7 @@ function reset() {
         rm -f /etc/php/"$v"/fpm/conf.d/*-ddtrace*.ini
         restartService "php-fpm$v"
     done
-    rm -f /opt/datadog-php/etc/ddtrace*.ini
+    rm -f /opt/signalx-php-tracing/etc/ddtrace*.ini
     restartService "apache2"
 }
 
