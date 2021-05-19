@@ -60,7 +60,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 SpanAssertion::exists('symfony.kernel.controller'),
                                 SpanAssertion::build(
                                     'symfony.controller',
-                                    'symfony',
+                                    'symf30',
                                     SpanAssertion::NOT_TESTED,
                                     'AppBundle\Controller\CommonScenariosController::simpleAction'
                                 )->skipIf(\PHP_MAJOR_VERSION !== 5), // call_user_func_array
