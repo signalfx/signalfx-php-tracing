@@ -57,8 +57,9 @@ PHP_INI_BEGIN()
 STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_signalfx_tracing_globals,
                     signalfx_tracing_globals)
 #if _BUILD_FROM_PECL_
-STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/signalfx_tracing/bridge/dd_wrap_autoloader.php", PHP_INI_SYSTEM,
-                  OnUpdateString, request_init_hook, zend_signalfx_tracing_globals, signalfx_tracing_globals)
+STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/signalfx_tracing/bridge/dd_wrap_autoloader.php",
+                  PHP_INI_SYSTEM, OnUpdateString, request_init_hook, zend_signalfx_tracing_globals,
+                  signalfx_tracing_globals)
 #else
 STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "", PHP_INI_SYSTEM, OnUpdateString, request_init_hook,
                   zend_signalfx_tracing_globals, signalfx_tracing_globals)
@@ -826,6 +827,7 @@ static PHP_FUNCTION(trace_function) {
     }
 
     zend_bool rv = ddtrace_trace(NULL, function, tracing_closure, options TSRMLS_CC);
+
     RETURN_BOOL(rv);
 }
 

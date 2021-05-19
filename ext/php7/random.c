@@ -8,8 +8,8 @@
 #include "configuration.h"
 #include "ddtrace.h"
 #include "env_config.h"
-#include "mt19937/mt19937-64.h"
 #include "hex_utils.h"
+#include "mt19937/mt19937-64.h"
 
 ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 

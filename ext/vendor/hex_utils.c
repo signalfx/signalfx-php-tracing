@@ -1,9 +1,9 @@
 #include "hex_utils.h"
 
 #include <php.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 static const int8_t hex_lut[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -17,18 +17,16 @@ static const int8_t hex_lut[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-static inline int8_t hex_to_int(char c) {
-	return hex_lut[(uint8_t)c];	
-}
+static inline int8_t hex_to_int(char c) { return hex_lut[(uint8_t)c]; }
 
-static inline bool is_valid_hex(const char* hex, int length) {
-	for (int i = 0; i < length; i++) {
-		if (hex_to_int(hex[i]) == -1) {
-      return false;
+static inline bool is_valid_hex(const char *hex, int length) {
+    for (int i = 0; i < length; i++) {
+        if (hex_to_int(hex[i]) == -1) {
+            return false;
+        }
     }
-	}
 
-  return true;
+    return true;
 }
 
 /**
@@ -89,7 +87,7 @@ void dd_trace_hex_dec(char *hex, char *buf) {
 
 uint64_t decode_hex_id(const char *hex, int length) {
     if (!is_valid_hex(hex, length)) {
-      return 0;
+        return 0;
     }
 
     errno = 0;
