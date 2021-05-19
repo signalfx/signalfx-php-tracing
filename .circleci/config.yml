@@ -271,8 +271,14 @@ jobs:
           name: Running eclint
           command: node_modules/.bin/eclint check '**/*' '!dockerfiles/**/*' '!tests/ext/sandbox/**' '!tests/ext/sandbox-prehook/*' '!tests/ext/background-sender/**/*' '!config.*' '!m4/*' '!tmp/**/*' '!vendor/**/*' '!ext/vendor/**/*' '!ext/.libs/*' '!src/dogstatsd/**' '!LICENSE' '!phpstan.*.neon' '!tests/overhead/**' '!tests/Frameworks/*/Version_*/**' '!tests/dockerfiles/**' '!tests/AutoInstrumentation/**' '!.composer/**/*' '!LICENSE.*' '!tooling/*' '!tests/randomized/**' '!**/tests/stubs/**' '!**/CMakeLists.txt' '!phpstan.neon' || touch .failure
       - run:
+          name: Check linting failure
+          command: test -e .failure && exit 1 || true
+      - run:
           name: Running phpcs
           command: composer lint -- --report=junit | tee test-results/phpcs/results.xml || touch .failure
+      - run:
+          name: Check linting failure
+          command: test -e .failure && exit 1 || true
       - run:
           name: Install Clang
           command: |
