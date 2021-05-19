@@ -1,13 +1,15 @@
 # In order to have compilation properly working in CI, this target has to be
 # executed so all relevant images are pushed to Datadog/dd-trace-ci.
 publish: \
+	push_alpine_5.4 \
 	push_alpine_5.5 \
 	push_alpine_5.6 \
 	push_alpine_7.0 \
 	push_alpine_7.1 \
 	push_alpine_7.2 \
 	push_alpine_7.3 \
-	push_alpine_7.4
+	push_alpine_7.4 \
+	push_alpine_8.0
 
 build_image_alpine_%:
 	docker-compose build $(*)-alpine
