@@ -348,7 +348,10 @@ final class TracerTest extends BaseTestCase
             }
         );
 
-        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags,global:foo']);
+        $this->putEnvAndReloadConfig([
+            'DD_VERSION=from-env',
+            'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags,global:foo',
+        ]);
 
         $test = $this;
         $traces = $this->isolateTracer(function (Tracer $tracer) use ($test) {
