@@ -44,6 +44,7 @@ EOD;
         putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
         putenv('SIGNALFX_SERVICE');
         putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+        putenv('SIGNALFX_TAGS');
 
         putenv('DD_INTEGRATIONS_DISABLED');
         putenv('DD_PRIORITY_SAMPLING');
@@ -51,7 +52,6 @@ EOD;
         putenv('DD_ENV');
         putenv('DD_SAMPLING_RATE');
         putenv('DD_SERVICE_MAPPING');
-        putenv('DD_TAGS');
         putenv('DD_TRACE_SAMPLE_RATE');
         putenv('DD_TRACE_SAMPLING_RULES');
         putenv('DD_TRACE_SLIM_ENABLED');
