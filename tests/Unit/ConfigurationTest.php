@@ -39,6 +39,7 @@ EOD;
         putenv('SIGNALFX_SERVICE');
         putenv('SIGNALFX_TRACING_ENABLED');
         putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
         putenv('DD_ENV');
         putenv('DD_INTEGRATIONS_DISABLED');
         putenv('DD_PRIORITY_SAMPLING');
@@ -46,7 +47,6 @@ EOD;
         putenv('DD_SERVICE_MAPPING');
         putenv('DD_TAGS');
         putenv('DD_TRACE_ANALYTICS_ENABLED');
-        putenv('DD_TRACE_GLOBAL_TAGS');
         putenv('DD_TRACE_PDO_ENABLED');
         putenv('DD_TRACE_REDIS_CLIENT_SPLIT_BY_HOST');
         putenv('DD_TRACE_SAMPLE_RATE');
@@ -538,28 +538,28 @@ EOD;
 
     public function testGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsLegacyEnv()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsNewEnvWinsOverLegacyEnv()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
-            'DD_TAGS=key1:value1,key2:value2',
+            'SIGNALFX_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
+            'SIGNALFX_TAGS=key1:value1,key2:value2',
         ]);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsWrongValueJustResultsInNoTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=wrong_key_value']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=wrong_key_value']);
         $this->assertEquals([], \ddtrace_config_global_tags());
     }
 

@@ -394,11 +394,14 @@ function ddtrace_config_sampling_rules()
  */
 function ddtrace_config_global_tags()
 {
-    $rawValue = \getenv('DD_TAGS');
-    if (false === $rawValue) {
-        // Fallback to legacy env variable name
-        $rawValue = \getenv('DD_TRACE_GLOBAL_TAGS');
+    foreach (['SIGNALFX_TRACE_GLOBAL_TAGS', 'SIGNALFX_TAGS', 'DD_TAGS', 'DD_TRACE_GLOBAL_TAGS'] as $key) {
+        $rawValue = \getenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+
+        if (false !== $rawValue) {
+            break;
+        }
     }
+
     return \_ddtrace_config_associative_array($rawValue, []);
 }
 

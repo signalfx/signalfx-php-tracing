@@ -43,6 +43,7 @@ EOD;
         putenv('SIGNALFX_TRACING_ENABLED');
         putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
         putenv('SIGNALFX_SERVICE');
+        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
 
         putenv('DD_INTEGRATIONS_DISABLED');
         putenv('DD_PRIORITY_SAMPLING');
@@ -51,7 +52,6 @@ EOD;
         putenv('DD_SAMPLING_RATE');
         putenv('DD_SERVICE_MAPPING');
         putenv('DD_TAGS');
-        putenv('DD_TRACE_GLOBAL_TAGS');
         putenv('DD_TRACE_SAMPLE_RATE');
         putenv('DD_TRACE_SAMPLING_RULES');
         putenv('DD_TRACE_SLIM_ENABLED');
@@ -465,14 +465,14 @@ EOD;
 
     public function testGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsLegacyEnv()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
@@ -480,8 +480,8 @@ EOD;
     public function testGlobalTagsNewEnvWinsOverLegacyEnv()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
-            'DD_TAGS=key1:value1,key2:value2',
+            'SIGNALFX_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
+            'SIGNALFX_TAGS=key1:value1,key2:value2',
         ]);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
@@ -489,7 +489,7 @@ EOD;
 
     public function testGlobalTagsWrongValueJustResultsInNoTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=wrong_key_value']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=wrong_key_value']);
         $this->assertEquals([], Configuration::get()->getGlobalTags());
     }
 }
