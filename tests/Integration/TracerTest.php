@@ -17,12 +17,12 @@ final class TracerTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        \putenv('DD_TAGS=global_tag:global,also_in_span:should_not_ovverride');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS=global_tag:global,also_in_span:should_not_ovverride');
     }
 
     protected function ddTearDown()
     {
-        \putenv('DD_TAGS');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
         \putenv('DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED');
         \putenv('DD_SERVICE_MAPPING');
         parent::ddTearDown();
@@ -255,7 +255,7 @@ final class TracerTest extends BaseTestCase
 
     public function testDDEnvHasPrecedenceOverGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'DD_TAGS=env:from-tags']);
+        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=env:from-tags']);
         $traces = $this->isolateTracer(function (Tracer $tracer) {
             $scope = $tracer->startActiveSpan('custom.root');
             $scope->close();
@@ -275,7 +275,7 @@ final class TracerTest extends BaseTestCase
             }
         );
 
-        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'DD_TAGS=env:from-tags,global:foo']);
+        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=env:from-tags,global:foo']);
 
         $test = $this;
         $traces = $this->isolateTracer(function (Tracer $tracer) use ($test) {
@@ -329,7 +329,7 @@ final class TracerTest extends BaseTestCase
 
     public function testDDVersionHasPrecedenceOverGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'DD_TAGS=version:from-tags']);
+        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags']);
         $traces = $this->isolateTracer(function (Tracer $tracer) {
             $scope = $tracer->startActiveSpan('custom.root');
             $scope->close();
@@ -348,7 +348,7 @@ final class TracerTest extends BaseTestCase
             }
         );
 
-        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'DD_TAGS=version:from-tags,global:foo']);
+        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags,global:foo']);
 
         $test = $this;
         $traces = $this->isolateTracer(function (Tracer $tracer) use ($test) {
