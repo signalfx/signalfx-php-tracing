@@ -47,12 +47,31 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
         $this->assertCount(2, $traces[0]);
         // Root span (userland)
         $rootSpan = $traces[0][0];
-        $this->assertSame('1589331357723252211', $rootSpan['trace_id']);
-        $this->assertSame('1589331357723252210', $rootSpan['parent_id']);
+        $this->assertSame('1042', $rootSpan['trace_id']);
+        $this->assertSame('1000', $rootSpan['parent_id']);
         // Child span (internal)
         $childSpan = $traces[0][1];
-        $this->assertSame('1589331357723252211', $childSpan['trace_id']);
+        $this->assertSame('1042', $childSpan['trace_id']);
         $this->assertSame($rootSpan['span_id'], $childSpan['parent_id']);
+    }
+
+    public function testDistributedTraceUint64()
+    {
+        $traces = $this->tracesFromWebRequest(function () {
+            $spec = new RequestSpec(
+                __FUNCTION__,
+                'GET',
+                '/sandbox.php',
+                [
+                    'x-datadog-trace-id: 12222222222222222222',
+                    'x-datadog-parent-id: 11133333333333333333',
+                ]
+            );
+            $this->call($spec);
+        });
+
+        $this->assertSame('12222222222222222222', $traces[0][0]['trace_id']);
+        $this->assertSame('11133333333333333333', $traces[0][0]['parent_id']);
     }
 
     // Synthetics requests have "0" as the parent ID
@@ -73,12 +92,11 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
 
         // Root span (userland)
         $rootSpan = $traces[0][0];
-        $this->assertSame('1589331357723252218', $rootSpan['trace_id']);
-        // New span id is generated in case of an invalid span id (0)
-        $this->assertArrayHasKey('parent_id', $rootSpan);
+        $this->assertSame('6017420907356617206', $rootSpan['trace_id']);
+        $this->assertArrayNotHasKey('parent_id', $rootSpan);
         // Child span (internal)
         $childSpan = $traces[0][1];
-        $this->assertSame('1589331357723252218', $childSpan['trace_id']);
+        $this->assertSame('6017420907356617206', $childSpan['trace_id']);
         $this->assertSame($rootSpan['span_id'], $childSpan['parent_id']);
     }
 

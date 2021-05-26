@@ -43,8 +43,27 @@ class DistributedTraceTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertSame('1589331357723252218', $traces[0][0]['trace_id']);
-        $this->assertSame('12636458435970850913', $traces[0][0]['parent_id']);
+        $this->assertSame('1042', $traces[0][0]['trace_id']);
+        $this->assertSame('1000', $traces[0][0]['parent_id']);
+    }
+
+    public function testDistributedTraceUint64()
+    {
+        $traces = $this->tracesFromWebRequest(function () {
+            $spec = new RequestSpec(
+                __FUNCTION__,
+                'GET',
+                '/index.php',
+                [
+                    'x-datadog-trace-id: 12222222222222222222',
+                    'x-datadog-parent-id: 11133333333333333333',
+                ]
+            );
+            $this->call($spec);
+        });
+
+        $this->assertSame('12222222222222222222', $traces[0][0]['trace_id']);
+        $this->assertSame('11133333333333333333', $traces[0][0]['parent_id']);
     }
 
     // Synthetics requests have "0" as the parent ID
@@ -64,8 +83,8 @@ class DistributedTraceTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertSame('1589331357723252218', $traces[0][0]['trace_id']);
-        $this->assertArrayHasKey('parent_id', $traces[0][0]);
+        $this->assertSame('6017420907356617206', $traces[0][0]['trace_id']);
+        $this->assertArrayNotHasKey('parent_id', $traces[0][0]);
     }
 
     public function testInvalidTraceId()
@@ -84,7 +103,7 @@ class DistributedTraceTest extends WebFrameworkTestCase
         });
 
         $this->assertNotSame('this-is-not-valid', $traces[0][0]['trace_id']);
-        $this->assertNotSame(0, $traces[0][0]['trace_id']);
+        $this->assertNotSame('0', $traces[0][0]['trace_id']);
         $this->assertArrayNotHasKey('parent_id', $traces[0][0]);
     }
 
@@ -102,8 +121,8 @@ class DistributedTraceTest extends WebFrameworkTestCase
             );
             $this->call($spec);
         });
-        $this->assertSame('12636458435970850913', $traces[0][0]['trace_id']);
-        // SFX: new span id
-        $this->assertArrayHasKey('parent_id', $traces[0][0]);
+
+        $this->assertNotSame('42', $traces[0][0]['trace_id']);
+        $this->assertArrayNotHasKey('parent_id', $traces[0][0]);
     }
 }

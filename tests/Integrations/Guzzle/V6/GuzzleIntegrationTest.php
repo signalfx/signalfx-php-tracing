@@ -147,10 +147,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
 
 
         // trace is: custom
-        self::assertSame(
-            (string)$traces[0][0]['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
+        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
 
         // parent is: curl_exec, used under the hood
         $curl_exec = null;
@@ -161,10 +158,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             }
         }
         self::assertNotNull($curl_exec, 'Unable to find curl_exec in spans!');
-        self::assertSame(
-            (string)$curl_exec['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
+        self::assertSame($curl_exec['span_id'], $found['headers']['X-Datadog-Parent-Id']);
 
         // existing headers are honored
         self::assertSame('preserved_value', $found['headers']['Honored']);
@@ -252,11 +246,15 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             $rootSpan = $traces[0][0];
             self::assertSame(
                 $rootSpan['span_id'],
-                sfx_trace_convert_hex_id($data['headers']['X-B3-Spanid'])
+                $data['headers']['X-Datadog-Parent-Id']
             );
             self::assertSame(
                 $rootSpan['trace_id'],
-                sfx_trace_convert_hex_id($data['headers']['X-B3-Traceid'])
+                $data['headers']['X-Datadog-Trace-Id']
+            );
+            self::assertSame(
+                (float) $rootSpan['metrics']['_sampling_priority_v1'],
+                (float) $data['headers']['X-Datadog-Sampling-Priority']
             );
             self::assertSame('preserved_value', $data['headers']['Honored']);
         }
@@ -296,14 +294,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         });
 
         // trace is: custom
-        self::assertSame(
-            (string)$traces[0][0]['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
-        self::assertSame(
-            (string)$traces[0][0]['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
+        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
+        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
         self::assertEquals(1, sizeof($traces[0]));
 
         // existing headers are honored
