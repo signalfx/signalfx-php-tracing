@@ -441,6 +441,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         self::assertTrue(function_exists('DDTrace\\Bridge\\curl_inject_distributed_headers'));
 
+<<<<<<< HEAD
         // Serialized internal span trace IDs are be integers.
         // trace is: some_operation
         $this->assertSame(
@@ -452,6 +453,78 @@ final class CurlIntegrationTest extends IntegrationTestCase
             (string)$traces[0][1]['span_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
+=======
+        // trace is: custom
+        self::assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
+        // parent is: curl_exec
+        self::assertSame($traces[0][1]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
+        self::assertSame('1', $found['headers']['X-Datadog-Sampling-Priority']);
+        self::assertSame($traces[0][0]['metrics']['_sampling_priority_v1'], PrioritySampling::AUTO_KEEP);
+        // existing headers are honored
+        self::assertSame('preserved_value', $found['headers']['Honored']);
+    }
+
+    public function testOriginIsPropagatedAndSetsRootSpanTag()
+    {
+        $found = [];
+        $traces = $this->isolateTracer(function () use (&$found) {
+            /** @var Tracer $tracer */
+            $tracer = GlobalTracer::get();
+            $headers = [
+                'x-datadog-trace-id' => '1337',
+                'x-datadog-parent-id' => '42',
+                'x-datadog-origin' => 'foo_origin',
+            ];
+            $span = $tracer->startRootSpan(
+                'custom',
+                StartSpanOptionsFactory::createForWebRequest($tracer, [], $headers)
+            )->getSpan();
+
+            $ch = curl_init(self::URL . '/headers');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $found = json_decode(curl_exec($ch), 1);
+
+            $span->finish();
+        });
+
+        $this->assertSame('foo_origin', $found['headers']['X-Datadog-Origin']);
+        $this->assertSame('foo_origin', $traces[0][0]['meta']['_dd.origin']);
+    }
+
+    public function testDistributedTracingIsPropagatedOnCopiedHandle()
+    {
+        $found = [];
+        $traces = $this->isolateTracer(function () use (&$found) {
+            /** @var Tracer $tracer */
+            $tracer = GlobalTracer::get();
+            $headers = [
+                'x-datadog-trace-id' => '1337',
+                'x-datadog-parent-id' => '42',
+                'x-datadog-sampling-priority' => (string) PrioritySampling::AUTO_KEEP,
+            ];
+            $span = $tracer->startRootSpan(
+                'custom',
+                StartSpanOptionsFactory::createForWebRequest($tracer, [], $headers)
+            )->getSpan();
+
+            $ch1 = \curl_init(self::URL . '/headers');
+            \curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+            \curl_setopt($ch1, CURLOPT_HTTPHEADER, [
+                'honored: preserved_value',
+            ]);
+            $ch2 = \curl_copy_handle($ch1);
+            \curl_close($ch1);
+            $found = \json_decode(\curl_exec($ch2), 1);
+
+            $span->finish();
+        });
+
+        // trace is: custom
+        $this->assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
+        // parent is: curl_exec
+        $this->assertSame($traces[0][1]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
+        $this->assertSame('1', $found['headers']['X-Datadog-Sampling-Priority']);
+>>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
         // existing headers are honored
         $this->assertSame('preserved_value', $found['headers']['Honored']);
     }
@@ -519,6 +592,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
         $this->assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
+<<<<<<< HEAD
         $this->assertSame(
             (string)$traces[0][0]['trace_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
@@ -528,6 +602,11 @@ final class CurlIntegrationTest extends IntegrationTestCase
             (string)$traces[0][0]['span_id'],
             sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
         );
+=======
+        $this->assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
+        // parent is: custom
+        $this->assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
+>>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
     }
 
     public function testTracerRunningAtLimitedCapacityCurlWorksWithoutARootSpan()
