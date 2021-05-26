@@ -67,7 +67,6 @@ class SyntheticsTest extends WebFrameworkTestCase
                 'component' => 'web.request',
             ])
         );
-
-        $this->assertSame('16453819474850114513', $traces[0][0]['trace_id']);
+        $this->assertSame('123456', $traces[0][0]['trace_id']);
     }
 }
