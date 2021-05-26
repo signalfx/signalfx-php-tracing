@@ -405,7 +405,6 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
     }
 
     ddtrace_internal_handlers_rinit();
-    ddtrace_engine_hooks_rinit();
     ddtrace_bgs_log_rinit(PG(error_log));
     ddtrace_dispatch_init();
     DDTRACE_G(disable_in_current_request) = 0;
@@ -439,7 +438,6 @@ static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     zval_dtor(&DDTRACE_G(additional_trace_meta));
     ZVAL_NULL(&DDTRACE_G(additional_trace_meta));
 
-    ddtrace_engine_hooks_rshutdown();
     ddtrace_internal_handlers_rshutdown();
     ddtrace_dogstatsd_client_rshutdown();
 
