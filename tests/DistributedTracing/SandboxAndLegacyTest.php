@@ -55,6 +55,25 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
         $this->assertSame($rootSpan['span_id'], $childSpan['parent_id']);
     }
 
+    public function testDistributedTraceUint64()
+    {
+        $traces = $this->tracesFromWebRequest(function () {
+            $spec = new RequestSpec(
+                __FUNCTION__,
+                'GET',
+                '/sandbox.php',
+                [
+                    'x-datadog-trace-id: 12222222222222222222',
+                    'x-datadog-parent-id: 11133333333333333333',
+                ]
+            );
+            $this->call($spec);
+        });
+
+        $this->assertSame('12222222222222222222', $traces[0][0]['trace_id']);
+        $this->assertSame('11133333333333333333', $traces[0][0]['parent_id']);
+    }
+
     // Synthetics requests have "0" as the parent ID
     public function testDistributedTraceWithNoParent()
     {
