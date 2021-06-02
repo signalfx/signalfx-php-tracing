@@ -4,7 +4,6 @@ namespace DDTrace\Integrations;
 
 use DDTrace\Integrations\CakePHP\CakePHPIntegration;
 use DDTrace\Integrations\Curl\CurlIntegration;
-use DDTrace\Integrations\Drupal\DrupalIntegration;
 use DDTrace\Integrations\ElasticSearch\V1\ElasticSearchIntegration;
 use DDTrace\Integrations\Eloquent\EloquentIntegration;
 use DDTrace\Integrations\Guzzle\GuzzleIntegration;
@@ -96,11 +95,6 @@ class IntegrationsLoader
             '\DDTrace\Integrations\Symfony\SymfonyIntegration';
         $this->integrations[ZendFrameworkIntegration::NAME] =
             '\DDTrace\Integrations\ZendFramework\ZendFrameworkIntegration';
-
-        if (\PHP_MAJOR_VERSION == 7) {
-            $this->integrations[DrupalIntegration::NAME] =
-                '\DDTrace\Integrations\Drupal\DrupalIntegration';
-        }
 
         // For PHP 7.0+ use C level deferred integration loader
         if (\PHP_MAJOR_VERSION < 7) {
