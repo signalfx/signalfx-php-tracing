@@ -16,7 +16,7 @@ final class HttpHeadersNotConfiguredTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'my-service',
+            'SIGNALFX_SERVICE_NAME' => 'my-service',
         ]);
     }
 
@@ -40,12 +40,13 @@ final class HttpHeadersNotConfiguredTest extends WebFrameworkTestCase
                 SpanAssertion::build(
                     'web.request',
                     'my-service',
-                    'web',
+                    SpanAssertion::NOT_TESTED,
                     'GET /'
                 )->withExactTags([
                     'http.method' => 'GET',
                     'http.url' => '/',
                     'http.status_code' => 200,
+                    'component' => 'web.request',
                 ]),
             ]
         );

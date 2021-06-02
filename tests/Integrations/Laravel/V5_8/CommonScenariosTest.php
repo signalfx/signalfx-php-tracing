@@ -16,7 +16,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'APP_NAME' => 'laravel_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'laravel_test_app',
         ]);
     }
 
@@ -42,21 +42,19 @@ class CommonScenariosTest extends WebFrameworkTestCase
                 'A simple GET request returning a string' => [
                     SpanAssertion::build(
                         'App\Http\Controllers\CommonSpecsController@simple simple_route',
-                        'unnamed-php-service',
+                        'laravel_test_app',
                         SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
+                        'GET /simple'
                     )->withExactTags([
                         'laravel.route.name' => 'simple_route',
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@simple',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
-                        'integration.name' => 'laravel',
-                        'component' => 'laravel'
+                        'component' => 'laravel',
                     ])->withChildren([
-                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple')
-                            ->withExactTags([
-                            ]),
+                        SpanAssertion::build('laravel.action', 'laravel_test_app', SpanAssertion::NOT_TESTED, 'simple')
+                            ->withExactTags(['component' => 'laravel']),
                         SpanAssertion::exists(
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
@@ -65,21 +63,21 @@ class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A simple GET request with a view' => [
                     SpanAssertion::build(
-                        'App\Http\Controllers\CommonSpecsController@simple_view',
-                        'unnamed-php-service',
+                        'App\Http\Controllers\CommonSpecsController@simple_view unnamed_route',
+                        'laravel_test_app',
                         SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
+                        'GET /simple_view'
                     )->withExactTags([
                         'laravel.route.name' => 'unnamed_route',
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@simple_view',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view',
                         'http.status_code' => '200',
-                        'integration.name' => 'laravel',
                         'component' => 'laravel'
                     ])->withChildren([
-                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple_view')
+                        SpanAssertion::build('laravel.action', 'laravel_test_app', SpanAssertion::NOT_TESTED, 'simple_view')
                             ->withExactTags([
+                                'component' => 'laravel',
                             ]),
                         SpanAssertion::exists(
                             'laravel.provider.load',
@@ -88,17 +86,17 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         SpanAssertion::build(
                             'laravel.view.render',
                             'laravel_test_app',
-                            'web',
+                            SpanAssertion::NOT_TESTED,
                             'simple_view'
                         )->withExactTags([
+                            'component' => 'laravel',
                         ])->withChildren([
                             SpanAssertion::build(
                                 'laravel.view',
                                 'laravel_test_app',
-                                'web',
+                                SpanAssertion::NOT_TESTED,
                                 '*/resources/views/simple_view.blade.php'
                             )->withExactTags([
-                                'integration.name' => 'laravel',
                                 'component' => 'laravel'
                             ]),
                         ]),
@@ -106,21 +104,19 @@ class CommonScenariosTest extends WebFrameworkTestCase
                 ],
                 'A GET request with an exception' => [
                     SpanAssertion::build(
-                        'App\Http\Controllers\CommonSpecsController@error',
-                        'unnamed-php-service',
+                        'App\Http\Controllers\CommonSpecsController@error unnamed_route',
+                        'laravel_test_app',
                         SpanAssertion::NOT_TESTED,
-                        SpanAssertion::NOT_TESTED
+                        'GET /error'
                     )->withExactTags([
                         'laravel.route.name' => 'unnamed_route',
                         'laravel.route.action' => 'App\Http\Controllers\CommonSpecsController@error',
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error',
                         'http.status_code' => '500',
-                        'integration.name' => 'laravel',
                         'component' => 'laravel'
                     ])->setError()->withChildren([
                         SpanAssertion::exists('laravel.action'),
-
                         SpanAssertion::exists('laravel.view.render')
                             ->withChildren([
                                 SpanAssertion::exists('laravel.view'),

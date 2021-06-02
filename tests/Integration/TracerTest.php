@@ -17,12 +17,12 @@ final class TracerTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        \putenv('DD_TAGS=global_tag:global,also_in_span:should_not_ovverride');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS=global_tag:global,also_in_span:should_not_ovverride');
     }
 
     protected function ddTearDown()
     {
-        \putenv('DD_TAGS');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
         \putenv('DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED');
         \putenv('DD_SERVICE_MAPPING');
         parent::ddTearDown();
@@ -212,7 +212,7 @@ final class TracerTest extends BaseTestCase
             ]
         );
 
-        $this->assertSame('web.request', $traces[0][0]['resource']);
+        $this->assertSame('web.request', $traces[0][0]['name']);
     }
 
     public function testResourceNormalizationWebHonorOverride()
@@ -255,7 +255,7 @@ final class TracerTest extends BaseTestCase
 
     public function testDDEnvHasPrecedenceOverGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'DD_TAGS=env:from-tags']);
+        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=env:from-tags']);
         $traces = $this->isolateTracer(function (Tracer $tracer) {
             $scope = $tracer->startActiveSpan('custom.root');
             $scope->close();
@@ -275,7 +275,7 @@ final class TracerTest extends BaseTestCase
             }
         );
 
-        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'DD_TAGS=env:from-tags,global:foo']);
+        $this->putEnvAndReloadConfig(['DD_ENV=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=env:from-tags,global:foo']);
 
         $test = $this;
         $traces = $this->isolateTracer(function (Tracer $tracer) use ($test) {
@@ -329,7 +329,7 @@ final class TracerTest extends BaseTestCase
 
     public function testDDVersionHasPrecedenceOverGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'DD_TAGS=version:from-tags']);
+        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags']);
         $traces = $this->isolateTracer(function (Tracer $tracer) {
             $scope = $tracer->startActiveSpan('custom.root');
             $scope->close();
@@ -348,7 +348,10 @@ final class TracerTest extends BaseTestCase
             }
         );
 
-        $this->putEnvAndReloadConfig(['DD_VERSION=from-env', 'DD_TAGS=version:from-tags,global:foo']);
+        $this->putEnvAndReloadConfig([
+            'DD_VERSION=from-env',
+            'SIGNALFX_TRACE_GLOBAL_TAGS=version:from-tags,global:foo',
+        ]);
 
         $test = $this;
         $traces = $this->isolateTracer(function (Tracer $tracer) use ($test) {
@@ -447,13 +450,13 @@ final class TracerTest extends BaseTestCase
             },
             __DIR__ . '/TracerTest_files/index.php',
             [
-                'DD_SERVICE_MAPPING' => 'host-httpbin_integration:changed_service',
+                'DD_SERVICE_MAPPING' => 'host-httpbin_integration:changed_service_by_domain_host',
                 'DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN' => true,
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
 
-        $this->assertSame('changed_service', $traces[0][1]['service']);
+        $this->assertSame('changed_service_by_domain_host', $traces[0][1]['service']);
     }
 
     public function testServiceMappingHttpClientsSplitByDomainIp()
@@ -464,13 +467,13 @@ final class TracerTest extends BaseTestCase
             },
             __DIR__ . '/TracerTest_files/index.php',
             [
-                'DD_SERVICE_MAPPING' => 'host-127.0.0.1:changed_service',
+                'DD_SERVICE_MAPPING' => 'host-127.0.0.1:changed_service_by_domain_ip',
                 'DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN' => true,
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
 
-        $this->assertSame('changed_service', $traces[0][1]['service']);
+        $this->assertSame('changed_service_by_domain_ip', $traces[0][1]['service']);
     }
 
     public function dummyMethodGlobalTags()

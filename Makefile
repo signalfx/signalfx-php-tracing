@@ -2,7 +2,7 @@ Q := @
 PROJECT_ROOT := $(shell pwd)
 SHELL := /bin/bash
 BUILD_SUFFIX := extension
-BUILD_DIR := tmp/build_$(BUILD_SUFFIX)
+BUILD_DIR := $(PROJECT_ROOT)/tmp/build_$(BUILD_SUFFIX)
 SO_FILE := $(BUILD_DIR)/modules/signalfx_tracing.so
 WALL_FLAGS := -Wall -Wextra
 EXTRA_CFLAGS :=
@@ -12,7 +12,7 @@ PHP_MAJOR_MINOR:=$(shell php -r 'echo PHP_MAJOR_VERSION . PHP_MINOR_VERSION;')
 
 VERSION:=$(shell awk -F\' '/const VERSION/ {print $$2}' < src/DDTrace/Tracer.php)
 
-INI_FILE := /usr/local/etc/php/conf.d/signalfx-tracing.ini
+INI_FILE := $(shell php -i | awk -F"=>" '/Scan this dir for additional .ini files/ {print $$2}')/signalfx-tracing.ini
 
 C_FILES := $(shell find components ext src/dogstatsd zend_abstract_interface -name '*.c' -o -name '*.h' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
 TEST_FILES := $(shell find tests/ext -name '*.php*' -o -name '*.inc' | awk '{ printf "$(BUILD_DIR)/%s\n", $$1 }' )
@@ -70,7 +70,7 @@ install_ini: $(INI_FILE)
 
 install_all: install install_ini
 
-test_c: export DD_TRACE_CLI_ENABLED=1
+test_c: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	set -xe; \
 	export REPORT_EXIT_STATUS=1; \
@@ -78,7 +78,7 @@ test_c: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	export USE_TRACKED_ALLOC=1; \
 	php -n -d 'memory_limit=-1' $$TEST_PHP_SRCDIR/run-tests.php -n -p $$(which php) -d extension=$(SO_FILE) -q --show-all $(TESTS)
 
-test_c_mem: export DD_TRACE_CLI_ENABLED=1
+test_c_mem: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c_mem: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	set -xe; \
 	export REPORT_EXIT_STATUS=1; \
@@ -89,7 +89,7 @@ test_c_mem: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 test_c2php: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	( \
 	set -xe; \
-	export DD_TRACE_CLI_ENABLED=1; \
+	export SIGNALFX_TRACE_CLI_ENABLED=1; \
 	export USE_ZEND_ALLOC=0; \
 	export ZEND_DONT_UNLOAD_MODULES=1; \
 	export USE_TRACKED_ALLOC=1; \
@@ -99,7 +99,7 @@ test_c2php: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 test_with_init_hook_asan: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	( \
 	set -xe; \
-	export DD_TRACE_CLI_ENABLED=1; \
+	export SIGNALFX_TRACE_CLI_ENABLED=1; \
 	export REPORT_EXIT_STATUS=1; \
 	export TEST_PHP_SRCDIR=$(BUILD_DIR); \
 	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/asan-extension-init-hook-test.xml; \
@@ -107,7 +107,7 @@ test_with_init_hook_asan: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	php -n -d 'memory_limit=-1' $$TEST_PHP_SRCDIR/run-tests.php -n -p $$(which php) -d extension=$(SO_FILE) -d ddtrace.request_init_hook=$$(pwd)/bridge/dd_wrap_autoloader.php -q --show-all --asan $(INIT_HOOK_TEST_FILES); \
 	)
 
-test_c_asan: export DD_TRACE_CLI_ENABLED=1
+test_c_asan: export SIGNALFX_TRACE_CLI_ENABLED=1
 test_c_asan: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	( \
 	set -xe; \
@@ -240,7 +240,7 @@ cores:
 # TESTS
 ########################################################################################################################
 REQUEST_INIT_HOOK := -d ddtrace.request_init_hook=$(PROJECT_ROOT)/bridge/dd_wrap_autoloader.php
-ENV_OVERRIDE := DD_TRACE_CLI_ENABLED=true
+ENV_OVERRIDE := SIGNALFX_TRACE_CLI_ENABLED=true
 
 ### DDTrace tests ###
 TESTS_ROOT := ./tests
@@ -260,8 +260,8 @@ TEST_INTEGRATIONS_54 := \
 	test_integrations_predis1
 
 TEST_WEB_54 := \
-	test_web_cakephp_28 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_yii_2 \
 	test_web_zend_1 \
 	test_web_custom
@@ -279,9 +279,8 @@ TEST_INTEGRATIONS_55 := \
 	test_integrations_predis1
 
 TEST_WEB_55 := \
-	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -304,13 +303,11 @@ TEST_INTEGRATIONS_56 := \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
-	test_integrations_predis1 \
-	test_opentracing_beta5
+	test_integrations_predis1
 
 TEST_WEB_56 := \
-	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -336,14 +333,12 @@ TEST_INTEGRATIONS_70 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5
+	test_integrations_predis1
 
 TEST_WEB_70 := \
 	test_metrics \
-	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_lumen_52 \
 	test_web_slim_312 \
 	test_web_symfony_23 \
@@ -369,16 +364,12 @@ TEST_INTEGRATIONS_71 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_71 := \
 	test_metrics \
-	test_web_cakephp_28 \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
+	test_web_cakephp_28 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_lumen_52 \
@@ -410,14 +401,10 @@ TEST_INTEGRATIONS_72 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_72 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_42 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -454,14 +441,10 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_73 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
@@ -494,14 +477,10 @@ TEST_INTEGRATIONS_74 := \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
-	test_integrations_predis1 \
-	test_opentracing_beta5 \
-	test_opentracing_beta6 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_74 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
 	test_web_laravel_8x \
@@ -512,7 +491,6 @@ TEST_WEB_74 := \
 	test_web_slim_4 \
 	test_web_symfony_34 \
 	test_web_symfony_40 \
-	test_web_symfony_42 \
 	test_web_symfony_44 \
 	test_web_symfony_50 \
 	test_web_symfony_51 \
@@ -535,12 +513,10 @@ TEST_INTEGRATIONS_80 := \
 	test_integrations_pdo \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
-	test_integrations_predis1 \
-	test_opentracing_10
+	test_integrations_predis1
 
 TEST_WEB_80 := \
 	test_metrics \
-	test_web_codeigniter_22 \
 	test_web_laravel_8x \
 	test_web_slim_312 \
 	test_web_slim_4 \
@@ -601,18 +577,6 @@ test_distributed_tracing:
 test_metrics:
 	$(call run_tests,--testsuite=metrics $(TESTS))
 
-test_opentracing_beta5:
-	$(MAKE) test_scenario_opentracing_beta5
-	$(call run_tests,tests/OpenTracerUnit)
-
-test_opentracing_beta6:
-	$(MAKE) test_scenario_opentracing_beta6
-	$(call run_tests,tests/OpenTracerUnit)
-
-test_opentracing_10:
-	$(MAKE) test_scenario_opentracing10
-	$(call run_tests,tests/OpenTracer1Unit)
-
 test_integrations: $(TEST_INTEGRATIONS_$(PHP_MAJOR_MINOR))
 test_web: $(TEST_WEB_$(PHP_MAJOR_MINOR))
 
@@ -657,8 +621,6 @@ test_integrations_predis1:
 test_web_cakephp_28:
 	$(COMPOSER) --working-dir=tests/Frameworks/CakePHP/Version_2_8 update
 	$(call run_tests,--testsuite=cakephp-28-test)
-test_web_codeigniter_22:
-	$(call run_tests,--testsuite=codeigniter-22-test)
 test_web_laravel_42:
 	$(COMPOSER) --working-dir=tests/Frameworks/Laravel/Version_4_2 update
 	php tests/Frameworks/Laravel/Version_4_2/artisan optimize

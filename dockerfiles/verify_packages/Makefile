@@ -6,18 +6,6 @@ CENTOS6_PHP_VERSIONS:=5.4.centos6 5.5.centos6 5.6.centos6 7.0.centos6 7.1.centos
 docker_compose_pull:
 	@docker-compose -f $(ROOT_DIR)/docker-compose.yml pull --parallel
 
-$(JESSIE_PHP_VERSIONS): %.jessie:
-	@echo Building Debian Jessie - PHP $*
-	@docker build --no-cache -t deb_jessie:$* --build-arg php_version=$* -f dockerfiles/verify_packages/debian_jessie/Dockerfile .
-
-$(STRETCH_PHP_VERSIONS): %.stretch:
-	@echo Building Debian Stretch - PHP $*
-	@docker build --no-cache -t deb_stretch:$* --build-arg php_version=$* -f dockerfiles/verify_packages/debian_stretch/Dockerfile .
-
-5.5_centos-6:
-	@echo Verifying Centos 6 - PHP 5.5
-	@docker-compose -f $(ROOT_DIR)/docker-compose.yml run -T --rm 5.5-centos6 bash /build_src/dockerfiles/verify_packages/verify_rpm_5.5.sh
-
 $(CENTOS6_PHP_VERSIONS): %.centos6:
 	@echo Verifying Centos 6 - PHP $*
 	@docker-compose -f $(ROOT_DIR)/docker-compose.yml run -T --rm ${*}-centos6 sh /build_src/dockerfiles/verify_packages/verify_rpm_centos6.sh

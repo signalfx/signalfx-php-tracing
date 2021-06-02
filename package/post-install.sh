@@ -144,12 +144,9 @@ function fail_print_and_exit() {
 }
 
 function verify_installation() {
-    ENABLED_VERSION="$(php -r "echo phpversion('signalfx_tracing');")"
-
-    if [[ -n ${ENABLED_VERSION} ]]; then
-        println "Extension ${ENABLED_VERSION} enabled successfully"
-    else
-        fail_print_and_exit
+    invoke_php -m | grep signalfx_tracing && \
+    println "Extension enabled successfully" || \
+    fail_print_and_exit
 }
 
 println "PHP version"
@@ -185,10 +182,10 @@ if [ -f "/etc/os-release" ] && $(grep -q 'Alpine Linux' "/etc/os-release") && [ 
     OS_SPECIFIER="-alpine"
 fi
 
-EXTENSION_NAME="signalfx-tracing-${PHP_VERSION}${VERSION_SUFFIX}.so"
+EXTENSION_NAME="signalfx_tracing-${PHP_VERSION}${VERSION_SUFFIX}${OS_SPECIFIER}.so"
 EXTENSION_FILE_PATH="${EXTENSION_DIR}/${EXTENSION_NAME}"
 INI_FILE_CONTENTS=$(cat <<EOF
-[signalfx-tracing]
+[signalfx_tracing]
 extension=${EXTENSION_FILE_PATH}
 ddtrace.request_init_hook=${EXTENSION_AUTO_INSTRUMENTATION_FILE}
 EOF

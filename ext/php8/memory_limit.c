@@ -17,7 +17,7 @@
 #include "memory_limit.h"
 #include "serializer.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 int64_t ddtrace_get_memory_limit(TSRMLS_D) {
     char *raw_memory_limit = get_dd_trace_memory_limit();

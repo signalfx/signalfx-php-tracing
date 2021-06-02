@@ -8,7 +8,7 @@ DD_TRACE_STARTUP_LOGS=0
 --FILE--
 <?php
 include_once 'startup_logging.inc';
-$logs = dd_get_startup_logs([], ['DD_TRACE_DEBUG=1']);
+$logs = dd_get_startup_logs([], ['SIGNALFX_TRACE_DEBUG=1']);
 
 var_dump($logs);
 ?>

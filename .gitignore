@@ -6,6 +6,7 @@ composer.lock
 .bash_history
 !/ext/vendor
 **/core*
+!tests/Frameworks/Drupal/Version_8_9/core
 .scenarios.lock/
 .vscode/
 .libs

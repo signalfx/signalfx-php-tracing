@@ -1,7 +1,7 @@
 --TEST--
 DDTrace\trace_function() and DDTrace\trace_method() declarative API error cases
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 # Functions

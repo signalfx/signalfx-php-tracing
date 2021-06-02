@@ -25,6 +25,6 @@ RUN set -eux; \
 ARG ddtracePkgUrl
 RUN set -eux; \
     cd ${HOME}; \
-    curl -L "${ddtracePkgUrl}" -o ./datadog_trace.tgz; \
-    pecl install datadog_trace.tgz; \
-    echo "extension=ddtrace.so" >  /usr/local/etc/php/conf.d/ddtrace.ini
+    curl -L "${ddtracePkgUrl}" -o ./signalfx_tracing.tgz; \
+    pecl install signalfx_tracing.tgz; \
+    echo "extension=signalfx-tracing.so" >  /usr/local/etc/php/conf.d/signalfx-tracing.ini

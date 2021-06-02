@@ -27,12 +27,12 @@ final class IntegrationsLoaderTest extends BaseTestCase
 
     public function testGlobalConfigCanDisableLoading()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_ENABLED=0']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACING_ENABLED=0']);
 
         DummyIntegration1::$value = Integration::LOADED;
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
         $loader->loadAll();
-        $this->putEnvAndReloadConfig(['DD_TRACE_ENABLED']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACING_ENABLED']);
 
         $this->assertSame(Integration::NOT_LOADED, $loader->getLoadingStatus('integration_1'));
     }
@@ -40,7 +40,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     public function testSingleIntegrationLoadingCanBeDisabled()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED=1',
+            'SIGNALFX_TRACING_ENABLED=1',
             'DD_INTEGRATIONS_DISABLED=pdo',
         ]);
 
@@ -48,7 +48,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED',
+            'SIGNALFX_TRACING_ENABLED',
             'DD_INTEGRATIONS_DISABLED',
         ]);
 
@@ -58,7 +58,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     public function testIntegrationsAreLoaded()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED=1',
+            'SIGNALFX_TRACING_ENABLED=1',
         ]);
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
 
@@ -66,7 +66,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         DummyIntegration2::$value = Integration::NOT_AVAILABLE;
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED',
+            'SIGNALFX_TRACING_ENABLED',
         ]);
 
         $this->assertSame(Integration::LOADED, $loader->getLoadingStatus('integration_1'));
@@ -76,7 +76,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     public function testIntegrationAlreadyLoadedIsNotReloaded()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED=1',
+            'SIGNALFX_TRACING_ENABLED=1',
         ]);
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
 
@@ -87,7 +87,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         DummyIntegration1::$value = Integration::LOADED;
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED',
+            'SIGNALFX_TRACING_ENABLED',
         ]);
         $this->assertSame(Integration::LOADED, $loader->getLoadingStatus('integration_1'));
 
@@ -100,7 +100,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     public function testIntegrationNotAvailableIsNotReloaded()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED=1',
+            'SIGNALFX_TRACING_ENABLED=1',
         ]);
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
 
@@ -111,7 +111,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         DummyIntegration1::$value = Integration::NOT_AVAILABLE;
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED',
+            'SIGNALFX_TRACING_ENABLED',
         ]);
         $this->assertSame(Integration::NOT_AVAILABLE, $loader->getLoadingStatus('integration_1'));
 
@@ -124,7 +124,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
     public function testIntegrationNotLoadedIsReloaded()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED=1',
+            'SIGNALFX_TRACING_ENABLED=1',
         ]);
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
 
@@ -135,7 +135,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         DummyIntegration1::$value = Integration::NOT_LOADED;
         $loader->loadAll();
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_ENABLED',
+            'SIGNALFX_TRACING_ENABLED',
         ]);
         $this->assertSame(Integration::NOT_LOADED, $loader->getLoadingStatus('integration_1'));
 

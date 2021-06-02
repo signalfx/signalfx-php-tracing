@@ -112,9 +112,9 @@ final class SpanAssertion
             return $this;
         }
         if (null !== $errorType) {
-            $this->exactTags[Tag::ERROR_KIND] = $errorType;
+            $this->exactTags[Tag::ERROR_TYPE] = $errorType;
         } else {
-            $this->existingTags[] = Tag::ERROR_KIND;
+            $this->existingTags[] = Tag::ERROR_TYPE;
         }
         if (null !== $errorMessage) {
             $this->exactTags[Tag::ERROR_MSG] = $errorMessage;

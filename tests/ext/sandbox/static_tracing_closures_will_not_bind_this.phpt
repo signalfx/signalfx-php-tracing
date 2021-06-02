@@ -1,7 +1,7 @@
 --TEST--
 Static tracing closures will not bind $this
 --ENV--
-DD_TRACE_DEBUG=true
+SIGNALFX_TRACE_DEBUG=true
 --FILE--
 <?php
 use DDTrace\SpanData;

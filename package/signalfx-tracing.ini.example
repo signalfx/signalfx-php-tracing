@@ -1,2 +1,2 @@
-[signalfx-tracing]
-extension=/opt/signalfx-php-tracing/extensions/signalfx-tracing-11111.so
+[signalfx_tracing]
+extension=/opt/signalfx-php-tracing/extensions/signalfx_tracing-11111.so

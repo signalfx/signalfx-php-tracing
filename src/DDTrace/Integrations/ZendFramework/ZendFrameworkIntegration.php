@@ -73,17 +73,19 @@ class ZendFrameworkIntegration extends Integration
                 try {
                     /** @var Zend_Controller_Request_Abstract $request */
                     list($request) = $args;
-                    $integration->addTraceAnalyticsIfEnabledLegacy($rootSpan);
-                    $rootSpan->overwriteOperationName($integration->getOperationName());
-                    $rootSpan->setTag(Tag::SERVICE_NAME, $appName);
                     $controller = $request->getControllerName();
                     $action = $request->getActionName();
                     $route = Zend_Controller_Front::getInstance()->getRouter()->getCurrentRouteName();
+                    $operationName = $controller . '@' . $action . ' ' . $route;
+
+                    $integration->addTraceAnalyticsIfEnabledLegacy($rootSpan);
+                    $rootSpan->overwriteOperationName($operationName);
+                    $rootSpan->setTag(Tag::SERVICE_NAME, $appName);
                     $rootSpan->setTag('zf1.controller', $controller);
                     $rootSpan->setTag('zf1.action', $action);
                     $rootSpan->setTag('zf1.route_name', $route);
-                    $rootSpan->setResource($controller . '@' . $action . ' ' . $route);
                     $rootSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
+                    $rootSpan->setTag(Tag::COMPONENT, 'zendframework');
                     $rootSpan->setTag(
                         Tag::HTTP_URL,
                         $request->getScheme() . '://' .
@@ -114,16 +116,5 @@ class ZendFrameworkIntegration extends Integration
         });
 
         return Integration::LOADED;
-    }
-
-    /**
-     * @return string
-     */
-    public static function getOperationName()
-    {
-        $contextName = 'cli' === PHP_SAPI ? 'command' : 'request';
-        // For backward compatibility with the legacy API we are not using the integration
-        // name 'zendframework', we are instead using the 'zf1' prefix.
-        return 'zf1' . '.' . $contextName;
     }
 }

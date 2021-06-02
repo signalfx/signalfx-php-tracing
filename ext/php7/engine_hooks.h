@@ -17,7 +17,7 @@ extern int ddtrace_op_array_extension;
 #define DDTRACE_OP_ARRAY_EXTENSION(op_array) ZEND_OP_ARRAY_EXTENSION(op_array, ddtrace_op_array_extension)
 #endif
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 void ddtrace_engine_hooks_minit(void);
 void ddtrace_engine_hooks_rinit(TSRMLS_D);

@@ -31,19 +31,27 @@ EOD;
 
     private function cleanUpEnvs()
     {
-        putenv('DD_DISTRIBUTED_TRACING');
-        putenv('DD_ENV');
+        putenv('SIGNALFX_DISTRIBUTED_TRACING');
+        putenv('SIGNALFX_ENDPOINT_HOST');
+        putenv('SIGNALFX_ENDPOINT_HTTPS');
+        putenv('SIGNALFX_ENDPOINT_PATH');
+        putenv('SIGNALFX_ENDPOINT_PORT');
+        putenv('SIGNALFX_ENDPOINT_URL');
+        putenv('SIGNALFX_SERVICE_NAME');
+        putenv('SIGNALFX_TRACE_APP_NAME');
+        putenv('SIGNALFX_TRACE_DEBUG');
+        putenv('SIGNALFX_TRACING_ENABLED');
+        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
+        putenv('SIGNALFX_SERVICE');
+        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+        putenv('SIGNALFX_TAGS');
+
         putenv('DD_INTEGRATIONS_DISABLED');
         putenv('DD_PRIORITY_SAMPLING');
+        putenv('DD_TRACE_ANALYTICS_ENABLED');
+        putenv('DD_ENV');
         putenv('DD_SAMPLING_RATE');
         putenv('DD_SERVICE_MAPPING');
-        putenv('DD_SERVICE_NAME');
-        putenv('DD_SERVICE');
-        putenv('DD_TAGS');
-        putenv('DD_TRACE_ANALYTICS_ENABLED');
-        putenv('DD_TRACE_DEBUG');
-        putenv('DD_TRACE_ENABLED');
-        putenv('DD_TRACE_GLOBAL_TAGS');
         putenv('DD_TRACE_SAMPLE_RATE');
         putenv('DD_TRACE_SAMPLING_RULES');
         putenv('DD_TRACE_SLIM_ENABLED');
@@ -58,7 +66,7 @@ EOD;
 
     public function testTracerDisabled()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(Configuration::get()->isEnabled());
     }
 
@@ -69,7 +77,7 @@ EOD;
 
     public function testDebugModeCanBeEnabled()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_DEBUG=true']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_DEBUG=true']);
         $this->assertTrue(Configuration::get()->isDebugModeEnabled());
     }
 
@@ -80,7 +88,7 @@ EOD;
 
     public function testDistributedTracingDisabled()
     {
-        $this->putEnvAndReloadConfig(['DD_DISTRIBUTED_TRACING=false']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_DISTRIBUTED_TRACING=false']);
         $this->assertFalse(Configuration::get()->isDistributedTracingEnabled());
     }
 
@@ -110,7 +118,7 @@ EOD;
 
     public function testIntegrationsDisabledIfGlobalDisabledDeprecatedEnv()
     {
-        $this->putEnvAndReloadConfig(['DD_INTEGRATIONS_DISABLED=pdo', 'DD_TRACE_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_INTEGRATIONS_DISABLED=pdo', 'SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('pdo'));
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('mysqli'));
     }
@@ -125,7 +133,7 @@ EOD;
 
     public function testIntegrationsDisabledIfGlobalDisabled()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=false', 'DD_TRACE_ENABLED=false']);
+        $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=false', 'SIGNALFX_TRACING_ENABLED=false']);
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('pdo'));
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('mysqli'));
     }
@@ -166,7 +174,7 @@ EOD;
     public function testAppNameFallbackPriorities()
     {
         // we do not support these fallbacks anymore; testing that we ignore them
-        $this->putEnvAndReloadConfig(['ddtrace_app_name', 'DD_TRACE_APP_NAME']);
+        $this->putEnvAndReloadConfig(['ddtrace_app_name', 'SIGNALFX_TRACE_APP_NAME']);
         $this->assertSame(
             'fallback_name',
             Configuration::get()->appName('fallback_name')
@@ -177,38 +185,32 @@ EOD;
         $this->assertSame('fallback_name', Configuration::get()->appName('fallback_name'));
 
         Configuration::clear();
-        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app', 'DD_TRACE_APP_NAME=bar_app']);
+        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app', 'SIGNALFX_TRACE_APP_NAME=bar_app']);
         $this->assertSame('fallback_name', Configuration::get()->appName('fallback_name'));
     }
 
     public function testServiceName()
     {
-        $this->putEnvAndReloadConfig(['DD_SERVICE', 'DD_TRACE_APP_NAME', 'ddtrace_app_name']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE', 'SIGNALFX_TRACE_APP_NAME', 'ddtrace_app_name']);
 
         $this->assertSame('__default__', Configuration::get()->appName('__default__'));
 
-        $this->putEnvAndReloadConfig(['DD_SERVICE=my_app']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE=my_app']);
         Configuration::clear();
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
 
     public function testServiceNameViaDDServiceWinsOverDDServiceName()
     {
-        $this->putEnvAndReloadConfig(['DD_SERVICE=my_app', 'DD_SERVICE_NAME=legacy']);
-        $this->assertSame('my_app', Configuration::get()->appName('__default__'));
-    }
-
-    public function testServiceNameViaDDServiceNameForBackwardCompatibility()
-    {
-        $this->putEnvAndReloadConfig(['DD_SERVICE_NAME=my_app']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE=my_app', 'SIGNALFX_SERVICE_NAME=legacy']);
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
 
     public function testServiceNameHasPrecedenceOverDeprecatedMethods()
     {
         $this->putEnvAndReloadConfig([
-            'DD_SERVICE=my_app',
-            'DD_TRACE_APP_NAME=wrong_app',
+            'SIGNALFX_SERVICE=my_app',
+            'SIGNALFX_TRACE_APP_NAME=wrong_app',
             'ddtrace_app_name=wrong_app',
         ]);
         $this->assertSame('my_app', Configuration::get()->appName('my_app'));
@@ -463,14 +465,14 @@ EOD;
 
     public function testGlobalTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
 
     public function testGlobalTagsLegacyEnv()
     {
-        $this->putEnvAndReloadConfig(['DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2']);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
     }
@@ -478,8 +480,8 @@ EOD;
     public function testGlobalTagsNewEnvWinsOverLegacyEnv()
     {
         $this->putEnvAndReloadConfig([
-            'DD_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
-            'DD_TAGS=key1:value1,key2:value2',
+            'SIGNALFX_TRACE_GLOBAL_TAGS=key10:value10,key20:value20',
+            'SIGNALFX_TAGS=key1:value1,key2:value2',
         ]);
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], Configuration::get()->getGlobalTags());
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], \ddtrace_config_global_tags());
@@ -487,7 +489,7 @@ EOD;
 
     public function testGlobalTagsWrongValueJustResultsInNoTags()
     {
-        $this->putEnvAndReloadConfig(['DD_TAGS=wrong_key_value']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_TAGS=wrong_key_value']);
         $this->assertEquals([], Configuration::get()->getGlobalTags());
     }
 }

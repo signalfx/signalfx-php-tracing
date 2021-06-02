@@ -7,7 +7,6 @@ use DDTrace\GlobalTracer;
 use DDTrace\SpanData;
 use DDTrace\Integrations\Integration;
 use DDTrace\Tag;
-use DDTrace\Type;
 
 /**
  * The base Laravel integration which delegates loading to the appropriate integration version.
@@ -68,9 +67,9 @@ class LaravelIntegration extends Integration
                     $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $response->getStatusCode());
                 }
                 $rootSpan->setTag(Tag::SERVICE_NAME, $integration->getServiceName());
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
 
                 $span->name = 'laravel.application.handle';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = 'Illuminate\Foundation\Application@handle';
             }
@@ -96,15 +95,14 @@ class LaravelIntegration extends Integration
                     $routeName = LaravelIntegration::UNNAMED_ROUTE;
                 }
 
-                $rootSpan->setTag(
-                    Tag::RESOURCE_NAME,
-                    $route->getActionName() . ' ' . $routeName
-                );
+                $operationName = $route->getActionName() . ' ' . $routeName;
+                $rootSpan->overwriteOperationName($operationName);
 
                 $rootSpan->setTag('laravel.route.name', $routeName);
                 $rootSpan->setTag('laravel.route.action', $route->getActionName());
                 $rootSpan->setTag('http.url', $request->url());
                 $rootSpan->setTag('http.method', $request->method());
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
 
                 return false;
             }
@@ -115,9 +113,9 @@ class LaravelIntegration extends Integration
             'run',
             function (SpanData $span) use ($integration) {
                 $span->name = 'laravel.action';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $this->uri;
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 
@@ -135,17 +133,17 @@ class LaravelIntegration extends Integration
             'fire',
             function (SpanData $span, $args) use ($integration) {
                 $span->name = 'laravel.event.handle';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $args[0];
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 
         \DDTrace\trace_method('Illuminate\View\View', 'render', function (SpanData $span) use ($integration) {
             $span->name = 'laravel.view.render';
-            $span->type = Type::WEB_SERVLET;
             $span->service = $integration->getServiceName();
             $span->resource = $this->view;
+            $span->meta[Tag::COMPONENT] = 'laravel';
         });
 
         \DDTrace\trace_method(
@@ -155,11 +153,11 @@ class LaravelIntegration extends Integration
                 // This is used by both laravel and lumen. For consistency we rename it for lumen traces as otherwise
                 // users would see a span changing name as they upgrade to the new version.
                 $span->name = $integration->isLumen($rootSpan) ? 'lumen.view' : 'laravel.view';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 if (isset($args[0]) && \is_string($args[0])) {
                     $span->resource = $args[0];
                 }
+                $span->meta[Tag::COMPONENT] = 'laravel';
             }
         );
 
@@ -169,7 +167,6 @@ class LaravelIntegration extends Integration
             function (SpanData $span) use ($rootSpan, $integration) {
                 $serviceName = $integration->getServiceName();
                 $span->name = 'laravel.provider.load';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $serviceName;
                 $span->resource = 'Illuminate\Foundation\ProviderRepository::load';
                 $rootSpan->overwriteOperationName('laravel.request');
@@ -181,11 +178,9 @@ class LaravelIntegration extends Integration
             'Illuminate\Console\Application',
             '__construct',
             function () use ($rootSpan, $integration) {
-                $rootSpan->overwriteOperationName('laravel.artisan');
-                $rootSpan->setTag(
-                    Tag::RESOURCE_NAME,
-                    !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan'
-                );
+                $op = !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan';
+                $rootSpan->overwriteOperationName($op);
+                $rootSpan->setTag(Tag::COMPONENT, 'laravel');
                 return false;
             }
         );

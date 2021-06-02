@@ -1,7 +1,7 @@
 --TEST--
 DDTrace\hook_function returns false quietly when no hook is passed
 --ENV--
-DD_TRACE_DEBUG=0
+SIGNALFX_TRACE_DEBUG=0
 --FILE--
 <?php
 

@@ -8,7 +8,7 @@ In this one, we're making sure that a tracing closure still works when:
   - It is defined inside another closure that does have a scope.
   - It is targeting a method.
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 

@@ -27,11 +27,12 @@ abstract class CLITestCase extends IntegrationTestCase
     protected static function getEnvs()
     {
         $envs = [
-            'DD_TRACE_CLI_ENABLED' => 'true',
-            'DD_AGENT_HOST' => 'request-replayer',
-            'DD_TRACE_AGENT_PORT' => '80',
+            'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
+            'SIGNALFX_ENDPOINT_HOST' => 'request-replayer',
+            'SIGNALFX_ENDPOINT_PORT' => '80',
+            'SIGNALFX_ENDPOINT_PATH' => '/',
             // Uncomment to see debug-level messages
-            //'DD_TRACE_DEBUG' => 'true',
+            //'SIGNALFX_TRACE_DEBUG' => 'true',
             'DD_TEST_INTEGRATION' => 'true',
         ];
         return $envs;
@@ -72,13 +73,47 @@ abstract class CLITestCase extends IntegrationTestCase
      */
     public function getAgentRequestFromCommand($arguments = '', $overrideEnvs = [])
     {
-        $envs = (string) new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
-        $inis = (string) new IniSerializer(static::getInis());
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
         $script = escapeshellarg($this->getScriptLocation());
         $arguments = escapeshellarg($arguments);
         $commandToExecute = "$envs php $inis $script $arguments";
         `$commandToExecute`;
         return $this->getLastAgentRequest();
+    }
+
+    public function getParsedAgentRequestFromCommand($arguments = '', $overrideEnvs = [])
+    {
+        $lastReq = $this->getAgentRequestFromCommand($arguments, $overrideEnvs);
+
+        if (!isset($lastReq['body'])) {
+            return [];
+        }
+
+        $rawTraces = [json_decode($lastReq['body'], true)];
+        return $this->parseRawTraces($rawTraces);
+    }
+
+    public function getAllAgentRequestsFromCommand($arguments = '', $overrideEnvs = [])
+    {
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
+        $script = escapeshellarg($this->getScriptLocation());
+        $arguments = escapeshellarg($arguments);
+        $commandToExecute = "$envs php $inis $script $arguments";
+        `$commandToExecute`;
+        return $this->getAllAgentRequests();
+    }
+
+    public function getParsedTracesFromCommand($arguments = '', $overrideEnvs = [])
+    {
+        $envs = (string)new EnvSerializer(array_merge([], static::getEnvs(), $overrideEnvs));
+        $inis = (string)new IniSerializer(static::getInis());
+        $script = escapeshellarg($this->getScriptLocation());
+        $arguments = escapeshellarg($arguments);
+        $commandToExecute = "$envs php $inis $script $arguments";
+        `$commandToExecute`;
+        return $this->parseTracesFromDumpedData();
     }
 
     /**

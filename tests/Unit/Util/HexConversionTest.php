@@ -9,9 +9,9 @@ final class HexConversionTest extends TestCase
 {
     public function testIdToHex()
     {
-        $id = 9223372036854775807;
-        $hex = HexConversion::idToHex($id);
-        $this->assertSame("7fffffffffffffff", $hex);
+        $this->assertSame("7fffffffffffffff", HexConversion::idToHex(9223372036854775807));
+        $this->assertSame("7fffffffffffffff", HexConversion::idToHex('9223372036854775807'));
+        $this->assertSame("ffffffffffffffff", HexConversion::idToHex('18446744073709551615'));
     }
 
     public function testHexToIntMin()

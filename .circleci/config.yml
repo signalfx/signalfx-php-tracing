@@ -269,10 +269,16 @@ jobs:
           command: mkdir -p test-results/phpcs
       - run:
           name: Running eclint
-          command: node_modules/.bin/eclint check '**/*' '!config.*' '!tmp/**/*' '!vendor/**/*' '!src/ext/.libs/*' '!LICENSE' '!phpstan.neon' '!tests/Frameworks/*/Version_*/**' '!tests/dockerfiles/**' '!dockerfiles/**' '!tests/AutoInstrumentation/**' '!.composer/**/*' '!src/ext/mpack/**' '!src/ext/third-party/**' '!.config/**/*' '!.npm/**/*' '!extensions/*.so' '!tests/ext/sandbox/**' '!tests/ext/sandbox-prehook/*' '!tests/ext/background-sender/**/*' '!m4/*' '!ext/vendor/**/*' '!ext/.libs/*' '!src/dogstatsd/**' '!tests/overhead/**' '!tooling/*' '!tests/randomized/**' '!**/tests/stubs/**' '!**/CMakeLists.txt' || touch .failure
+          command: node_modules/.bin/eclint check '**/*' '!dockerfiles/**/*' '!tests/ext/sandbox/**' '!tests/ext/sandbox-prehook/*' '!tests/ext/background-sender/**/*' '!config.*' '!m4/*' '!tmp/**/*' '!vendor/**/*' '!ext/vendor/**/*' '!ext/.libs/*' '!src/dogstatsd/**' '!LICENSE' '!phpstan.*.neon' '!tests/overhead/**' '!tests/Frameworks/*/Version_*/**' '!tests/dockerfiles/**' '!tests/AutoInstrumentation/**' '!.composer/**/*' '!LICENSE.*' '!tooling/*' '!tests/randomized/**' '!**/tests/stubs/**' '!**/CMakeLists.txt' '!phpstan.neon' || touch .failure
+      - run:
+          name: Check linting failure
+          command: test -e .failure && exit 1 || true
       - run:
           name: Running phpcs
-          command: composer lint -- --report=junit > test-results/phpcs/results.xml
+          command: composer lint -- --report=junit | tee test-results/phpcs/results.xml || touch .failure
+      - run:
+          name: Check linting failure
+          command: test -e .failure && exit 1 || true
       - run:
           name: Install Clang
           command: |
@@ -319,25 +325,6 @@ jobs:
       - run:
           name: Running phpstan
           command: composer scenario << parameters.scenario >> ; PATH=$PATH:~/.composer/vendor/bin composer static-analyze
-
-  "Post-Install Hook":
-    working_directory: ~/datadog
-    docker:
-      - image: datadog/dd-trace-ci:php-nginx-apache2
-    steps:
-      - <<: *STEP_ATTACH_WORKSPACE
-      - run:
-          name: Start Supervisor
-          command: supervisord
-          background: true
-      - run:
-          name: Copy post-install script
-          command: |
-              mkdir -p /src/ddtrace-scripts
-              cp package/post-install.sh /src/ddtrace-scripts
-      - run:
-          name: Test post-install hook
-          command: bash tests/PostInstallHook/run-tests.sh
 
   opcache_tests:
     parameters:
@@ -402,6 +389,7 @@ jobs:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
       HTTPBIN_HOSTNAME: httpbin_integration
+      DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
       docker_image: datadog/dd-trace-ci:php-<< parameters.php_major_minor >>_buster
@@ -453,7 +441,7 @@ jobs:
     resource_class: << parameters.resource_class >>
     executor:
       name: with_integrations
-      docker_image: datadog/dd-trace-ci:php-<< parameters.php_major_minor >>_buster
+      docker_image: siimkallas/signalfx-tracing-ci:php-<< parameters.php_major_minor >>_buster
     environment:
       COMPOSER_PROCESS_TIMEOUT: 0
     steps:
@@ -473,7 +461,7 @@ jobs:
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
           name: Run tests
-          command: DD_TRACE_AGENT_TIMEOUT=1000 <<# parameters.disable_runner_distributed_tracing >> DD_DISTRIBUTED_TRACING=false <</ parameters.disable_runner_distributed_tracing >> DD_TRACE_TEST_SAPI=<< parameters.sapi >> make << parameters.make_target >> PHPUNIT_OPTS="--log-junit test-results/php-composer/results.xml"
+          command: DD_TRACE_AGENT_TIMEOUT=1000 <<# parameters.disable_runner_distributed_tracing >> SIGNALFX_DISTRIBUTED_TRACING=false <</ parameters.disable_runner_distributed_tracing >> DD_TRACE_TEST_SAPI=<< parameters.sapi >> make << parameters.make_target >> PHPUNIT_OPTS="--log-junit test-results/php-composer/results.xml"
       - run:
           command: |
             mkdir -p /tmp/artifacts
@@ -492,9 +480,6 @@ jobs:
       xfail_list:
         type: string
         default: none
-      php_src_dir:
-        type: string
-        default: /usr/src/php
     working_directory: ~/datadog
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
@@ -510,18 +495,16 @@ jobs:
       - run:
           name: Run tests
           command: |
-            mkdir -p <<parameters.php_src_dir>>
-            docker-php-source extract
+            sudo rm -f /opt/php/debug/conf.d/memcached.ini
             if [[ ! "<<parameters.xfail_list>>" == "none" ]]; then
-              cp "<<parameters.xfail_list>>" <<parameters.php_src_dir>>/xfail_tests.list
+              cp "<<parameters.xfail_list>>" /usr/local/src/php/xfail_tests.list
               (
-                cd <<parameters.php_src_dir>>
-                cat xfail_tests.list | xargs -n 1 grep -L '\-\-SKIPIF\-\-' | xargs -n 1 -r sed -i -e $'s/\(--FILE.*--\)/--SKIPIF--\\\n\\1/g' || true
-                cat xfail_tests.list | xargs -n 1 sed -i -e $'s/\(--SKIPIF--\)/\\1\\\nskip Unreliable output or flaky test/g'
+                cd /usr/local/src/php
+                cat xfail_tests.list | xargs -n 1 rm -f || true
               )
             fi
-            cd <<parameters.php_src_dir>>
-            export SIGNALFX_TRACING_CLI_ENABLED=true
+            cd /usr/local/src/php
+            export SIGNALFX_TRACE_CLI_ENABLED=true
             export DD_TRACE_STARTUP_LOGS=0
             export DD_TRACE_WARN_CALL_STACK_DEPTH=0
             export DD_TRACE_WARN_LEGACY_DD_TRACE=0
@@ -534,7 +517,7 @@ jobs:
               -d ddtrace.request_init_hook=/home/circleci/datadog/bridge/dd_wrap_autoloader.php
       - run:
           command: |
-            cd <<parameters.php_src_dir>>
+            cd /usr/local/src/php
             mkdir -p /tmp/artifacts/core_dumps
             find ./ -name "core.*" | xargs -I % -n 1 cp % /tmp/artifacts/core_dumps
             mkdir -p /tmp/artifacts/diffs
@@ -589,7 +572,7 @@ jobs:
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
           name: Run << parameters.integration_testsuite >> integration test
-          command: DD_TRACE_AGENT_TIMEOUT=1000 <<# parameters.disable_runner_distributed_tracing >> DD_DISTRIBUTED_TRACING=false <</ parameters.disable_runner_distributed_tracing >> DD_TRACE_TEST_SAPI=<< parameters.sapi >> make << parameters.integration_testsuite >>
+          command: DD_TRACE_AGENT_TIMEOUT=1000 <<# parameters.disable_runner_distributed_tracing >> SIGNALFX_DISTRIBUTED_TRACING=false <</ parameters.disable_runner_distributed_tracing >> DD_TRACE_TEST_SAPI=<< parameters.sapi >> make << parameters.integration_testsuite >>
       - run:
           command: |
             mkdir -p /tmp/artifacts
@@ -614,6 +597,7 @@ jobs:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
       HTTPBIN_HOSTNAME: httpbin_integration
+      DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
       docker_image: << parameters.docker_image >>
@@ -625,15 +609,6 @@ jobs:
       - <<: *STEP_EXPORT_CI_ENV
       - <<: *STEP_WAIT_AGENT
       - <<: *STEP_WAIT_REQUEST_REPLAYER
-      - run: |
-          set -xe
-          curl -q -o hyperfine.tgz -L https://github.com/sharkdp/hyperfine/releases/download/v1.6.0/hyperfine-v1.6.0-x86_64-unknown-linux-musl.tar.gz
-          tar xf hyperfine.tgz --strip-component=1
-          php -m | grep signalfx_tracing
-          sudo rm /usr/local/etc/php/conf.d/signalfx-tracing.ini
-          php -m | grep signalfx_tracing || true
-          ./hyperfine -s basic 'php -m' 'php -m -dextension=signalfx_tracing.so' --min-runs 10000 --export-markdown hyperfine.md
-      - store_artifacts: { path: 'hyperfine.md', destination: /hyperfine.md }
       - run:
           name: Ensure ext/<< parameters.ext_name >> is missing
           command: |
@@ -693,9 +668,8 @@ jobs:
         environment:
           PHP_PACKAGE: << parameters.php_package >>
           OS_NAME: alpine
-          DD_AGENT_HOST: request-replayer
-          DD_TRACE_AGENT_PORT: 80
-          DD_TRACE_AGENT_FLUSH_INTERVAL: 1000
+          SIGNALFX_ENDPOINT_HOST: request-replayer
+          SIGNALFX_ENDPOINT_PORT: 80
           VERIFY_APACHE: 'no'
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
     steps:
@@ -722,9 +696,8 @@ jobs:
       - image: << parameters.docker_image >>
         environment:
           PHP_PACKAGE: << parameters.php_package >>
-          DD_AGENT_HOST: request-replayer
-          DD_TRACE_AGENT_PORT: 80
-          DD_TRACE_AGENT_FLUSH_INTERVAL: 1000
+          SIGNALFX_ENDPOINT_HOST: request-replayer
+          SIGNALFX_ENDPOINT_PORT: 80
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
     steps:
       - <<: *STEP_ATTACH_WORKSPACE
@@ -761,9 +734,8 @@ jobs:
     docker:
       - image: << parameters.docker_image >>
         environment:
-          DD_AGENT_HOST: request-replayer
-          DD_TRACE_AGENT_PORT: 80
-          DD_TRACE_AGENT_FLUSH_INTERVAL: 1000
+          SIGNALFX_ENDPOINT_HOST: request-replayer
+          SIGNALFX_ENDPOINT_PORT: 80
           VERIFY_APACHE: << parameters.verify_apache >>
           INSTALL_MODE: << parameters.install_mode >>
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
@@ -822,7 +794,7 @@ jobs:
           name: Make PECL build
           command: |
             tooling/bin/pecl-build
-            mkdir -p ./pecl && cp datadog_trace-*.tgz ./pecl
+            mkdir -p ./pecl && cp signalfx_tracing-*.tgz ./pecl
       #- store_artifacts:
       #    path: pecl
       - persist_to_workspace:
@@ -837,8 +809,6 @@ jobs:
         type: boolean
         default: true
     working_directory: ~/datadog
-    environment:
-      HTTPBIN_HOSTNAME: httpbin_integration
     executor:
       name: with_httpbin_and_request_replayer
       docker_image: << parameters.docker_image >>
@@ -847,15 +817,19 @@ jobs:
       - run:
           name: Install from PECL build
           command: |
-            cp ./pecl/datadog_trace-*.tgz ./datadog_trace.tgz
-            sudo pecl install datadog_trace.tgz
-            echo "extension=ddtrace.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/ddtrace.ini
-            php --ri=ddtrace
+            cp ./pecl/signalfx_tracing-*.tgz ./signalfx_tracing.tgz
+            sudo pecl install signalfx_tracing.tgz
+            echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx_tracing.ini
+            php --ri=signalfx_tracing
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
           name: Run phpt tests with PECL
           command: |
-            TERM=dumb sudo pecl run-tests <<# parameters.showdiff >> --showdiff <</ parameters.showdiff >> --ini=" -d ddtrace.request_init_hook=" -p datadog_trace
+            sudo \
+            TERM=dumb \
+            HTTPBIN_HOSTNAME=httpbin_integration \
+            DATADOG_HAVE_DEV_ENV=1 \
+            pecl run-tests <<# parameters.showdiff >> --showdiff <</ parameters.showdiff >> --ini=" -d ddtrace.request_init_hook=" -p signalfx_tracing
       - run:
           name: Gather .diff files for artifacts
           command: |
@@ -1090,7 +1064,7 @@ jobs:
         # Expected in the format: <major>.<minor>, e.g. 5.6
         type: string
     docker:
-      - image: datadog/dd-trace-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
+      - image: siimkallas/signalfx-tracing-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
     steps:
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
@@ -1162,19 +1136,19 @@ jobs:
           command: |
             switch-php << parameters.php_version >>
             make all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O2 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx_tracing-<< parameters.so_suffix >>.so
       - run:
           name: Build debug, nts configuration
           command: |
             switch-php << parameters.php_version >>-debug
             make clean all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O0 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>-debug.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx_tracing-<< parameters.so_suffix >>-debug.so
       - run:
           name: Build zts configuration
           command: |
             switch-php << parameters.php_version >>-zts
             make clean all ECHO_ARG="-e" CFLAGS="-std=gnu11 -O2 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>"
-            cp tmp/build_extension/.libs/ddtrace.so extensions/ddtrace-<< parameters.so_suffix >>-zts.so
+            cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx_tracing-<< parameters.so_suffix >>-zts.so
       - persist_to_workspace:
           root: '.'
           paths: [ './extensions' ]
@@ -1337,67 +1311,6 @@ workflows:
           php_version: "7.3"
           docker_image: "datadog/dd-trace-ci:php-7.3_centos-6"
           so_suffix: "20180731"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 74"
-          lib_curl_command: yum -y install libcurl-devel
-          docker_image: "datadog/dd-trace-ci:php-7.4-centos-7"
-          so_suffix: "20190902"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 56-zts"
-          docker_image: "circleci/php:5.6-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20131106-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 70-zts"
-          docker_image: "circleci/php:7.0-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20151012-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 71-zts"
-          docker_image: "circleci/php:7.1-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20160303-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 72-zts"
-          docker_image: "circleci/php:7.2-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20170718-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 73-zts"
-          docker_image: "circleci/php:7.3-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20180731-zts"
-      - compile_extension:
-          requires: [ 'Code Checkout' ]
-          name: "Compile PHP 74-zts"
-          docker_image: "circleci/php:7.4-zts"
-          lib_curl_command: sudo apt update; sudo apt -y install libcurl4-nss-dev
-          so_suffix: "20190902-zts"
-      - "package extension":
-          requires:
-            - "Compile PHP 54"
-            - "Compile PHP 56"
-            - "Compile PHP 70"
-            - "Compile PHP 71"
-            - "Compile PHP 72"
-            - "Compile PHP 73"
-            - "Compile PHP 74"
-            - "Compile PHP 56-zts"
-            - "Compile PHP 70-zts"
-            - "Compile PHP 71-zts"
-            - "Compile PHP 72-zts"
-            - "Compile PHP 73-zts"
-            - "Compile PHP 74-zts"
-      - "package verification":
-          requires:
-            - "package extension"
-      - verify_package:
           catch_warnings: false # On debug builds: unused parameter '__zend_filename'
       - compile_extension_ex:
           requires: [ 'Prepare Code' ]
@@ -1499,7 +1412,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php php-fpm
+                - php php-fpm php7-curl php7-json
               docker_image:
                 - alpine:3.8
                 - alpine:3.9
@@ -1512,12 +1425,11 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php7 php7-fpm
+                - php7 php7-fpm php7-curl php7-json
               docker_image:
                 - alpine:3.7
                 - alpine:3.8
                 - alpine:3.9
-                - alpine:3.9
                 - alpine:3.10
                 - alpine:3.11
                 - alpine:3.12
@@ -1527,7 +1439,7 @@ workflows:
           matrix:
             parameters:
               php_package:
-                - php5 php5-fpm
+                - php5 php5-fpm php5-curl php5-json
               docker_image:
                 - alpine:3.5
                 - alpine:3.6
@@ -1593,7 +1505,7 @@ workflows:
                   # Sury.org no longer provides PHP packages for Jessie
                   # https://www.linuxcompatible.org/story/suryorg-has-discontinued-debian-8-support/
                   # So we just test the PHP version in the default repo (5.6)
-                - PHP_PACKAGE="php5 php5-fpm libapache2-mod-php5" PHP_FPM_BIN="php5-fpm"
+                - PHP_PACKAGE="php5 php5-curl php5-fpm libapache2-mod-php5" PHP_FPM_BIN="php5-fpm"
 
       - pecl_tests:
           requires: [ "Build PECL" ]
@@ -1653,21 +1565,21 @@ workflows:
           resource_class: medium+
           sapi: cgi-fcgi
           integration_testsuite: "test_web"
-          docker_image: "datadog/dd-trace-ci:php-7.3_buster"
+          docker_image: "siimkallas/signalfx-tracing-ci:php-7.3_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 74 web tests with nginx + FastCGI"
           resource_class: medium+
           sapi: cgi-fcgi
           integration_testsuite: "test_web"
-          docker_image: "datadog/dd-trace-ci:php-7.4_buster"
+          docker_image: "siimkallas/signalfx-tracing-ci:php-7.4_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 80 web tests with nginx + FastCGI"
           resource_class: medium+
           sapi: cgi-fcgi
           integration_testsuite: "test_web"
-          docker_image: "datadog/dd-trace-ci:php-8.0_buster"
+          docker_image: "siimkallas/signalfx-tracing-ci:php-8.0_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 55 custom autoloaded web tests with nginx + PHP-FPM"
@@ -1681,7 +1593,7 @@ workflows:
           resource_class: medium+
           sapi: fpm-fcgi
           integration_testsuite: "test_web_custom"
-          docker_image: "datadog/dd-trace-ci:php-7.4_buster"
+          docker_image: "siimkallas/signalfx-tracing-ci:php-7.4_buster"
 
   build:
     jobs:
@@ -1878,19 +1790,7 @@ workflows:
           requires: [ 'Language tests' ]
           name: "PHP 73 language tests"
           xfail_list: dockerfiles/ci/xfail_tests/7.3.list
-          docker_image: "datadog/dd-trace-php:7.3-buster-debug"
-      - unit_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 74 Unit tests"
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
-          valgrind_config: 7_4_musl
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - php_language_tests:
-          requires: [ 'Language tests' ]
-          name: "PHP 74 language tests"
-          xfail_list: dockerfiles/ci/xfail_tests/7.4.list
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-buster"
-          php_src_dir: "/usr/local/src/php"
+          docker_image: "datadog/dd-trace-ci:php-7.3_buster"
       - php_language_tests:
           requires: [ 'Language tests' ]
           name: "PHP 72 language tests"
@@ -1920,144 +1820,11 @@ workflows:
           requires: [ 'Language tests' ]
           name: "PHP 54 language tests"
           xfail_list: dockerfiles/ci/xfail_tests/5.4.list
-          docker_image: "datadog/dd-trace-php:5.4-buster-debug"
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 54 Integration tests"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-5.4-debug"
-          integration_testsuite: "test-integrations-54"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 56 Integration tests"
-          integration_testsuite: "test-integrations-56"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-5.6-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 70 Integration tests"
-          integration_testsuite: "test-integrations-70"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.0-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 71 Integration tests"
-          integration_testsuite: "test-integrations-71"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.1-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 72 Integration tests"
-          integration_testsuite: "test-integrations-72"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.2-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 73 Integration tests"
-          integration_testsuite: "test-integrations-73"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 74 Integration tests"
-          integration_testsuite: "test-integrations-74"
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 54 Web integration tests"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-5.4-debug"
-          integration_testsuite: "test-web-54"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 56 Web integration tests"
-          integration_testsuite: "test-web-56"
-          # docker_image: "datadog/docker-library:ddtrace_alpine_php-5.6-debug" composer goes over memory if run with debug
-          docker_image: "datadog/docker-library:ddtrace_php_5_6"
-          lib_curl_command: sudo apt update ; sudo apt-get -y install libcurl4-nss-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 70 Web integration tests"
-          integration_testsuite: "test-web-70"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.0-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 71 Web integration tests"
-          integration_testsuite: "test-web-71"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.1-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 72 Web integration tests"
-          integration_testsuite: "test-web-72"
-          docker_image: "datadog/docker-library:ddtrace_php_7_2"
-          lib_curl_command: sudo apt update ; sudo apt-get -y install libcurl4-nss-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 73 Web integration tests"
-          integration_testsuite: "test-web-73"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - integration_tests:
-          requires: [ 'Code Checkout' ]
-          name: "PHP 74 Web integration tests"
-          resource_class: medium+
-          integration_testsuite: "test-web-74"
-          docker_image: "datadog/dd-trace-ci:php-dev-7.4"
-          lib_curl_command: sudo apt update ; sudo apt-get -y install libcurl4-nss-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 54 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-5.4-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 56 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-5.6-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 70 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.0-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 71 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.1-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 72 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.2-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 73 benchmarks"
-          docker_image: "datadog/docker-library:ddtrace_alpine_php-7.3-debug"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
-      - hyperfine_tests:
-          requires: [ 'Code Checkout' ]
-          name: "Hyperfine 74 benchmarks"
-          docker_image: "datadog/dd-trace-ci:php-7.4-debug-alpine-3.11"
-          lib_curl_command: sudo apk update ; sudo apk add curl-dev
+          docker_image: "datadog/dd-trace-ci:php-5.4_buster"
       - internal_integrations:
           requires: [ 'Prepare Code' ]
           name: "PHP 80 curl integration tests a shared lib"
           ext_name: "curl"
           docker_image: "datadog/dd-trace-ci:php-8.0-shared-ext"
       - "Lint files":
-          requires: [ 'Prepare Code' ]
-      - static_analysis:
-          requires: [ 'Prepare Code' ]
-          name: "Static Analysis 71"
-          docker_image: circleci/php:7.1
-          scenario: opentracing_beta6
-      - static_analysis:
-          requires: [ 'Prepare Code' ]
-          name: "Static Analysis 80"
-          docker_image: circleci/php:8.0
-          scenario: opentracing10
-      - "Post-Install Hook":
           requires: [ 'Prepare Code' ]

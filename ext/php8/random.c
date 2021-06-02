@@ -8,9 +8,10 @@
 #include "configuration.h"
 #include "ddtrace.h"
 #include "env_config.h"
+#include "hex_utils.h"
 #include "mt19937/mt19937-64.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 void ddtrace_seed_prng(TSRMLS_D) {
     if (get_dd_trace_debug_prng_seed() > 0) {
@@ -50,8 +51,25 @@ static inline uint64_t zval_to_uint64(zval *zid) {
     return (uid && errno == 0) ? uid : 0U;
 }
 
+uint64_t sfxtrace_hex_to_u64(zval *zid) {
+    if (!zid || Z_TYPE_P(zid) != IS_STRING) {
+        return 0U;
+    }
+    const char *hex_id = Z_STRVAL_P(zid);
+    return decode_hex_id(hex_id, Z_STRLEN_P(zid));
+}
+
 BOOL_T ddtrace_set_userland_trace_id(zval *zid TSRMLS_DC) {
     uint64_t uid = zval_to_uint64(zid);
+    if (uid) {
+        DDTRACE_G(trace_id) = uid;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL_T ddtrace_set_userland_trace_id_hex(zval *zid TSRMLS_DC) {
+    uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         DDTRACE_G(trace_id) = uid;
         return TRUE;
@@ -76,6 +94,15 @@ uint64_t ddtrace_push_span_id(uint64_t id TSRMLS_DC) {
 
 BOOL_T ddtrace_push_userland_span_id(zval *zid TSRMLS_DC) {
     uint64_t uid = zval_to_uint64(zid);
+    if (uid) {
+        ddtrace_push_span_id(uid TSRMLS_CC);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL_T ddtrace_push_userland_span_id_hex(zval *zid TSRMLS_DC) {
+    uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         ddtrace_push_span_id(uid TSRMLS_CC);
         return TRUE;

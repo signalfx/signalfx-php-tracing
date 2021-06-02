@@ -15,7 +15,7 @@
 #define USE_REALTIME_CLOCK 0
 #define USE_MONOTONIC_CLOCK 1
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 void ddtrace_init_span_stacks(TSRMLS_D) {
     DDTRACE_G(open_spans_top) = NULL;

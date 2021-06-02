@@ -14,6 +14,7 @@ ${PHP_SRC_DIR}/configure \
     --enable-opcache \
     --enable-pcntl \
     --enable-sockets \
+    --enable-gd \
     --with-curl \
     --with-fpm-user=www-data \
     --with-fpm-group=www-data \

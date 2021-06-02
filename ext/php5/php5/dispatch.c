@@ -7,7 +7,7 @@
 
 #include "ext/php5/ddtrace.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 // todo: is this used anywhere?
 #if !defined(ZVAL_COPY_VALUE)

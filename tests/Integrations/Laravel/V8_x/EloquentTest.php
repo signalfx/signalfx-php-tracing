@@ -7,6 +7,7 @@ use DDTrace\Tests\Common\SpanAssertionTrait;
 use DDTrace\Tests\Common\TracerTestTrait;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
+use DDTrace\Tag;
 
 class EloquentTest extends WebFrameworkTestCase
 {
@@ -16,6 +17,13 @@ class EloquentTest extends WebFrameworkTestCase
     protected static function getAppIndexScript()
     {
         return __DIR__ . '/../../../Frameworks/Laravel/Version_8_x/public/index.php';
+    }
+
+    protected static function getEnvs()
+    {
+        return array_merge(parent::getEnvs(), [
+            'SIGNALFX_SERVICE_NAME' => 'Laravel',
+        ]);
     }
 
     protected function ddSetUp()
@@ -34,9 +42,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.destroy',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'App\\Models\\User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -50,9 +59,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.refresh',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'App\\Models\\User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -65,10 +75,11 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.get',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'select * from `users`'
         )->withExactTags([
-            'sql.query' => 'select * from `users`',
+            Tag::DB_STATEMENT => 'select * from `users`',
+            'component' => 'eloquent',
         ]));
     }
 
@@ -81,9 +92,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.insert',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'App\\Models\\User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -97,9 +109,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.update',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'App\\Models\\User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -113,9 +126,10 @@ class EloquentTest extends WebFrameworkTestCase
         $this->assertOneExpectedSpan($traces, SpanAssertion::build(
             'eloquent.delete',
             'Laravel',
-            'sql',
+            SpanAssertion::NOT_TESTED,
             'App\\Models\\User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 

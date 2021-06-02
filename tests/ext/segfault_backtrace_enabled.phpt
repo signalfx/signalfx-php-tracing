@@ -18,5 +18,5 @@ Datadog PHP Trace extension \(DEBUG MODE\)
 Received Signal 11
 Note: Backtrace below might be incomplete and have wrong entries due to optimized runtime
 Backtrace:
-.*ddtrace\.so.*
+.*signalfx_tracing\.so.*
 .*

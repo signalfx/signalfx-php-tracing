@@ -6,7 +6,7 @@ If curl_inject_distributed_headers helper is missing, we don't sigsegv, right?
 --INI--
 ddtrace.request_init_hook=
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_TRACED_INTERNAL_FUNCTIONS=curl_exec
 --FILE--
 <?php

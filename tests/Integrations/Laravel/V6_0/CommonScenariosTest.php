@@ -16,7 +16,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'APP_NAME' => 'laravel_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'laravel_test_app',
         ]);
     }
 

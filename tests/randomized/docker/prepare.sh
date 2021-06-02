@@ -5,7 +5,7 @@ set -e
 # Install the tracers
 if [ "${INSTALL_MODE}" == "package" ]; then
     tar -xf /tmp/tracer-versions/ddtrace-test.tar.gz -C /
-    sh /opt/datadog-php/bin/post-install.sh
+    sh /opt/signalfx-php-tracing/bin/post-install.sh
 elif [ "${INSTALL_MODE}" == "pecl" ]; then
     echo "PECL installation mode not supported yet"
     exit 1

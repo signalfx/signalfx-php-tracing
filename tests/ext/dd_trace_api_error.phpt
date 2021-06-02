@@ -1,7 +1,7 @@
 --TEST--
 dd_trace() declarative API error cases
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_WARN_LEGACY_DD_TRACE=0
 --FILE--
 <?php

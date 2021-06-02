@@ -54,7 +54,7 @@ final class WebServer
 
     private $defaultEnvs = [
         'SIGNALFX_ENDPOINT_PORT' => 80,
-        'SIGNALFX_ENDPOINT_HOST' => 'request_replayer',
+        'SIGNALFX_ENDPOINT_HOST' => 'request-replayer',
         'SIGNALFX_ENDPOINT_PATH' => '/',
         'DD_TRACE_AGENT_FLUSH_AFTER_N_REQUESTS' => 1,
         // Short flush interval by default or our tests will take all day

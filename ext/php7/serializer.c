@@ -16,7 +16,7 @@
 #include "mpack/mpack.h"
 #include "span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static int msgpack_write_zval(mpack_writer_t *writer, zval *trace TSRMLS_DC);
 
@@ -229,7 +229,7 @@ static int dd_exception_to_error_msg(zend_object *exception, void *context,
     int status = ddtrace_call_method(exception, exception->ce, NULL, ZEND_STRL("getmessage"), &msg, 0, NULL);
 
     if (status == SUCCESS && Z_TYPE(msg) == IS_STRING) {
-        ddtrace_string key = DDTRACE_STRING_LITERAL("error.msg");
+        ddtrace_string key = DDTRACE_STRING_LITERAL("sfx.error.message");
         ddtrace_string value = {Z_STRVAL(msg), Z_STRLEN(msg)};
         status = add_tag(context, key, value);
     } else {
@@ -242,7 +242,7 @@ static int dd_exception_to_error_msg(zend_object *exception, void *context,
 
 static int dd_exception_to_error_type(zend_object *exception, void *context,
                                       int (*add_tag)(void *context, ddtrace_string key, ddtrace_string value)) {
-    ddtrace_string value, key = DDTRACE_STRING_LITERAL("error.type");
+    ddtrace_string value, key = DDTRACE_STRING_LITERAL("sfx.error.kind");
 
     if (instanceof_function(exception->ce, ddtrace_ce_fatal_error)) {
         zval code = ddtrace_zval_undef();
@@ -296,7 +296,7 @@ static int dd_exception_to_error_stack(zend_object *exception, void *context,
     if (result == SUCCESS && Z_TYPE(stack) == IS_ARRAY) {
         error_stack = dd_serialize_stack_trace(&stack);
         if (Z_TYPE(error_stack) == IS_STRING) {
-            ddtrace_string key = DDTRACE_STRING_LITERAL("error.stack");
+            ddtrace_string key = DDTRACE_STRING_LITERAL("sfx.error.stack");
             ddtrace_string value = {Z_STRVAL(error_stack), Z_STRLEN(error_stack)};
             result = add_tag(context, key, value);
         }
@@ -459,17 +459,17 @@ static int dd_fatal_error_to_meta(zval *meta, dd_error_info error) {
 
     if (error.type) {
         zval tmp = ddtrace_zval_zstr(zend_string_copy(error.type));
-        zend_symtable_str_update(ht, ZEND_STRL("error.type"), &tmp);
+        zend_symtable_str_update(ht, ZEND_STRL("sfx.error.kind"), &tmp);
     }
 
     if (error.msg) {
         zval tmp = ddtrace_zval_zstr(zend_string_copy(error.msg));
-        zend_symtable_str_update(ht, ZEND_STRL("error.msg"), &tmp);
+        zend_symtable_str_update(ht, ZEND_STRL("sfx.error.message"), &tmp);
     }
 
     if (error.stack) {
         zval tmp = ddtrace_zval_zstr(zend_string_copy(error.stack));
-        zend_symtable_str_update(ht, ZEND_STRL("error.stack"), &tmp);
+        zend_symtable_str_update(ht, ZEND_STRL("sfx.error.stack"), &tmp);
     }
 
     return error.type && error.msg ? SUCCESS : FAILURE;
@@ -504,7 +504,7 @@ static void _serialize_meta(zval *el, ddtrace_span_fci *span_fci) {
         ddtrace_exception_to_meta(span_fci->exception, meta, dd_add_meta_array);
     }
 
-    zval *error = ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("error.msg"));
+    zval *error = ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("sfx.error.message"));
     if (error) {
         add_assoc_long(el, "error", 1);
     }

@@ -9,7 +9,7 @@ register_shutdown_function(function () {
         printf(
             "%s with exception: %s\n",
             $span['name'],
-            $span['meta']['error.msg']
+            $span['meta']['sfx.error.message']
         );
     }, dd_trace_serialize_closed_spans());
 });

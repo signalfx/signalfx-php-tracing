@@ -93,6 +93,9 @@ function _ddtrace_config_json($value, $default)
         return $default;
     }
 
+    // If the char `'` used to escape the json object reaches this variable, it has to be removed.
+    $value = trim($value, "'");
+
     $parsed = \json_decode($value, true);
     if (null === $parsed) {
         return $default;
@@ -178,6 +181,54 @@ function ddtrace_config_service_version()
     return \_ddtrace_config_string(\getenv('DD_VERSION'), null);
 }
 
+function sfx_trace_config_endpoint_url()
+{
+    $endpoint = \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_URL'), '');
+    if ($endpoint === '') {
+        $parts = [
+            "scheme" => \sfx_trace_config_endpoint_https() === true ? "https" : "http",
+            "host" => \sfx_trace_config_endpoint_host(),
+            "port" => \sfx_trace_config_endpoint_port(),
+            "path" => \sfx_trace_config_endpoint_path(),
+        ];
+    } else {
+        $parts = parse_url($endpoint);
+    }
+    $portPart = "";
+    if (isset($parts['port']) &&
+        (($parts['scheme'] === "https" && $parts['port'] !== "443") ||
+            ($parts['scheme'] === "http" && $parts['port'] !== "80"))) {
+        $portPart = ":" . $parts['port'];
+    }
+
+    return "${parts['scheme']}://${parts['host']}${portPart}${parts['path']}";
+}
+
+function sfx_trace_config_endpoint_host()
+{
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_HOST'), 'localhost');
+}
+
+function sfx_trace_config_endpoint_port()
+{
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PORT'), '9080');
+}
+
+function sfx_trace_config_endpoint_path()
+{
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ENDPOINT_PATH'), '/v1/trace');
+}
+
+function sfx_trace_config_endpoint_https()
+{
+    return \_ddtrace_config_bool(\getenv('SIGNALFX_ENDPOINT_HTTPS'), false);
+}
+
+function sfx_trace_config_access_token()
+{
+    return \_ddtrace_config_string(\getenv('SIGNALFX_ACCESS_TOKEN'), '');
+}
+
 /**
  * Whether or not debug mode is enabled.
  *
@@ -185,7 +236,10 @@ function ddtrace_config_service_version()
  */
 function ddtrace_config_debug_enabled()
 {
-    return \_ddtrace_config_bool(\getenv('DD_TRACE_DEBUG'), false);
+    return \_ddtrace_config_bool(
+        \getenv('SIGNALFX_TRACE_DEBUG'),
+        \_ddtrace_config_bool(\getenv('DD_TRACE_DEBUG'), false)
+    );
 }
 
 /**
@@ -340,11 +394,14 @@ function ddtrace_config_sampling_rules()
  */
 function ddtrace_config_global_tags()
 {
-    $rawValue = \getenv('DD_TAGS');
-    if (false === $rawValue) {
-        // Fallback to legacy env variable name
-        $rawValue = \getenv('DD_TRACE_GLOBAL_TAGS');
+    foreach (['SIGNALFX_TAGS', 'SIGNALFX_TRACE_GLOBAL_TAGS', 'DD_TAGS', 'DD_TRACE_GLOBAL_TAGS'] as $key) {
+        $rawValue = \getenv($key);
+
+        if (false !== $rawValue) {
+            break;
+        }
     }
+
     return \_ddtrace_config_associative_array($rawValue, []);
 }
 
@@ -367,4 +424,9 @@ function ddtrace_config_http_headers()
         },
         \_ddtrace_config_indexed_array(\getenv('DD_TRACE_HEADER_TAGS'), [])
     );
+}
+
+function sfx_trace_config_max_attribute_length()
+{
+    return (int)\_ddtrace_config_float(\getenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH'), 1200);
 }

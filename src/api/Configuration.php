@@ -3,15 +3,12 @@
 namespace DDTrace;
 
 use DDTrace\Configuration\AbstractConfiguration;
-use DDTrace\Log\LoggingTrait;
 
 /**
  * DDTrace global configuration object.
  */
 class Configuration extends AbstractConfiguration
 {
-    use LoggingTrait;
-
     /**
      * Parsing sampling rules might be expensive so we cache values the first time we parse them.
      *
@@ -26,7 +23,7 @@ class Configuration extends AbstractConfiguration
      */
     public function isEnabled()
     {
-        return $this->boolValue('trace.enabled', true);
+        return $this->boolValue('tracing.enabled', true);
     }
 
     /**
@@ -68,6 +65,19 @@ class Configuration extends AbstractConfiguration
     {
         return $this->isDistributedTracingEnabled()
             && $this->boolValue('priority.sampling', true);
+    }
+
+    /**
+     * Maximum size span attribute values can have. Attribute values larger than this size
+     * are truncated to fit the rule.
+     *
+     * -1 means no limit
+     *
+     * @return int
+     */
+    public function getMaxAttributeLength()
+    {
+        return (int)$this->floatValue('recorded.value.max.length', 1200);
     }
 
     /**
@@ -209,9 +219,9 @@ class Configuration extends AbstractConfiguration
 
     /**
      * Whether or not sandboxed tracing closures are enabled.
+     * @return bool
      * @deprecated 0.48.0 Sandoxing is always enabled.
      *
-     * @return bool
      */
     public function isSandboxEnabled()
     {
@@ -230,6 +240,55 @@ class Configuration extends AbstractConfiguration
         $service = $service ?: $this->stringValue('service.name', null);
         $service = $service ?: $default;
         return $service;
+    }
+
+    public function getEndpointURL()
+    {
+        $endpoint = $this->stringValue("endpoint.url", '');
+        if ($endpoint === "") {
+            $parts = [
+                "scheme" => $this->getEndpointHTTPS() === true ? "https" : "http",
+                "host" => $this->getEndpointHost(),
+                "port" => $this->getEndpointPort(),
+                "path" => $this->getEndpointPath(),
+            ];
+        } else {
+            $parts = parse_url($endpoint);
+        }
+
+        $portPart = "";
+        if (isset($parts['port']) &&
+            (($parts['scheme'] === "https" && $parts['port'] !== "443") ||
+                ($parts['scheme'] === "http" && $parts['port'] !== "80"))) {
+            $portPart = ":" . $parts['port'];
+        }
+
+        return "${parts['scheme']}://${parts['host']}${portPart}${parts['path']}";
+    }
+
+    private function getEndpointHost()
+    {
+        return $this->stringValue("endpoint.host", 'localhost');
+    }
+
+    private function getEndpointPort()
+    {
+        return $this->stringValue("endpoint.port", '9080');
+    }
+
+    private function getEndpointPath()
+    {
+        return $this->stringValue("endpoint.path", '/v1/trace');
+    }
+
+    private function getEndpointHTTPS()
+    {
+        return $this->boolValue("endpoint.https", false);
+    }
+
+    public function getAccessToken()
+    {
+        return $this->stringValue("access.token");
     }
 
     /**

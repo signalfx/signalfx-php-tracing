@@ -21,9 +21,12 @@ void ddtrace_seed_prng(TSRMLS_D);
 void ddtrace_init_span_id_stack(TSRMLS_D);
 void ddtrace_free_span_id_stack(TSRMLS_D);
 BOOL_T ddtrace_set_userland_trace_id(zval *zid TSRMLS_DC);
+BOOL_T ddtrace_set_userland_trace_id_hex(zval *zid TSRMLS_DC);
 uint64_t ddtrace_push_span_id(uint64_t id TSRMLS_DC);
 BOOL_T ddtrace_push_userland_span_id(zval *zid TSRMLS_DC);
+BOOL_T ddtrace_push_userland_span_id_hex(zval *zid TSRMLS_DC);
 uint64_t ddtrace_pop_span_id(TSRMLS_D);
 uint64_t ddtrace_peek_span_id(TSRMLS_D);
+uint64_t sfxtrace_hex_to_u64(zval *zid);
 
 #endif  // DD_RANDOM_H

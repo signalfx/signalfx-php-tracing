@@ -41,8 +41,8 @@ final class CurlHeadersMapTest extends BaseTestCase
         (new CurlHeadersMap($this->tracer))->inject($context, $carrier);
 
         $this->assertEquals([
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -61,8 +61,8 @@ final class CurlHeadersMapTest extends BaseTestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -84,8 +84,8 @@ final class CurlHeadersMapTest extends BaseTestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }

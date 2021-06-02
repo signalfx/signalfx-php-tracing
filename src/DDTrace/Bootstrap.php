@@ -124,6 +124,7 @@ final class Bootstrap
             // Status code defaults to 200, will be later on changed when http_response_code will be called
             $span->setTag(Tag::HTTP_STATUS_CODE, 200);
 
+
             // Adding configured incoming request http headers
             foreach (Private_\util_extract_configured_headers_as_tags($httpHeaders, true) as $tag => $value) {
                 $span->setTag($tag, $value);
@@ -132,6 +133,7 @@ final class Bootstrap
         $integration = WebIntegration::getInstance();
         $integration->addTraceAnalyticsIfEnabledLegacy($span);
         $span->setTag(Tag::SERVICE_NAME, \ddtrace_config_app_name($operationName));
+        $span->setTag(Tag::COMPONENT, 'web.request');
 
         $rootSpan = $span;
         \DDTrace\hook_function('header', null, function ($args) use ($rootSpan) {

@@ -6,6 +6,11 @@ ENV PHP_INSTALL_DIR_DEBUG_NTS=${PHP_INSTALL_DIR}/debug
 ENV PHP_INSTALL_DIR_NTS=${PHP_INSTALL_DIR}/nts
 ENV PHP_VERSION=${phpVersion}
 
+RUN set -eux; \
+    sudo apt-get update; \
+    sudo apt-get install -y --no-install-recommends \
+    libpng-dev libjpeg-dev;
+
 FROM base as build
 ARG phpTarGzUrl
 ARG phpSha256Hash

@@ -34,6 +34,7 @@
 #include "engine_hooks.h"
 #include "excluded_modules.h"
 #include "handlers_internal.h"
+#include "hex_utils.h"
 #include "integrations/integrations.h"
 #include "logging.h"
 #include "memory_limit.h"
@@ -50,25 +51,26 @@ bool ddtrace_has_excluded_module;
 atomic_int ddtrace_first_rinit;
 atomic_int ddtrace_warn_legacy_api;
 
-ZEND_DECLARE_MODULE_GLOBALS(ddtrace)
+ZEND_DECLARE_MODULE_GLOBALS(signalfx_tracing)
 
 PHP_INI_BEGIN()
-STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_ddtrace_globals,
-                    ddtrace_globals)
+STD_PHP_INI_BOOLEAN("ddtrace.disable", "0", PHP_INI_SYSTEM, OnUpdateBool, disable, zend_signalfx_tracing_globals,
+                    signalfx_tracing_globals)
 #if _BUILD_FROM_PECL_
-STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/datadog_trace/bridge/dd_wrap_autoloader.php", PHP_INI_SYSTEM,
-                  OnUpdateString, request_init_hook, zend_ddtrace_globals, ddtrace_globals)
+STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "@php_dir@/signalfx_tracing/bridge/dd_wrap_autoloader.php",
+                  PHP_INI_SYSTEM, OnUpdateString, request_init_hook, zend_signalfx_tracing_globals,
+                  signalfx_tracing_globals)
 #else
 STD_PHP_INI_ENTRY("ddtrace.request_init_hook", "", PHP_INI_SYSTEM, OnUpdateString, request_init_hook,
-                  zend_ddtrace_globals, ddtrace_globals)
+                  zend_signalfx_tracing_globals, signalfx_tracing_globals)
 #endif
 
 // Exposed for testing only
 STD_PHP_INI_ENTRY("ddtrace.cgroup_file", "/proc/self/cgroup", PHP_INI_SYSTEM, OnUpdateString, cgroup_file,
-                  zend_ddtrace_globals, ddtrace_globals)
+                  zend_signalfx_tracing_globals, signalfx_tracing_globals)
 PHP_INI_END()
 
-static int ddtrace_startup(struct _zend_extension *extension) {
+static int signalfx_tracing_startup(struct _zend_extension *extension) {
     ddtrace_resource = zend_get_resource_handle(extension);
 #if PHP_VERSION_ID >= 70400
     ddtrace_op_array_extension = zend_get_op_array_extension_handle();
@@ -79,14 +81,14 @@ static int ddtrace_startup(struct _zend_extension *extension) {
     return SUCCESS;
 }
 
-static void ddtrace_shutdown(struct _zend_extension *extension) {
+static void signalfx_tracing_shutdown(struct _zend_extension *extension) {
     UNUSED(extension);
 
     ddtrace_internal_handlers_shutdown();
 }
 
-static void ddtrace_activate(void) {}
-static void ddtrace_deactivate(void) {}
+static void signalfx_tracing_activate(void) {}
+static void signalfx_tracing_deactivate(void) {}
 
 // prepare the tracer state to start handling a new trace
 static void dd_prepare_for_new_trace(TSRMLS_D);
@@ -96,10 +98,10 @@ static zend_extension _dd_zend_extension_entry = {"ddtrace",
                                                   "Datadog",
                                                   "https://github.com/DataDog/dd-trace-php",
                                                   "Copyright Datadog",
-                                                  ddtrace_startup,
-                                                  ddtrace_shutdown,
-                                                  ddtrace_activate,
-                                                  ddtrace_deactivate,
+                                                  signalfx_tracing_startup,
+                                                  signalfx_tracing_shutdown,
+                                                  signalfx_tracing_activate,
+                                                  signalfx_tracing_deactivate,
                                                   NULL,
                                                   NULL,
                                                   NULL,
@@ -150,7 +152,19 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id, 0, 0, 1)
 ZEND_ARG_INFO(0, trace_id)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id_hex, 0, 0, 1)
+ZEND_ARG_INFO(0, trace_id)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id, 0, 0, 0)
+ZEND_ARG_INFO(0, existing_id)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id_hex, 0, 0, 0)
+ZEND_ARG_INFO(0, existing_id)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_sfx_trace_convert_hex_id, 0, 0, 0)
 ZEND_ARG_INFO(0, existing_id)
 ZEND_END_ARG_INFO()
 
@@ -197,6 +211,14 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_ddtrace_void, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_dec_hex, 0, 0, 1)
+ZEND_ARG_INFO(0, dec_string)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_hex_dec, 0, 0, 1)
+ZEND_ARG_INFO(0, hex_string)
+ZEND_END_ARG_INFO()
+
 /* Legacy API */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace, 0, 0, 2)
 ZEND_ARG_INFO(0, class_or_function_name)
@@ -204,13 +226,15 @@ ZEND_ARG_INFO(0, method_name_or_tracing_closure)
 ZEND_ARG_INFO(0, tracing_closure)
 ZEND_END_ARG_INFO()
 
-static void php_ddtrace_init_globals(zend_ddtrace_globals *ng) { memset(ng, 0, sizeof(zend_ddtrace_globals)); }
+static void php_ddtrace_init_globals(zend_signalfx_tracing_globals *ng) {
+    memset(ng, 0, sizeof(zend_signalfx_tracing_globals));
+}
 
-static PHP_GINIT_FUNCTION(ddtrace) {
-#if defined(COMPILE_DL_DDTRACE) && defined(ZTS)
+static PHP_GINIT_FUNCTION(signalfx_tracing) {
+#if defined(COMPILE_DL_SIGNALFX_TRACING) && defined(ZTS)
     ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-    php_ddtrace_init_globals(ddtrace_globals);
+    php_ddtrace_init_globals(signalfx_tracing_globals);
 }
 
 /* DDTrace\SpanData */
@@ -279,7 +303,7 @@ static void dd_disable_if_incompatible_sapi_detected(void) {
     }
 }
 
-static PHP_MINIT_FUNCTION(ddtrace) {
+static PHP_MINIT_FUNCTION(signalfx_tracing) {
     UNUSED(type);
     REGISTER_STRING_CONSTANT("DD_TRACE_VERSION", PHP_DDTRACE_VERSION, CONST_CS | CONST_PERSISTENT);
     REGISTER_INI_ENTRIES();
@@ -295,8 +319,8 @@ static PHP_MINIT_FUNCTION(ddtrace) {
      * See http://www.phpinternalsbook.com/php7/extensions_design/zend_extensions.html#hybrid-extensions
      * {{{ */
     Dl_info infos;
-    zend_register_extension(&_dd_zend_extension_entry, ddtrace_module_entry.handle);
-    dladdr(ZEND_MODULE_STARTUP_N(ddtrace), &infos);
+    zend_register_extension(&_dd_zend_extension_entry, signalfx_tracing_module_entry.handle);
+    dladdr(ZEND_MODULE_STARTUP_N(signalfx_tracing), &infos);
     dlopen(infos.dli_fname, RTLD_LAZY);
     /* }}} */
 
@@ -323,7 +347,7 @@ static PHP_MINIT_FUNCTION(ddtrace) {
     return SUCCESS;
 }
 
-static PHP_MSHUTDOWN_FUNCTION(ddtrace) {
+static PHP_MSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     UNREGISTER_INI_ENTRIES();
@@ -351,7 +375,7 @@ static PHP_MSHUTDOWN_FUNCTION(ddtrace) {
     return SUCCESS;
 }
 
-static PHP_RINIT_FUNCTION(ddtrace) {
+static PHP_RINIT_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (ddtrace_has_excluded_module == true) {
@@ -409,7 +433,7 @@ static PHP_RINIT_FUNCTION(ddtrace) {
     return SUCCESS;
 }
 
-static PHP_RSHUTDOWN_FUNCTION(ddtrace) {
+static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (DDTRACE_G(disable)) {
@@ -495,7 +519,7 @@ static void _dd_info_diagnostics_table(TSRMLS_D) {
     php_info_print_table_end();
 }
 
-static PHP_MINFO_FUNCTION(ddtrace) {
+static PHP_MINFO_FUNCTION(signalfx_tracing) {
     UNUSED(zend_module);
 
     php_info_print_box_start(0);
@@ -803,6 +827,7 @@ static PHP_FUNCTION(trace_function) {
     }
 
     zend_bool rv = ddtrace_trace(NULL, function, tracing_closure, options TSRMLS_CC);
+
     RETURN_BOOL(rv);
 }
 
@@ -976,7 +1001,7 @@ static PHP_FUNCTION(ddtrace_config_app_name) {
     }
 
     ddtrace_string app_name =
-        ddtrace_string_getenv_multi(ZEND_STRL("DD_SERVICE"), ZEND_STRL("DD_SERVICE_NAME") TSRMLS_CC);
+        ddtrace_string_getenv_multi(ZEND_STRL("SIGNALFX_SERVICE"), ZEND_STRL("SIGNALFX_SERVICE_NAME") TSRMLS_CC);
     bool should_free_app_name = app_name.ptr;
     if (!app_name.len) {
         if (should_free_app_name) {
@@ -1239,6 +1264,20 @@ static PHP_FUNCTION(dd_trace_set_trace_id) {
     RETURN_BOOL(0);
 }
 
+/* {{{ proto string dd_trace_set_trace_id_hex() */
+static PHP_FUNCTION(dd_trace_set_trace_id_hex) {
+    UNUSED(execute_data);
+
+    zval *trace_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &trace_id) == SUCCESS) {
+        if (ddtrace_set_userland_trace_id_hex(trace_id TSRMLS_CC) == TRUE) {
+            RETURN_BOOL(1);
+        }
+    }
+
+    RETURN_BOOL(0);
+}
+
 static inline void return_span_id(zval *return_value, uint64_t id) {
     char buf[DD_TRACE_MAX_ID_LEN + 1];
     snprintf(buf, sizeof(buf), "%" PRIu64, id);
@@ -1258,6 +1297,35 @@ static PHP_FUNCTION(dd_trace_push_span_id) {
     }
 
     return_span_id(return_value, ddtrace_push_span_id(0 TSRMLS_CC));
+}
+
+/* {{{ proto string dd_trace_push_span_id_hex() */
+static PHP_FUNCTION(dd_trace_push_span_id_hex) {
+    UNUSED(execute_data);
+
+    zval *existing_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &existing_id) == SUCCESS) {
+        if (ddtrace_push_userland_span_id_hex(existing_id TSRMLS_CC) == TRUE) {
+            return_span_id(return_value, ddtrace_peek_span_id(TSRMLS_C));
+            return;
+        }
+    }
+
+    return_span_id(return_value, ddtrace_push_span_id(0 TSRMLS_CC));
+}
+
+/* {{{ proto string sfx_trace_convert_hex_id() */
+static PHP_FUNCTION(sfx_trace_convert_hex_id) {
+    UNUSED(execute_data);
+
+    zval *hex_id = NULL;
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &hex_id) == SUCCESS) {
+        uint64_t id = sfxtrace_hex_to_u64(hex_id);
+        return_span_id(return_value, id);
+        return;
+    }
+
+    return_span_id(return_value, 0);
 }
 
 /* {{{ proto string dd_trace_pop_span_id() */
@@ -1324,7 +1392,58 @@ static PHP_FUNCTION(startup_logs) {
     ZVAL_NEW_STR(return_value, buf.s);
 }
 
-static const zend_function_entry ddtrace_functions[] = {
+/* {{{ proto string dd_trace_hex_dec(hex_string) */
+static PHP_FUNCTION(dd_trace_hex_dec) {
+    UNUSED(execute_data);
+    zval *hex = NULL;
+
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &hex) != SUCCESS) {
+        RETURN_STRING("0");
+    }
+
+    if (!hex || Z_TYPE_P(hex) != IS_STRING) {
+        ddtrace_zval_ptr_dtor(hex);
+        RETURN_STRING("0");
+    }
+    char *hex_arg = Z_STRVAL_P(hex);
+
+#if PHP_VERSION_ID >= 70200
+    RETURN_STR(dd_trace_hex_dec(hex_arg));
+#else
+    char buf[23];
+    dd_trace_hex_dec(hex_arg, buf);
+    RETURN_STRING(buf);
+#endif
+}
+
+/* {{{ proto string dd_trace_dec_hex(dec_string) */
+static PHP_FUNCTION(dd_trace_dec_hex) {
+    UNUSED(execute_data);
+    zval *dec = NULL;
+
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &dec) != SUCCESS) {
+        RETURN_STRING("0");
+    }
+    if (!dec || Z_TYPE_P(dec) != IS_STRING) {
+        ddtrace_zval_ptr_dtor(dec);
+        RETURN_STRING("0");
+    }
+    char *dec_arg = Z_STRVAL_P(dec);
+
+#if PHP_VERSION_ID >= 70200
+    RETURN_STR(dd_trace_dec_hex(dec_arg));
+#else
+    char buf[18];
+    dd_trace_dec_hex(dec_arg, buf);
+#if PHP_VERSION_ID >= 70000
+    RETURN_STRING(buf);
+#else
+    RETURN_STRING(buf, 1);
+#endif
+#endif
+}
+
+static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_FE(dd_trace, arginfo_dd_trace),  // Noop legacy API
     DDTRACE_FE(dd_trace_buffer_span, arginfo_dd_trace_buffer_span),
     DDTRACE_FE(dd_trace_check_memory_under_limit, arginfo_ddtrace_void),
@@ -1341,11 +1460,16 @@ static const zend_function_entry ddtrace_functions[] = {
     DDTRACE_FE(dd_trace_pop_span_id, arginfo_ddtrace_void),
     DDTRACE_NS_FE(trace_id, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_push_span_id, arginfo_dd_trace_push_span_id),
+    DDTRACE_FE(dd_trace_push_span_id_hex, arginfo_dd_trace_push_span_id_hex),
+    DDTRACE_FE(sfx_trace_convert_hex_id, arginfo_sfx_trace_convert_hex_id),
+    DDTRACE_FE(dd_trace_dec_hex, arginfo_dd_trace_dec_hex),
+    DDTRACE_FE(dd_trace_hex_dec, arginfo_dd_trace_hex_dec),
     DDTRACE_FE(dd_trace_reset, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_send_traces_via_thread, arginfo_dd_trace_send_traces_via_thread),
     DDTRACE_FE(dd_trace_serialize_closed_spans, arginfo_ddtrace_void),
     DDTRACE_FE(dd_trace_serialize_msgpack, arginfo_dd_trace_serialize_msgpack),
     DDTRACE_FE(dd_trace_set_trace_id, arginfo_dd_trace_set_trace_id),
+    DDTRACE_FE(dd_trace_set_trace_id_hex, arginfo_dd_trace_set_trace_id_hex),
     DDTRACE_FE(dd_trace_tracer_is_limited, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_can_try, arginfo_ddtrace_void),
     DDTRACE_FE(dd_tracer_circuit_breaker_info, arginfo_ddtrace_void),
@@ -1373,23 +1497,23 @@ static const zend_function_entry ddtrace_functions[] = {
     DDTRACE_SUB_NS_FE("Testing\\", trigger_error, arginfo_ddtrace_testing_trigger_error),
     DDTRACE_FE_END};
 
-zend_module_entry ddtrace_module_entry = {STANDARD_MODULE_HEADER,
-                                          PHP_DDTRACE_EXTNAME,
-                                          ddtrace_functions,
-                                          PHP_MINIT(ddtrace),
-                                          PHP_MSHUTDOWN(ddtrace),
-                                          PHP_RINIT(ddtrace),
-                                          PHP_RSHUTDOWN(ddtrace),
-                                          PHP_MINFO(ddtrace),
-                                          PHP_DDTRACE_VERSION,
-                                          PHP_MODULE_GLOBALS(ddtrace),
-                                          PHP_GINIT(ddtrace),
-                                          NULL,
-                                          NULL,
-                                          STANDARD_MODULE_PROPERTIES_EX};
+zend_module_entry signalfx_tracing_module_entry = {STANDARD_MODULE_HEADER,
+                                                   PHP_DDTRACE_EXTNAME,
+                                                   signalfx_tracing_functions,
+                                                   PHP_MINIT(signalfx_tracing),
+                                                   PHP_MSHUTDOWN(signalfx_tracing),
+                                                   PHP_RINIT(signalfx_tracing),
+                                                   PHP_RSHUTDOWN(signalfx_tracing),
+                                                   PHP_MINFO(signalfx_tracing),
+                                                   PHP_DDTRACE_VERSION,
+                                                   PHP_MODULE_GLOBALS(signalfx_tracing),
+                                                   PHP_GINIT(signalfx_tracing),
+                                                   NULL,
+                                                   NULL,
+                                                   STANDARD_MODULE_PROPERTIES_EX};
 
-#ifdef COMPILE_DL_DDTRACE
-ZEND_GET_MODULE(ddtrace)
+#ifdef COMPILE_DL_SIGNALFX_TRACING
+ZEND_GET_MODULE(signalfx_tracing)
 #if defined(ZTS) && PHP_VERSION_ID >= 70000
 ZEND_TSRMLS_CACHE_DEFINE();
 #endif

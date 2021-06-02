@@ -16,6 +16,7 @@ ${PHP_SRC_DIR}/configure \
     --enable-sockets \
     --enable-zip \
     --with-curl \
+    --with-gd \
     --with-fpm-user=www-data \
     --with-fpm-group=www-data \
     --with-libedit \

@@ -31,21 +31,19 @@ final class NoRootSpanTest extends CLITestCase
 
     public function testCommandWillAutoFlush()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedTracesFromCommand();
 
         $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'my_app',
-                'foo_service',
-                'custom',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
                 'foo_resource'
             )->withExactTags([
                 'foo' => 'bar',
+                'component' => 'foo_service',
             ])->withChildren([
-                SpanAssertion::exists(
-                    'mysqli_connect',
-                    'mysqli_connect'
-                ),
+                SpanAssertion::exists('mysqli_connect'),
                 SpanAssertion::exists(
                     'curl_exec',
                     'http://httpbin_integration/status/?'

@@ -11,7 +11,7 @@ function testErrorFromUserland()
 
 DDTrace\trace_function('testErrorFromUserland', function (SpanData $span) {
     $span->name = 'testErrorFromUserland';
-    $span->meta = ['error.msg' => 'Foo error'];
+    $span->meta = ['sfx.error.message' => 'Foo error'];
 });
 
 testErrorFromUserland();
@@ -39,7 +39,7 @@ array(1) {
     int(1)
     ["meta"]=>
     array(2) {
-      ["error.msg"]=>
+      ["sfx.error.message"]=>
       string(9) "Foo error"
       ["system.pid"]=>
       string(%d) "%d"

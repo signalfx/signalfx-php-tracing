@@ -3,7 +3,6 @@
 namespace DDTrace\Integrations;
 
 use DDTrace\Integrations\CakePHP\CakePHPIntegration;
-use DDTrace\Integrations\CodeIgniter\V2\CodeIgniterIntegration;
 use DDTrace\Integrations\Curl\CurlIntegration;
 use DDTrace\Integrations\ElasticSearch\V1\ElasticSearchIntegration;
 use DDTrace\Integrations\Eloquent\EloquentIntegration;
@@ -61,8 +60,6 @@ class IntegrationsLoader
 
         // Add integrations as they support PHP 8
         if (\PHP_MAJOR_VERSION >= 8) {
-            $this->integrations[CodeIgniterIntegration::NAME] =
-                '\DDTrace\Integrations\CodeIgniter\V2\CodeIgniterIntegration';
             $this->integrations[CurlIntegration::NAME] =
                 '\DDTrace\Integrations\Curl\CurlIntegration';
             $this->integrations[EloquentIntegration::NAME] =
@@ -80,8 +77,6 @@ class IntegrationsLoader
 
         $this->integrations[CakePHPIntegration::NAME] =
             '\DDTrace\Integrations\CakePHP\CakePHPIntegration';
-        $this->integrations[CodeIgniterIntegration::NAME] =
-            '\DDTrace\Integrations\CodeIgniter\V2\CodeIgniterIntegration';
         $this->integrations[CurlIntegration::NAME] =
             '\DDTrace\Integrations\Curl\CurlIntegration';
         $this->integrations[EloquentIntegration::NAME] =
@@ -139,11 +134,6 @@ class IntegrationsLoader
      */
     public function loadAll()
     {
-        $globalConfig = Configuration::get();
-        if (!$globalConfig->isEnabled()) {
-            return;
-        }
-
         if (!extension_loaded('signalfx_tracing')) {
             trigger_error(
                 'Missing signalfx_tracing extension. To disable tracing set env variable '

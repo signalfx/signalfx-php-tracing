@@ -1,5 +1,5 @@
 --TEST--
-Distributed tracing context with an origin
+Distributed tracing with b3 headers
 --FILE--
 <?php
 
@@ -19,8 +19,8 @@ curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
 ]);
 $response = json_decode(curl_exec($ch), 1);
-if (empty($response['headers']['X-Datadog-Origin']) || $response['headers']['X-Datadog-Origin'] !== 'some-origin') {
-    throw new Exception('Unexpected origin header. ' . var_export($response, true));
+if (empty($response['headers']['X-B3-Traceid']) || empty($response['headers']['X-B3-Spanid'])) {
+    throw new Exception('B3 headers not found. ' . var_export($response, true));
 }
 
 curl_close($ch);

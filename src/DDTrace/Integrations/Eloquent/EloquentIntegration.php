@@ -5,7 +5,6 @@ namespace DDTrace\Integrations\Eloquent;
 use DDTrace\Integrations\Integration;
 use DDTrace\SpanData;
 use DDTrace\Tag;
-use DDTrace\Type;
 
 class EloquentIntegration extends Integration
 {
@@ -103,8 +102,8 @@ class EloquentIntegration extends Integration
      */
     public function setCommonValues(SpanData $span)
     {
-        $span->type = Type::SQL;
         $span->service = $this->getAppName();
+        $span->meta[Tag::COMPONENT] = 'eloquent';
     }
 
     /**

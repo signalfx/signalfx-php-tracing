@@ -10,12 +10,12 @@ const DEFAULT_ENVS = [
 // then there is an equal probability that any of the assigned values from this array can be set.
 const ENVS = [
     'DD_ENV' => ['some_env'],
-    'DD_SERVICE' => ['my_custom_service'],
-    'DD_TRACE_ENABLED' => ['false'],
-    'DD_TRACE_DEBUG' => ['true'],
+    'SIGNALFX_SERVICE' => ['my_custom_service'],
+    'SIGNALFX_TRACING_ENABLED' => ['false'],
+    'SIGNALFX_TRACE_DEBUG' => ['true'],
+    'SIGNALFX_DISTRIBUTED_TRACING' => ['false'],
     'DD_AGENT_HOST' => [null, 'wrong_host'],
     'DD_TRACE_AGENT_PORT' => ['9999'],
-    'DD_DISTRIBUTED_TRACING' => ['false'],
     'DD_AUTOFINISH_SPANS' => ['true'],
     'DD_PRIORITY_SAMPLING' => ['false'],
     'DD_SERVICE_MAPPING' => ['pdo:pdo-changed,curl:curl-changed'],
@@ -37,7 +37,6 @@ const ENVS = [
     'DD_TRACE_SAMPLE_RATE' => ['0.3'],
     // Integrations
     'DD_TRACE_CAKEPHP_ENABLED' => ['false'],
-    'DD_TRACE_CODEIGNITER_ENABLED' => ['false'],
     'DD_TRACE_CURL_ENABLED' => ['false'],
     'DD_TRACE_ELASTICSEARCH_ENABLED' => ['false'],
     'DD_TRACE_ELOQUENT_ENABLED' => ['false'],

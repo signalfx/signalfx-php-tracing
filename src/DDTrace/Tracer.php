@@ -32,7 +32,7 @@ final class Tracer implements TracerInterface
      * Must begin with a number for Debian packaging requirements
      * Must use single-quotes for packaging script to work
      */
-    const VERSION = '0.30.2-beta-sfx4'; // Update ./version.php too
+    const VERSION = '0.58.0-beta-sfx5'; // Update ./version.php too
 
     /**
      * @var Span[][]

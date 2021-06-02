@@ -33,9 +33,9 @@ class PDOIntegration extends Integration
     /**
      * @return string The truncated statement
      */
-    public static function truncate($statement, $start = 0, $length = 1024)
+    public static function truncate($statement, $start = 0, $length = 65536)
     {
-        if (isset($statement) && $statement !== '') {
+        if (isset($statement) && is_string($statement) && $statement !== '') {
             return substr($statement, $start, $length);
         }
         return $statement;
@@ -60,13 +60,8 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = $span->resource = 'PDO.__construct';
-            $span->service = 'pdo';
-            $span->type = Type::SQL;
             $span->meta = PDOIntegration::storeConnectionParams($this, $args);
-            $span->setTag(Tag::SPAN_TYPE, Type::SQL);
-            $span->setTag(Tag::SERVICE_NAME, 'PDO');
-            $span->setTag(Tag::RESOURCE_NAME, 'PDO.__construct');
-            $span->setTag(Tag::COMPONENT, 'PDO');
+            $span->meta[Tag::COMPONENT] = 'PDO';
         });
 
         // public int PDO::exec(string $query)
@@ -75,22 +70,15 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = 'PDO.exec';
-            $span->service = 'pdo';
             $span->type = Type::SQL;
-            $span->resource = $args[0];
-            $span->setTag(Tag::SPAN_TYPE, Type::SQL);
-            $span->setTag(Tag::SERVICE_NAME, 'PDO');
-            $span->setTag(Tag::DB_STATEMENT, PDOIntegration::truncate($statement));
-            $span->setTag(Tag::COMPONENT, 'PDO');
-            $span->setTraceAnalyticsCandidate();
+            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
+            $span->meta[Tag::COMPONENT] = 'PDO';
             if (is_numeric($retval)) {
-                $span->meta = [
-                    'db.rowcount' => $retval,
-                ];
+                $span->meta['db.rowcount'] = $retval;
             }
             PDOIntegration::setConnectionTags($this, $span);
-            $integration->addTraceAnalyticsIfEnabled($span);
             PDOIntegration::detectError($this, $span);
+            $integration->addTraceAnalyticsIfEnabled($span);
         });
 
         // public PDOStatement PDO::query(string $query)
@@ -103,25 +91,17 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = 'PDO.query';
-            $span->service = 'pdo';
             $span->type = Type::SQL;
-            $span->resource = $args[0];
-            $span->setTag(Tag::SPAN_TYPE, Type::SQL);
-            $span->setTag(Tag::SERVICE_NAME, 'PDO');
-            $span->setTag(Tag::DB_STATEMENT, PDOIntegration::truncate($args[0]));
-            $span->setTag(Tag::COMPONENT, 'PDO');
-            $span->setTraceAnalyticsCandidate();
+            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
+            $span->meta[Tag::COMPONENT] = 'PDO';
 
             if ($retval instanceof \PDOStatement) {
-                $span->meta = [
-                    'db.rowcount' => $retval->rowCount(),
-                ];
                 PDOIntegration::storeStatementFromConnection($this, $retval);
             }
 
             PDOIntegration::setConnectionTags($this, $span);
-            $integration->addTraceAnalyticsIfEnabled($span);
             PDOIntegration::detectError($this, $span);
+            $integration->addTraceAnalyticsIfEnabled($span);
         });
 
         // public bool PDO::commit ( void )
@@ -130,10 +110,8 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = $span->resource = 'PDO.commit';
-            $span->service = 'pdo';
             $span->type = Type::SQL;
-            $span->setTag(Tag::SERVICE_NAME, 'PDO');
-            $span->setTag(Tag::COMPONENT, 'PDO');
+            $span->meta[Tag::COMPONENT] = 'PDO';
             PDOIntegration::setConnectionTags($this, $span);
         });
 
@@ -143,12 +121,8 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = 'PDO.prepare';
-            $span->service = 'pdo';
-            $span->type = Type::SQL;
-            $span->resource = $args[0];
-            $span->setTag(Tag::SERVICE_NAME, 'PDO');
-            $span->setTag(Tag::DB_STATEMENT, PDOIntegration::truncate($args[0]));
-            $span->setTag(Tag::COMPONENT, 'PDO');
+            $span->meta[Tag::COMPONENT] = 'PDO';
+            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
             PDOIntegration::setConnectionTags($this, $span);
             PDOIntegration::storeStatementFromConnection($this, $retval);
         });
@@ -162,21 +136,12 @@ class PDOIntegration extends Integration
                     return false;
                 }
                 $span->name = 'PDOStatement.execute';
-                $span->service = 'pdo';
                 $span->type = Type::SQL;
-                $span->setTag(Tag::SERVICE_NAME, 'PDO');
-                $span->setTag(Tag::DB_STATEMENT, PDOIntegration::truncate($this->queryString));
-                $span->setTag(Tag::COMPONENT, 'PDO');
-                $span->setTraceAnalyticsCandidate();
-                $span->resource = $this->queryString;
-                if ($retval === true) {
-                    $span->meta = [
-                        'db.rowcount' => $this->rowCount(),
-                    ];
-                }
+                $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($this->queryString);
+                $span->meta[Tag::COMPONENT] = 'PDO';
                 PDOIntegration::setStatementTags($this, $span);
-                $integration->addTraceAnalyticsIfEnabled($span);
                 PDOIntegration::detectError($this, $span);
+                $integration->addTraceAnalyticsIfEnabled($span);
             }
         );
 

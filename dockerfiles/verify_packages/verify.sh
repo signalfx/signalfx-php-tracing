@@ -36,9 +36,9 @@ fi
 echo "PHP version: $(php -v)"
 
 # Script output
-CLI_OUTPUT=$(DD_TRACE_CLI_ENABLED=true ${DD_TRACE_PHP_BIN} /var/www/html/index.php)
+CLI_OUTPUT=$(SIGNALFX_TRACE_CLI_ENABLED=true SIGNALFX_TRACE_DEBUG=true ${DD_TRACE_PHP_BIN} /var/www/html/index.php)
 if [ ! "${CLI_OUTPUT}" == "hi" ]; then
-    echo "Error: expected request output is 'hi'. Actual:\n${APACHE_OUTPUT}"
+    echo "Error: expected request output is 'hi'. Actual:\n${CLI_OUTPUT}"
     exit 1
 else
     echo "Request output is correct"
@@ -47,8 +47,10 @@ fi
 # Trace exists
 sleep 1
 CLI_TRACES=$(curl -s -L request-replayer/replay)
+echo "CLI traces"
+echo "${CLI_TRACES}"
 # sh compatible way to do string contains
-if [ "${CLI_TRACES#*trace_id}" == "${CLI_TRACES}" ]; then
+if [ "${CLI_TRACES#*traceId}" == "${CLI_TRACES}" ]; then
     echo "Error: traces have not been sent correctly. From request replayer:\n${CLI_TRACES}"
     exit 1
 else
@@ -77,8 +79,11 @@ fi
 # Trace exists: waiting more than DD_TRACE_AGENT_FLUSH_INTERVAL=1000
 sleep 2
 NGINX_TRACES=$(curl -s -L request-replayer/replay)
+
+echo "nginx traces"
+echo "${NGINX_TRACES}"
 # sh compatible way to do string contains
-if [ "${NGINX_TRACES#*trace_id}" == "${NGINX_TRACES}" ]; then
+if [ "${NGINX_TRACES#*traceId}" == "${NGINX_TRACES}" ]; then
     echo "Error: traces have not been sent correctly. From request replayer:\n${NGINX_TRACES}"
     exit 1
 else
@@ -108,8 +113,10 @@ if [ "${VERIFY_APACHE}" != "no" ]; then
     # Trace exists: waiting more than DD_TRACE_AGENT_FLUSH_INTERVAL=1000
     sleep 2
     APACHE_TRACES=$(curl -s -L request-replayer/replay)
+    echo "apache traces"
+    echo "${APACHE_TRACES}"
     # sh compatible way to do string contains
-    if [ "${APACHE_TRACES#*trace_id}" == "${APACHE_TRACES}" ]; then
+    if [ "${APACHE_TRACES#*traceId}" == "${APACHE_TRACES}" ]; then
         echo "Error: traces have not been sent correctly. From request replayer:\n${APACHE_TRACES}"
         exit 1
     else

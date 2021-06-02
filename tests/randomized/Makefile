@@ -3,7 +3,7 @@ TMP_RESULTS_FOLDER := $(TMP_SCENARIO_FOLDER)/.results
 DOCKER_COMPOSE_FILE := $(TMP_SCENARIO_FOLDER)/docker-compose.yml
 REGRESSIONS_FOLDER := ./regressions
 REGRESSION_NAME := "provide-regression-name"
-DOCKER_IMAGE_PREFIX := datadog/dd-trace-ci:php-randomizedtests-
+DOCKER_IMAGE_PREFIX := siimkallas/signalfx-tracing-ci:php-randomizedtests-
 TRACER_TEST_URL := https://github.com/DataDog/dd-trace-php/releases/download/0.54.0/datadog-php-tracer-0.54.0.x86_64.tar.gz
 TRACER_DOWNLOAD_PATH := ./.tracer-versions
 TRACER_VERSION := 0.55.0
@@ -52,7 +52,7 @@ pull.centos7:
 
 tracer.local:
 	@mkdir -p ${TRACER_DOWNLOAD_PATH}
-	@cp ../../build/packages/datadog-php-tracer-*.tar.gz ${TRACER_DOWNLOAD_PATH}/ddtrace-test.tar.gz
+	@cp ../../build/packages/signalfx-tracing-*.tar.gz ${TRACER_DOWNLOAD_PATH}/ddtrace-test.tar.gz
 
 tracer.download:
 	@echo "Downloading tracer at url: $(TRACER_TEST_URL)"

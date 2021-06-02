@@ -15,7 +15,7 @@
 #include "mpack/mpack.h"
 #include "span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static int msgpack_write_zval(mpack_writer_t *writer, zval *trace TSRMLS_DC);
 
@@ -274,7 +274,7 @@ static void dd_serialize_exception(zval *el, zval *meta, ddtrace_exception_t *ex
 
     zend_call_method_with_0_params(&exception, Z_OBJCE_P(exception), NULL, "getmessage", &msg);
     if (msg) {
-        add_assoc_zval(meta, "error.msg", msg);
+        add_assoc_zval(meta, "sfx.error.message", msg);
     }
 
     bool use_class_name_for_error_type = true;
@@ -301,7 +301,7 @@ static void dd_serialize_exception(zval *el, zval *meta, ddtrace_exception_t *ex
                         ZEND_ASSERT(0 && "Unhandled error type in DDTrace\\FatalError; is a fatal error case missing?");
                         error_type = DDTRACE_STRING_LITERAL("{unknown error}");
                 }
-                add_assoc_stringl(meta, "error.type", error_type.ptr, error_type.len, 1);
+                add_assoc_stringl(meta, "sfx.error.kind", error_type.ptr, error_type.len, 1);
                 use_class_name_for_error_type = false;
             } else {
                 ddtrace_log_debug("Exception was a DDTrace\\FatalError but exception code was not an int");
@@ -317,7 +317,7 @@ static void dd_serialize_exception(zval *el, zval *meta, ddtrace_exception_t *ex
         /* add_assoc_stringl does not actually mutate the string, but we've either
          * already made a copy, or it will when it duplicates with dup param, so
          * if it did it should still be safe. */
-        add_assoc_stringl(meta, "error.type", (char *)class_name, class_name_len, needs_copied);
+        add_assoc_stringl(meta, "sfx.error.kind", (char *)class_name, class_name_len, needs_copied);
     }
 
     /* Note, we use Exception::getTrace() instead of getTraceAsString because
@@ -328,7 +328,7 @@ static void dd_serialize_exception(zval *el, zval *meta, ddtrace_exception_t *ex
     if (stack) {
         char *trace_string = dd_serialize_stack_trace(stack TSRMLS_CC);
         if (trace_string) {
-            add_assoc_string(meta, "error.stack", trace_string, 0);
+            add_assoc_string(meta, "sfx.error.stack", trace_string, 0);
         }
         zval_ptr_dtor(&stack);
     }
@@ -361,7 +361,7 @@ static void _serialize_meta(zval *el, ddtrace_span_fci *span_fci TSRMLS_DC) {
 
     dd_serialize_exception(el, meta, span_fci->exception TSRMLS_CC);
     // zend_hash_exists on PHP 5 needs `sizeof(string)`, not `sizeof(string) - 1`
-    if (!span_fci->exception && zend_hash_exists(Z_ARRVAL_P(meta), "error.msg", sizeof("error.msg"))) {
+    if (!span_fci->exception && zend_hash_exists(Z_ARRVAL_P(meta), "sfx.error.message", sizeof("sfx.error.message"))) {
         add_assoc_long(el, "error", 1);
     }
     if (span->parent_id == 0) {
@@ -493,8 +493,7 @@ static zval *dd_fatal_error_msg(const char *format, va_list args) {
         if (newline) {
             *newline = '\0';
             size_t linelen = newline - buffer;
-            // +1 for null terminator
-            ZVAL_STRINGL(msg, buffer, linelen + 1, 1);
+            ZVAL_STRINGL(msg, buffer, linelen, 1);
         } else {
             // This is suspect; there is always a newline in these messages
             ZVAL_STRING(msg, "Unknown uncaught exception", 1);
@@ -533,15 +532,15 @@ typedef struct dd_error_info {
 static void dd_fatal_error_to_meta(zval *meta, dd_error_info error) {
     if (error.type) {
         Z_ADDREF_P(error.type);
-        add_assoc_zval(meta, "error.type", error.type);
+        add_assoc_zval(meta, "sfx.error.kind", error.type);
     }
     if (error.msg) {
         Z_ADDREF_P(error.msg);
-        add_assoc_zval(meta, "error.msg", error.msg);
+        add_assoc_zval(meta, "sfx.error.message", error.msg);
     }
     if (error.stack) {
         Z_ADDREF_P(error.stack);
-        add_assoc_zval(meta, "error.stack", error.stack);
+        add_assoc_zval(meta, "sfx.error.stack", error.stack);
     }
 }
 

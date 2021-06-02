@@ -17,13 +17,18 @@ final class LongRunningScriptTest extends CLITestCase
             $this->markTestSkipped('We do not officially support and test long running scripts on PHP 5');
             return;
         }
-        $agentRequest = $this->getAgentRequestFromCommand('', [
+        $agentRequests = $this->getAllAgentRequestsFromCommand('', [
             'DD_TRACE_AUTO_FLUSH_ENABLED' => 'true',
             'DD_TRACE_GENERATE_ROOT_SPAN' => 'false',
             'DD_TRACE_BGS_TIMEOUT' => 3000,
         ]);
 
-        $this->assertSame('3', $agentRequest['headers']['X-Datadog-Trace-Count']);
-        $this->assertCount(3, json_decode($agentRequest['body'], true));
+        $traces = [];
+
+        foreach ($agentRequests as $req) {
+            $traces[] = json_decode($req['body'], true);
+        }
+
+        $this->assertCount(3, $traces);
     }
 }

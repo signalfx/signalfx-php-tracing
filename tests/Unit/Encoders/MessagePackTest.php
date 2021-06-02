@@ -19,7 +19,7 @@ final class MessagePackTest extends BaseTestCase
     protected function ddSetUp()
     {
         parent::ddSetUp();
-        putenv('SIGNALFX_AUTOFINISH_SPANS=true');
+        putenv('DD_AUTOFINISH_SPANS=true');
         $this->tracer = new Tracer(
             new DebugTransport(),
             null,
@@ -34,7 +34,7 @@ final class MessagePackTest extends BaseTestCase
     protected function ddTearDown()
     {
         parent::ddTearDown();
-        putenv('SIGNALFX_AUTOFINISH_SPANS=');
+        putenv('DD_AUTOFINISH_SPANS=');
     }
 
     public function testEncodeTracesSuccess()
