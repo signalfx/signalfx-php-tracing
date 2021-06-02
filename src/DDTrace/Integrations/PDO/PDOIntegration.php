@@ -60,7 +60,6 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = $span->resource = 'PDO.__construct';
-            $span->type = Type::SQL;
             $span->meta = PDOIntegration::storeConnectionParams($this, $args);
             $span->meta[Tag::COMPONENT] = 'PDO';
         });
@@ -122,7 +121,6 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = 'PDO.prepare';
-            $span->type = Type::SQL;
             $span->meta[Tag::COMPONENT] = 'PDO';
             $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
             PDOIntegration::setConnectionTags($this, $span);

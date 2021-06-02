@@ -7,7 +7,6 @@ use DDTrace\GlobalTracer;
 use DDTrace\SpanData;
 use DDTrace\Integrations\Integration;
 use DDTrace\Tag;
-use DDTrace\Type;
 
 /**
  * The base Laravel integration which delegates loading to the appropriate integration version.
@@ -71,7 +70,6 @@ class LaravelIntegration extends Integration
                 $rootSpan->setTag(Tag::COMPONENT, 'laravel');
 
                 $span->name = 'laravel.application.handle';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = 'Illuminate\Foundation\Application@handle';
             }
@@ -115,7 +113,6 @@ class LaravelIntegration extends Integration
             'run',
             function (SpanData $span) use ($integration) {
                 $span->name = 'laravel.action';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $this->uri;
                 $span->meta[Tag::COMPONENT] = 'laravel';
@@ -136,7 +133,6 @@ class LaravelIntegration extends Integration
             'fire',
             function (SpanData $span, $args) use ($integration) {
                 $span->name = 'laravel.event.handle';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 $span->resource = $args[0];
                 $span->meta[Tag::COMPONENT] = 'laravel';
@@ -145,7 +141,6 @@ class LaravelIntegration extends Integration
 
         \DDTrace\trace_method('Illuminate\View\View', 'render', function (SpanData $span) use ($integration) {
             $span->name = 'laravel.view.render';
-            $span->type = Type::WEB_SERVLET;
             $span->service = $integration->getServiceName();
             $span->resource = $this->view;
             $span->meta[Tag::COMPONENT] = 'laravel';
@@ -158,7 +153,6 @@ class LaravelIntegration extends Integration
                 // This is used by both laravel and lumen. For consistency we rename it for lumen traces as otherwise
                 // users would see a span changing name as they upgrade to the new version.
                 $span->name = $integration->isLumen($rootSpan) ? 'lumen.view' : 'laravel.view';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->getServiceName();
                 if (isset($args[0]) && \is_string($args[0])) {
                     $span->resource = $args[0];
@@ -173,7 +167,6 @@ class LaravelIntegration extends Integration
             function (SpanData $span) use ($rootSpan, $integration) {
                 $serviceName = $integration->getServiceName();
                 $span->name = 'laravel.provider.load';
-                $span->type = Type::WEB_SERVLET;
                 $span->service = $serviceName;
                 $span->resource = 'Illuminate\Foundation\ProviderRepository::load';
                 $rootSpan->overwriteOperationName('laravel.request');
