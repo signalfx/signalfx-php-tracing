@@ -50,7 +50,6 @@ class SymfonyIntegration extends Integration
                     function (SpanData $span) {
                         $span->name = 'symfony.httpkernel.kernel.handle';
                         $span->resource = \get_class($this);
-                        $span->type = Type::WEB_SERVLET;
                         $span->meta[Tag::COMPONENT] = 'symfony';
                     }
                 );
@@ -61,7 +60,6 @@ class SymfonyIntegration extends Integration
                     function (SpanData $span) {
                         $span->name = 'symfony.httpkernel.kernel.boot';
                         $span->resource = \get_class($this);
-                        $span->type = Type::WEB_SERVLET;
                         $span->meta[Tag::COMPONENT] = 'symfony';
                     }
                 );
@@ -151,7 +149,6 @@ class SymfonyIntegration extends Integration
                 list($request) = $args;
 
                 $span->name = 'symfony.kernel.handle';
-                $span->type = Type::WEB_SERVLET;
                 $span->meta[Tag::COMPONENT] = 'symfony';
 
                 $integration->symfonyRequestSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
@@ -217,7 +214,6 @@ class SymfonyIntegration extends Integration
                                             function (SpanData $span) use ($controllerName, $integration) {
                                                 $span->name = 'symfony.controller';
                                                 $span->resource = $controllerName;
-                                                $span->type = Type::WEB_SERVLET;
                                             }
                                         );
                                     }
@@ -227,7 +223,6 @@ class SymfonyIntegration extends Integration
                                         function (SpanData $span) use ($controllerName, $integration) {
                                             $span->name = 'symfony.controller';
                                             $span->resource = $controllerName;
-                                            $span->type = Type::WEB_SERVLET;
                                         }
                                     );
                                 }
@@ -260,7 +255,6 @@ class SymfonyIntegration extends Integration
         // Tracing templating engines
         $traceRender = function (SpanData $span, $args) use ($integration) {
             $span->name = 'symfony.templating.render';
-            $span->type = Type::WEB_SERVLET;
             $span->meta[Tag::COMPONENT] = 'symfony';
 
             $resourceName = count($args) > 0 ? get_class($this) . ' ' . $args[0] : get_class($this);
