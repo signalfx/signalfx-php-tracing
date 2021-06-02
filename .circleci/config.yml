@@ -1579,7 +1579,7 @@ workflows:
           resource_class: medium+
           sapi: cgi-fcgi
           integration_testsuite: "test_web"
-          docker_image: "datadog/dd-trace-ci:php-8.0_buster"
+          docker_image: "siimkallas/signalfx-tracing-ci:php-8.0_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 55 custom autoloaded web tests with nginx + PHP-FPM"
