@@ -63,7 +63,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
@@ -104,7 +104,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => 'object(DDTrace\Tests\Integrations\PDO\BrokenPDOStatement)#' . $objId
@@ -152,7 +152,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.__construct',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags($this->baseTags()),
         ]);
@@ -170,7 +170,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.__construct',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )
                 ->withExactTags(array_merge($this->baseTags(), [
@@ -386,7 +386,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
@@ -462,7 +462,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )->withExactTags(array_merge($this->baseTags(), [
                 Tag::DB_STATEMENT => $query,
@@ -502,7 +502,7 @@ final class PDOTest extends IntegrationTestCase
             SpanAssertion::build(
                 'PDO.prepare',
                 SpanAssertion::NOT_TESTED,
-                'sql',
+                SpanAssertion::NOT_TESTED,
                 SpanAssertion::NOT_TESTED
             )
                 ->withExactTags(array_merge($this->baseTags(), [

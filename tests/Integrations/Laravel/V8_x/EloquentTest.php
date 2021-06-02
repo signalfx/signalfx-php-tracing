@@ -19,6 +19,13 @@ class EloquentTest extends WebFrameworkTestCase
         return __DIR__ . '/../../../Frameworks/Laravel/Version_8_x/public/index.php';
     }
 
+    protected static function getEnvs()
+    {
+        return array_merge(parent::getEnvs(), [
+            'SIGNALFX_SERVICE_NAME' => 'Laravel',
+        ]);
+    }
+
     protected function ddSetUp()
     {
         parent::ddSetUp();
