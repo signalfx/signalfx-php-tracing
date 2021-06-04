@@ -32,71 +32,154 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             $this->call($spec);
         });
 
-        $this->assertExpectedSpans($this, $traces, $spanExpectations);
+        $this->assertFlameGraph($traces, $spanExpectations);
     }
 
     public function provideSpecs()
     {
-        return $this->buildDataProvider(
-            [
-                'A simple GET request returning a string' => [
-                    SpanAssertion::build(
-                        'slim.request',
-                        'slim_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'GET simple-route'
-                    )->withExactTags([
-                        'slim.route.controller' => 'Closure::__invoke',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/simple',
-                        'http.status_code' => '200',
-                        'integration.name' => 'slim',
-                        'component' => 'slim',
-                    ]),
-                ],
-                'A simple GET request with a view' => [
-                    SpanAssertion::build(
-                        'slim.request',
-                        'slim_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'GET /simple_view'
-                    )->withExactTags([
-                        'slim.route.controller' => 'App\SimpleViewController::index',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/simple_view',
-                        'http.status_code' => '200',
-                        'integration.name' => 'slim',
-                        'component' => 'slim',
-                    ]),
-                    SpanAssertion::build(
-                        'slim.view',
-                        'slim_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'simple_view.phtml'
-                    )->withExactTags([
-                        'slim.view' => 'simple_view.phtml',
-                        'integration.name' => 'slim',
-                        'component' => 'slim',
-                    ]),
-                ],
-                'A GET request with an exception' => [
-                    SpanAssertion::build(
-                        'slim.request',
-                        'slim_test_app',
-                        SpanAssertion::NOT_TESTED,
-                        'GET /error'
-                    )->withExactTags([
-                        'slim.route.controller' => 'Closure::__invoke',
-                        'http.method' => 'GET',
-                        'http.url' => 'http://localhost:9999/error',
-                        'http.status_code' => '500',
-                        'integration.name' => 'slim',
-                        'component' => 'slim',
-                    ])->withExistingTagsNames([
-                        'sfx.error.stack'
-                    ])->setError(null, 'Foo error'),
-                ],
-            ]
-        );
+        if (\PHP_MAJOR_VERSION < 7) {
+            // Controller's __invoke method is not traced until we support tracing prehook
+            // zend_execute_internals so some metadata is missing in 5, e.g. controller name.
+            return $this->buildDataProvider(
+                [
+                    'A simple GET request returning a string' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET simple-route'
+                        )->withExactTags([
+                            'http.method' => 'GET',
+                            'http.url' => '/simple',
+                            'http.status_code' => '200',
+                            'component' => 'slim',
+                        ]),
+                    ],
+                    'A simple GET request with a view' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET /simple_view'
+                        )->withExactTags([
+                            'http.method' => 'GET',
+                            'http.url' => '/simple_view',
+                            'http.status_code' => '200',
+                            'component' => 'slim',
+                        ])->withChildren([
+                            SpanAssertion::build(
+                                'slim.view',
+                                'slim_test_app',
+                                SpanAssertion::NOT_TESTED,
+                                'simple_view.phtml'
+                            )->withExactTags([
+                                'slim.view' => 'simple_view.phtml',
+                                'component' => 'slim',
+                            ])
+                        ]),
+                    ],
+                    'A GET request with an exception' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET /error'
+                        )->withExactTags([
+                            'http.method' => 'GET',
+                            'http.url' => '/error',
+                            'http.status_code' => '500',
+                            'component' => 'slim',
+                        ])->setError(null, null /* On PHP 5.6 slim error messages are not traced on sandboxed */),
+                    ],
+                ]
+            );
+        } else {
+            return $this->buildDataProvider(
+                [
+                    'A simple GET request returning a string' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET simple-route'
+                        )->withExactTags([
+                            'slim.route.controller' => 'Closure::__invoke',
+                            'http.method' => 'GET',
+                            'http.url' => 'http://localhost:9999/simple',
+                            'http.status_code' => '200',
+                            'component' => 'slim',
+                        ])->withChildren([
+                            SpanAssertion::build(
+                                'slim.route.controller',
+                                'slim_test_app',
+                                SpanAssertion::NOT_TESTED,
+                                'Closure::__invoke'
+                            )->withExactTags([
+                                'component' => 'slim'
+                            ]),
+                        ]),
+                    ],
+                    'A simple GET request with a view' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET /simple_view'
+                        )->withExactTags([
+                            'slim.route.controller' => 'App\SimpleViewController::index',
+                            'http.method' => 'GET',
+                            'http.url' => 'http://localhost:9999/simple_view',
+                            'http.status_code' => '200',
+                            'component' => 'slim',
+                        ])->withChildren([
+                            SpanAssertion::build(
+                                'slim.route.controller',
+                                'slim_test_app',
+                                SpanAssertion::NOT_TESTED,
+                                'App\SimpleViewController::index'
+                            )->withExactTags([
+                                'component' => 'slim'
+                            ])->withChildren([
+                                SpanAssertion::build(
+                                    'slim.view',
+                                    'slim_test_app',
+                                    SpanAssertion::NOT_TESTED,
+                                    'simple_view.phtml'
+                                )->withExactTags([
+                                    'slim.view' => 'simple_view.phtml',
+                                    'component' => 'slim',
+                                ])
+                            ])
+                        ]),
+                    ],
+                    'A GET request with an exception' => [
+                        SpanAssertion::build(
+                            'slim.request',
+                            'slim_test_app',
+                            SpanAssertion::NOT_TESTED,
+                            'GET /error'
+                        )->withExactTags([
+                            'slim.route.controller' => 'Closure::__invoke',
+                            'http.method' => 'GET',
+                            'http.url' => 'http://localhost:9999/error',
+                            'http.status_code' => '500',
+                            'component' => 'slim',
+                        ])->setError(null, null)
+                            ->withChildren([
+                                SpanAssertion::build(
+                                    'slim.route.controller',
+                                    'slim_test_app',
+                                    SpanAssertion::NOT_TESTED,
+                                    'Closure::__invoke'
+                                )
+                                    ->withExactTags(['component' => 'slim'])
+                                    ->withExistingTagsNames([
+                                        'sfx.error.stack'
+                                    ])->setError(null, 'Foo error')
+                            ])
+                    ],
+                ]
+            );
+        }
     }
 }

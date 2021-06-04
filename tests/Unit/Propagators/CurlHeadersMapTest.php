@@ -9,8 +9,9 @@ use DDTrace\Tracer;
 use DDTrace\GlobalTracer;
 use DDTrace\Util\HexConversion;
 use PHPUnit\Framework;
+use DDTrace\Tests\Common\BaseTestCase;
 
-final class CurlHeadersMapTest extends Framework\TestCase
+final class CurlHeadersMapTest extends BaseTestCase
 {
     const BAGGAGE_ITEM_KEY = 'test_key';
     const BAGGAGE_ITEM_VALUE = 'test_value';
@@ -22,9 +23,9 @@ final class CurlHeadersMapTest extends Framework\TestCase
      */
     private $tracer;
 
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
         $this->tracer = new Tracer(new DebugTransport());
         GlobalTracer::set($this->tracer);
     }
@@ -40,8 +41,8 @@ final class CurlHeadersMapTest extends Framework\TestCase
         (new CurlHeadersMap($this->tracer))->inject($context, $carrier);
 
         $this->assertEquals([
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -60,8 +61,8 @@ final class CurlHeadersMapTest extends Framework\TestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
     }
@@ -83,9 +84,21 @@ final class CurlHeadersMapTest extends Framework\TestCase
 
         $this->assertEquals([
             'existing: headers',
-            'x-datadog-trace-id: ' . HexConversion::hexToInt($rootContext->getTraceId()),
-            'x-datadog-parent-id: ' . HexConversion::hexToInt($context->getSpanId()),
+            'x-datadog-trace-id: ' . $rootContext->getTraceId(),
+            'x-datadog-parent-id: ' . $context->getSpanId(),
             'ot-baggage-' . self::BAGGAGE_ITEM_KEY . ': ' . self::BAGGAGE_ITEM_VALUE,
         ], array_values($carrier));
+    }
+
+    public function testOriginIsPropagated()
+    {
+        $rootContext = SpanContext::createAsRoot();
+        $rootContext->origin = 'foo_origin';
+        $context = SpanContext::createAsChild($rootContext);
+
+        $carrier = [];
+        (new CurlHeadersMap($this->tracer))->inject($context, $carrier);
+
+        $this->assertContains('x-datadog-origin: foo_origin', $carrier);
     }
 }

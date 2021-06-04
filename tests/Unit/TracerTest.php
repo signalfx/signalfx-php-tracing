@@ -2,7 +2,7 @@
 
 namespace DDTrace\Tests\Unit;
 
-use DDTrace\Configuration;
+use DDTrace\Format;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
@@ -10,6 +10,11 @@ use DDTrace\Tests\DebugTransport;
 use DDTrace\Time;
 use DDTrace\Tracer;
 use DDTrace\Transport\Noop as NoopTransport;
+use DDTrace\Tests\Common\BaseTestCase;
+
+function baz()
+{
+}
 
 final class TracerTest extends BaseTestCase
 {
@@ -18,6 +23,22 @@ final class TracerTest extends BaseTestCase
     const TAG_KEY = 'test_key';
     const TAG_VALUE = 'test_value';
     const FORMAT = 'test_format';
+
+    protected function ddSetUp()
+    {
+        \putenv('DD_AUTOFINISH_SPANS');
+        \putenv('DD_TRACE_REPORT_HOSTNAME');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+        parent::ddSetUp();
+    }
+
+    protected function ddTearDown()
+    {
+        parent::ddTearDown();
+        \putenv('DD_TRACE_REPORT_HOSTNAME');
+        \putenv('DD_AUTOFINISH_SPANS');
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+    }
 
     public function testStartSpanAsNoop()
     {
@@ -79,11 +100,9 @@ final class TracerTest extends BaseTestCase
         $this->assertEquals($parentScope->getSpan()->getService(), $childScope->getSpan()->getService());
     }
 
-    /**
-     * @expectedException \DDTrace\Exceptions\UnsupportedFormat
-     */
     public function testInjectThrowsUnsupportedFormatException()
     {
+        $this->setExpectedException('\DDTrace\Exceptions\UnsupportedFormat');
         $context = SpanContext::createAsRoot();
         $carrier = [];
 
@@ -102,11 +121,9 @@ final class TracerTest extends BaseTestCase
         $tracer->inject($context, self::FORMAT, $carrier);
     }
 
-    /**
-     * @expectedException \DDTrace\Exceptions\UnsupportedFormat
-     */
     public function testExtractThrowsUnsupportedFormatException()
     {
+        $this->setExpectedException('\DDTrace\Exceptions\UnsupportedFormat');
         $carrier = [];
         $tracer = new Tracer(new NoopTransport());
         $tracer->extract(self::FORMAT, $carrier);
@@ -146,10 +163,22 @@ final class TracerTest extends BaseTestCase
         $tracer->flush();
     }
 
-    public function testPrioritySamplingIsAssigned()
+    public function testPrioritySamplingIsLazilyAssignedOnInject()
     {
         $tracer = new Tracer(new DebugTransport());
-        $tracer->startSpan(self::OPERATION_NAME);
+        $span = $tracer->startRootSpan(self::OPERATION_NAME)->getSpan();
+        $this->assertNull($tracer->getPrioritySampling());
+        $carrier = [];
+        $tracer->inject($span->getContext(), Format::TEXT_MAP, $carrier);
+        $this->assertSame(PrioritySampling::AUTO_KEEP, $tracer->getPrioritySampling());
+    }
+
+    public function testPrioritySamplingIsLazilyAssignedBeforeFlush()
+    {
+        $tracer = new Tracer(new DebugTransport());
+        $tracer->startRootSpan(self::OPERATION_NAME);
+        $this->assertNull($tracer->getPrioritySampling());
+        $tracer->flush();
         $this->assertSame(PrioritySampling::AUTO_KEEP, $tracer->getPrioritySampling());
     }
 
@@ -158,9 +187,11 @@ final class TracerTest extends BaseTestCase
         $distributedTracingContext = new SpanContext('', '', '', [], true);
         $distributedTracingContext->setPropagatedPrioritySampling(PrioritySampling::USER_REJECT);
         $tracer = new Tracer(new DebugTransport());
-        $tracer->startSpan(self::OPERATION_NAME, [
+        $tracer->startRootSpan(self::OPERATION_NAME, [
             'child_of' => $distributedTracingContext,
         ]);
+        // We need to flush as priority sampling is lazily evaluated at inject time or flush time.
+        $tracer->flush();
         $this->assertSame(PrioritySampling::USER_REJECT, $tracer->getPrioritySampling());
     }
 
@@ -178,13 +209,7 @@ final class TracerTest extends BaseTestCase
 
     public function testUnfinishedSpansCanBeFinishedOnFlush()
     {
-        Configuration::replace(\Mockery::mock(Configuration::get(), [
-            'isAutofinishSpansEnabled' => true,
-            'isPrioritySamplingEnabled' => false,
-            'getSpansLimit' => 1000,
-            'isDebugModeEnabled' => false,
-            'getGlobalTags' => [],
-        ]));
+        \putenv('DD_AUTOFINISH_SPANS=true');
 
         $transport = new DebugTransport();
         $tracer = new Tracer($transport);
@@ -217,9 +242,7 @@ final class TracerTest extends BaseTestCase
 
     public function testFlushAddsHostnameToRootSpanWhenEnabled()
     {
-        Configuration::replace(\Mockery::mock(Configuration::get(), [
-            'isHostnameReportingEnabled' => true
-        ]));
+        \putenv('DD_TRACE_REPORT_HOSTNAME=true');
 
         $tracer = new Tracer(new NoopTransport());
         $scope = $tracer->startRootSpan(self::OPERATION_NAME);
@@ -238,16 +261,7 @@ final class TracerTest extends BaseTestCase
 
     public function testHonorGlobalTags()
     {
-        Configuration::replace(\Mockery::mock(Configuration::get(), [
-            'isAutofinishSpansEnabled' => true,
-            'isPrioritySamplingEnabled' => false,
-            'getSpansLimit' => 1000,
-            'isDebugModeEnabled' => false,
-            'getGlobalTags' => [
-                'key1' => 'value1',
-                'key2' => 'value2',
-            ],
-        ]));
+        \putenv('SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2');
 
         $transport = new DebugTransport();
         $tracer = new Tracer($transport);
@@ -255,5 +269,24 @@ final class TracerTest extends BaseTestCase
 
         $this->assertSame('value1', $span->getAllTags()['key1']);
         $this->assertSame('value2', $span->getAllTags()['key2']);
+    }
+
+    public function testInternalAndUserlandSpansAreMergedIntoSameTraceOnSerialization()
+    {
+        // Clear existing internal spans
+        dd_trace_serialize_closed_spans();
+
+        \DDTrace\trace_function(__NAMESPACE__ . '\\baz', function () {
+            // Do nothing
+        });
+        $tracer = new Tracer(new DebugTransport());
+        $span = $tracer->startSpan('foo');
+        baz();
+        $span->finish();
+
+        $this->assertSame(2, dd_trace_closed_spans_count());
+        $traces = $tracer->getTracesAsArray();
+        $this->assertCount(1, $traces);
+        $this->assertCount(2, $traces[0]);
     }
 }

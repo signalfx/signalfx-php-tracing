@@ -7,6 +7,8 @@ use DDTrace\Contracts\SpanContext as SpanContextInterface;
 use DDTrace\Contracts\Tracer;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\SpanContext;
+use DDTrace\Util\HexConversion;
+use DDTrace\Log\LoggingTrait;
 
 
 /*
@@ -15,6 +17,7 @@ use DDTrace\SpanContext;
 
 final class B3TextMap implements Propagator
 {
+    use LoggingTrait;
     /**
      * @var Tracer
      */
@@ -33,10 +36,10 @@ final class B3TextMap implements Propagator
      */
     public function inject(SpanContextInterface $spanContext, &$carrier)
     {
-        $carrier[B3_TRACE_ID_HEADER] = $spanContext->getTraceId();
-        $carrier[B3_SPAN_ID_HEADER] = $spanContext->getSpanId();
+        $carrier[B3_TRACE_ID_HEADER] = HexConversion::idToHex($spanContext->getTraceId());
+        $carrier[B3_SPAN_ID_HEADER] = HexConversion::idToHex($spanContext->getSpanId());
         if ($spanContext->getParentId() !== null) {
-            $carrier[B3_PARENT_SPAN_ID_HEADER] = $spanContext->getParentId();
+            $carrier[B3_PARENT_SPAN_ID_HEADER] = HexConversion::idToHex($spanContext->getParentId());
         }
 
         foreach ($spanContext as $key => $value) {
@@ -58,20 +61,20 @@ final class B3TextMap implements Propagator
      */
     public function extract($carrier)
     {
-        $traceId = null;
-        $parentSpanId = null;
-        $spanId = null;
+        $traceIdHex = null;
+        $spanIdHex = null;
+        $parentSpanIdHex = null;
         $sampled = null;
         $flags = null;
         $baggageItems = [];
 
         foreach ($carrier as $key => $value) {
             if ($key === B3_TRACE_ID_HEADER) {
-                $traceId = (string) $this->extractStringOrFirstArrayElement($value);
+                $traceIdHex = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_SPAN_ID_HEADER) {
-                $spanId = (string) $this->extractStringOrFirstArrayElement($value);
+                $spanIdHex = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_PARENT_SPAN_ID_HEADER) {
-                $parentSpanId = (string) $this->extractStringOrFirstArrayElement($value);
+                $parentSpanIdHex = (string) $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_SAMPLED_HEADER) {
                 $sampled = $this->extractStringOrFirstArrayElement($value);
             } elseif ($key === B3_FLAGS_HEADER) {
@@ -81,11 +84,19 @@ final class B3TextMap implements Propagator
             }
         }
 
-        if ($traceId === null || $spanId === null) {
+        if ($traceIdHex === null || $spanIdHex === null) {
             return null;
         }
 
-        $spanContext = new SpanContext($traceId, $spanId, $parentSpanId, $baggageItems, true);
+        if (!$this->setDistributedTraceId($traceIdHex)) {
+            return null;
+        }
+
+        $traceId = \DDTrace\trace_id();
+        $spanId = dd_trace_push_span_id_hex($spanIdHex);
+
+        $parentId = null === $parentSpanIdHex ? $parentSpanIdHex : sfx_trace_convert_hex_id($parentSpanIdHex);
+        $spanContext = new SpanContext($traceId, $spanId, $parentId, $baggageItems, true);
 
         $prioritySampling = null;
         if ($sampled === "0") {
@@ -98,6 +109,22 @@ final class B3TextMap implements Propagator
         $spanContext->setPropagatedPrioritySampling($prioritySampling);
 
         return $spanContext;
+    }
+
+    private function setDistributedTraceId($traceIdHex)
+    {
+        if (dd_trace_set_trace_id_hex($traceIdHex)) {
+            return true;
+        }
+        if (\ddtrace_config_debug_enabled()) {
+            self::logDebug(
+                'Error parsing distributed trace trace ID: {id}; ignoring.',
+                [
+                    'id' => $traceIdHex,
+                ]
+            );
+        }
+        return false;
     }
 
     /**

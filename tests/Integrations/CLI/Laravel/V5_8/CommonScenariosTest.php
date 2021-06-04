@@ -3,9 +3,9 @@
 namespace DDTrace\Tests\Integrations\CLI\Laravel\V5_8;
 
 use DDTrace\Tests\Common\SpanAssertion;
-use DDTrace\Tests\Integrations\CLI\CLITestCase;
+use DDTrace\Tests\Common\CLITestCase;
 
-final class CommonScenariosTest extends CLITestCase
+class CommonScenariosTest extends CLITestCase
 {
     protected function getScriptLocation()
     {
@@ -15,61 +15,73 @@ final class CommonScenariosTest extends CLITestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'APP_NAME' => 'artisan_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'artisan_test_app',
         ]);
     }
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedTracesFromCommand();
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
-            ])
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ]),
         ]);
     }
 
     public function testCommandWithArgument()
     {
-        $traces = $this->getTracesFromCommand('route:list');
+        $traces = $this->getParsedTracesFromCommand('route:list');
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan route:list',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
-            ])
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ]),
         ]);
     }
 
     public function testCommandWithError()
     {
-        $traces = $this->getTracesFromCommand('foo:error');
+        $traces = $this->getParsedTracesFromCommand('foo:error');
 
-        $this->assertSpans($traces, [
+        $this->assertFlameGraph($traces, [
             SpanAssertion::build(
                 'artisan foo:error',
-                'unnamed-php-service',
+                'artisan_test_app',
                 SpanAssertion::NOT_TESTED,
-                SpanAssertion::NOT_TESTED
+                ''
             )->withExactTags([
-                'integration.name' => 'laravel',
                 'component' => 'laravel'
             ])->withExistingTagsNames([
                 'sfx.error.message',
                 'sfx.error.stack'
-            ])->setError()
+            ])->withChildren([
+                SpanAssertion::exists(
+                    'laravel.provider.load',
+                    'Illuminate\Foundation\ProviderRepository::load'
+                ),
+            ])->setError(),
         ]);
     }
 }

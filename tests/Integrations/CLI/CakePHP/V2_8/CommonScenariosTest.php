@@ -3,9 +3,9 @@
 namespace DDTrace\Tests\Integrations\CLI\CakePHP\V2_8;
 
 use DDTrace\Tests\Common\SpanAssertion;
-use DDTrace\Tests\Integrations\CLI\CLITestCase;
+use DDTrace\Tests\Common\CLITestCase;
 
-final class CommonScenariosTest extends CLITestCase
+class CommonScenariosTest extends CLITestCase
 {
     protected function getScriptLocation()
     {
@@ -21,7 +21,7 @@ final class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithNoArguments()
     {
-        $traces = $this->getTracesFromCommand();
+        $traces = $this->getParsedAgentRequestFromCommand();
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -30,7 +30,6 @@ final class CommonScenariosTest extends CLITestCase
                 SpanAssertion::NOT_TESTED,
                 'cake_console'
             )->withExactTags([
-                'integration.name' => 'cakephp',
                 'component' => 'cakephp',
             ])
         ]);
@@ -38,7 +37,7 @@ final class CommonScenariosTest extends CLITestCase
 
     public function testCommandWithArgument()
     {
-        $traces = $this->getTracesFromCommand('command_list');
+        $traces = $this->getParsedAgentRequestFromCommand('command_list');
 
         $this->assertSpans($traces, [
             SpanAssertion::build(
@@ -47,7 +46,6 @@ final class CommonScenariosTest extends CLITestCase
                 SpanAssertion::NOT_TESTED,
                 'cake_console command_list'
             )->withExactTags([
-                'integration.name' => 'cakephp',
                 'component' => 'cakephp',
             ])
         ]);
@@ -68,9 +66,7 @@ final class CommonScenariosTest extends CLITestCase
                 'cake_console_test_app',
                 'cli',
                 'cake_console foo_error'
-            )->withExactTags([
-                'integration.name' => 'cakephp',
-            ])->withExistingTagsNames([
+            )->withExistingTagsNames([
                 'sfx.error.message',
                 'sfx.error.stack'
             ])->setError()

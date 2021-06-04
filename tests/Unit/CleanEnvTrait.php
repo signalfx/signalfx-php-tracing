@@ -2,7 +2,6 @@
 
 namespace DDTrace\Tests\Unit;
 
-
 /**
  * This trait provides to work in a clean environment for specific env variables. Env variables provided in the method
  * `getCleanEnvs()` are cleaned during setup and restored to their original value during tearDown.
@@ -23,9 +22,9 @@ trait CleanEnvTrait
     }
 
     /** @inheritdoc */
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
 
         // Cleaning up envs that MUST be null
         foreach ($this->getCleanEnvs() as $env) {
@@ -35,7 +34,7 @@ trait CleanEnvTrait
     }
 
     /** @inheritdoc */
-    protected function tearDown()
+    protected function ddTearDown()
     {
         // Restoring envs to their previous value
         foreach ($this->getCleanEnvs() as $env) {
@@ -47,6 +46,6 @@ trait CleanEnvTrait
             }
         }
 
-        parent::tearDown();
+        parent::ddTearDown();
     }
 }

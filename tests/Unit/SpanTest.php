@@ -6,13 +6,12 @@ use DDTrace\Span;
 use DDTrace\SpanContext;
 use DDTrace\Tag;
 use DDTrace\Sampling\PrioritySampling;
-use DDTrace\Configuration;
 use DDTrace\GlobalTracer;
 use DDTrace\Tracer;
 use Exception;
-use PHPUnit\Framework;
+use DDTrace\Tests\Common\BaseTestCase;
 
-final class SpanTest extends Framework\TestCase
+final class SpanTest extends BaseTestCase
 {
     const OPERATION_NAME = 'test_span';
     const SERVICE = 'test_service';
@@ -37,14 +36,14 @@ final class SpanTest extends Framework\TestCase
      */
     private $oldTracer;
 
-    protected function setUp()
+    protected function ddSetUp()
     {
-        parent::setUp();
+        parent::ddSetUp();
         $this->tracer = new Tracer();
         $this->oldTracer = \DDTrace\GlobalTracer::get();
         \DDTrace\GlobalTracer::set($this->tracer);
     }
-    protected function tearDown()
+    protected function ddTearDown()
     {
         \DDTrace\GlobalTracer::set($this->oldTracer);
     }
@@ -113,14 +112,16 @@ final class SpanTest extends Framework\TestCase
         $span->setTag("t1", $value);
         $this->assertEquals($span->getTag("t1"), "tag value");
 
-        Configuration::clear();
-        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH=3');
+        $this->putEnvAndReloadConfig([
+            'SIGNALFX_RECORDED_VALUE_MAX_LENGTH=3',
+        ]);
         $span = $this->createSpan();
         $value = "tag value";
         $span->setTag("t1", $value);
         $this->assertEquals($span->getTag("t1"), "tag");
-        Configuration::clear();
-        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
+        $this->putEnvAndReloadConfig([
+            'SIGNALFX_RECORDED_VALUE_MAX_LENGTH',
+        ]);
     }
 
     public function testLogWithErrorBoolProperlyMarksError()
@@ -195,13 +196,13 @@ final class SpanTest extends Framework\TestCase
         $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
     }
 
-    public function testSpanErrorRemainsImmutableAfterFinishing()
+    public function testSpanErrorRemainsMutableAfterFinishing()
     {
         $span = $this->createSpan();
         $span->finish();
 
         $span->setError(new Exception());
-        $this->assertFalse($span->hasError());
+        $this->assertTrue($span->hasError());
     }
 
     public function testSpanSetResource()
@@ -212,12 +213,12 @@ final class SpanTest extends Framework\TestCase
         $this->assertSame('modified_test_resource', $span->getResource());
     }
 
-    /**
-     * @expectedException \DDTrace\Exceptions\InvalidSpanArgument
-     * @expectedExceptionMessage Error should be either Exception or Throwable, got integer.
-     */
     public function testSpanErrorFailsForInvalidError()
     {
+        $this->setExpectedException(
+            '\DDTrace\Exceptions\InvalidSpanArgument',
+            'Error should be either Exception or Throwable, got integer.'
+        );
         $span = $this->createSpan();
         $span->setError(1);
     }
@@ -234,12 +235,12 @@ final class SpanTest extends Framework\TestCase
         $this->assertEquals(self::ANOTHER_TYPE, $span->getType());
     }
 
-    /**
-     * @expectedException \DDTrace\Exceptions\InvalidSpanArgument
-     * @expectedExceptionMessage Invalid key type in given span tags. Expected string, got integer.
-     */
     public function testAddTagsFailsForInvalidTagKey()
     {
+        $this->setExpectedException(
+            '\DDTrace\Exceptions\InvalidSpanArgument',
+            'Invalid key type in given span tags. Expected string, got integer.'
+        );
         $span = $this->createSpan();
         $span->setTag(1, self::TAG_VALUE);
     }

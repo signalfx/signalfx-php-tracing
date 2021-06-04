@@ -4,7 +4,7 @@ namespace DDTrace\Tests\Integration\Transport;
 
 use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Tests\Common\AgentReplayerTrait;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Tracer;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\GlobalTracer;
@@ -25,10 +25,9 @@ final class HttpSignalFxTest extends BaseTestCase
 
     public function testSpanReportingFailsOnUnavailableAgent()
     {
-        $logger = $this->withDebugLogger();
-
         $httpTransport = new HttpSignalFx(new JsonZipkinV2(), [
-            'endpoint' => 'http://0.0.0.0:8127/v1/trace'
+            'endpoint' => 'http://0.0.0.0:8127/v1/trace',
+            'debug' => true,
         ]);
         $tracer = new Tracer($httpTransport);
         GlobalTracer::set($tracer);
@@ -41,6 +40,7 @@ final class HttpSignalFxTest extends BaseTestCase
 
         $span->finish();
 
+        $logger = $this->withDebugLogger();
         $httpTransport->send($tracer);
         $this->assertTrue($logger->has(
             'error',
@@ -50,11 +50,10 @@ final class HttpSignalFxTest extends BaseTestCase
 
     public function testSpanReportingSuccess()
     {
-        $logger = $this->withDebugLogger();
-
         $httpTransport = new HttpSignalFx(new JsonZipkinV2(), [
             'endpoint' => $this->agentTracesUrl()
         ]);
+
         $tracer = new Tracer($httpTransport);
         GlobalTracer::set($tracer);
 
@@ -75,6 +74,7 @@ final class HttpSignalFxTest extends BaseTestCase
 
         $span->finish();
 
+        $logger = $this->withDebugLogger();
         $httpTransport->send($tracer);
         $this->assertTrue($logger->has('debug', 'About to send ~1 traces'));
         $this->assertTrue($logger->has('debug', 'Spans successfully sent'));

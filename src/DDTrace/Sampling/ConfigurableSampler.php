@@ -2,7 +2,6 @@
 
 namespace DDTrace\Sampling;
 
-use DDTrace\Configuration;
 use DDTrace\Contracts\Span;
 
 /**
@@ -16,8 +15,53 @@ final class ConfigurableSampler implements Sampler
      */
     public function getPrioritySampling(Span $span)
     {
-        $rate = Configuration::get()->getSamplingRate();
+        $samplingRules = \ddtrace_config_sampling_rules();
+        $usedRate = null;
 
+        foreach ($samplingRules as $rule) {
+            if ($this->ruleMatches($span, $rule)) {
+                $rate = $rule['sample_rate'];
+                $usedRate = $rate;
+                break;
+            }
+        }
+
+        if (null === $usedRate) {
+            $usedRate = \ddtrace_config_sampling_rate();
+        }
+
+        $span->setMetric('_dd.rule_psr', $usedRate);
+        return $this->computePrioritySampling($usedRate);
+    }
+
+    /**
+     * Applies the provided rule to the span and returns whether or not it matches.
+     *
+     * @param Span $span
+     * @param array $rule
+     * @return bool
+     */
+    private function ruleMatches(Span $span, array $rule)
+    {
+        $serviceName = $span->getService();
+        $serviceNameMatches = $serviceName === \null
+            || preg_match('/' . $rule['service'] . '/', $serviceName);
+
+        $operationName = $span->getOperationName();
+        $operationNameMatches = $operationName === \null
+            || preg_match('/' . $rule['name'] . '/', $operationName);
+
+        return $serviceNameMatches && $operationNameMatches;
+    }
+
+    /**
+     * Given a float rate, it computes whether or not the current should be sampled.
+     *
+     * @param float $rate
+     * @return int
+     */
+    private function computePrioritySampling($rate)
+    {
         if ($rate === 1.0) {
             return PrioritySampling::AUTO_KEEP;
         } elseif ($rate === 0.0) {

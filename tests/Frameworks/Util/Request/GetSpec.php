@@ -2,25 +2,15 @@
 
 namespace DDTrace\Tests\Frameworks\Util\Request;
 
-
 class GetSpec extends RequestSpec
 {
     /**
      * @param string $name
      * @param string $path
-     */
-    protected function __construct($name, $path)
-    {
-        parent::__construct($name, 'GET', $path);
-    }
-
-    /**
-     * @param string $name
-     * @param string $path
      * @return GetSpec
      */
-    public static function create($name, $path)
+    public static function create($name, $path, array $headers = [])
     {
-        return new GetSpec($name, $path);
+        return new self($name, 'GET', $path, $headers);
     }
 }

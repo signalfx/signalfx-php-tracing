@@ -5,7 +5,6 @@ namespace DDTrace;
 use ArrayIterator;
 use DDTrace\Contracts\SpanContext as SpanContextInterface;
 use DDTrace\Data\SpanContext as SpanContextData;
-use DDTrace\Util\HexConversion;
 
 final class SpanContext extends SpanContextData
 {
@@ -18,28 +17,41 @@ final class SpanContext extends SpanContextData
     ) {
         $this->traceId = $traceId;
         $this->spanId = $spanId;
-        $this->parentId = $parentId;
+        $this->parentId = $parentId ?: null;
         $this->baggageItems = $baggageItems;
         $this->isDistributedTracingActivationContext = $isDistributedTracingActivationContext;
     }
 
     public static function createAsChild(SpanContextInterface $parentContext)
     {
+        // Since dd_trace_push_span_id() updates the return value of
+        // dd_trace_peek_span_id(), we need to access the existing
+        // value before generating a new ID
+        $activeSpanId = dd_trace_peek_span_id();
+
         $instance = new self(
             $parentContext->getTraceId(),
-            HexConversion::idToHex(dd_trace_generate_id()),
-            $parentContext->getSpanId(),
+            dd_trace_push_span_id(),
+            // Since the last span could have been generated internally,
+            // we can't use `$parentContext->getSpanId()` here
+            $activeSpanId,
             $parentContext->getAllBaggageItems(),
             false
         );
         $instance->parentContext = $parentContext;
         $instance->setPropagatedPrioritySampling($parentContext->getPropagatedPrioritySampling());
+        if (
+            property_exists($instance, 'origin')
+            && !empty($parentContext->origin)
+        ) {
+            $instance->origin = $parentContext->origin;
+        }
         return $instance;
     }
 
     public static function createAsRoot(array $baggageItems = [])
     {
-        $nextId = HexConversion::idToHex(dd_trace_generate_id());
+        $nextId = dd_trace_push_span_id();
 
         return new self(
             $nextId,

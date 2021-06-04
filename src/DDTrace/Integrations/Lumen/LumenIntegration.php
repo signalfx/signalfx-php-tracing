@@ -2,28 +2,17 @@
 
 namespace DDTrace\Integrations\Lumen;
 
+use DDTrace\GlobalTracer;
+use DDTrace\SpanData;
 use DDTrace\Integrations\Integration;
-use DDTrace\Integrations\Lumen\V5\LumenIntegrationLoader;
+use DDTrace\Tag;
 
-final class LumenIntegration extends Integration
+/**
+ * Lumen Sandboxed integration
+ */
+class LumenIntegration extends Integration
 {
     const NAME = 'lumen';
-
-    /**
-     * @var self
-     */
-    private static $instance;
-
-    /**
-     * @return self
-     */
-    public static function getInstance()
-    {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
 
     /**
      * @return string The integration name.
@@ -42,32 +31,87 @@ final class LumenIntegration extends Integration
     }
 
     /**
-     * Loads the integration.
-     *
      * @return int
      */
-    public static function load()
+    public function init()
     {
-        return self::getInstance()->doLoad();
-    }
+        if (!self::shouldLoad(self::NAME)) {
+            return Integration::NOT_LOADED;
+        }
 
-    /**
-     * @return int
-     */
-    public function doLoad()
-    {
-        dd_trace('Laravel\Lumen\Application', '__construct', function () {
-            // We support Lumen 5.2+
-            if (0 === strpos($this->version(), 'Lumen (5.1')) {
-                return dd_trace_forward_call();
+        $rootScope = GlobalTracer::get()->getRootScope();
+        $rootSpan = null;
+
+        if (null === $rootScope || null === ($rootSpan = $rootScope->getSpan())) {
+            return Integration::NOT_LOADED;
+        }
+
+        $integration = $this;
+
+        \DDTrace\trace_method(
+            'Laravel\Lumen\Application',
+            'prepareRequest',
+            function (SpanData $span, $args) use ($rootSpan, $integration) {
+                $request = $args[0];
+                $rootSpan->overwriteOperationName('lumen.request');
+                $integration->addTraceAnalyticsIfEnabledLegacy($rootSpan);
+                $rootSpan->setTag(Tag::HTTP_URL, $request->getUri());
+                $rootSpan->setTag(Tag::HTTP_METHOD, $request->getMethod());
+                $rootSpan->setTag(Tag::COMPONENT, 'lumen');
+                return false;
             }
-            if (0 === strpos($this->version(), 'Lumen (5.')
-                || (0 === strpos($this->version(), 'Lumen (6.'))) {
-                $loader = new LumenIntegrationLoader();
-                $loader->load();
+        );
+
+        // convert to non-tracing API
+        $hook = 'posthook';
+        // Extracting resource name as in legacy integration
+        \DDTrace\trace_method(
+            'Laravel\Lumen\Application',
+            'handleFoundRoute',
+            [
+                $hook => function (SpanData $span, $args) use ($rootSpan) {
+                    $span->type = 'web';
+                    $span->meta[Tag::COMPONENT] = 'lumen';
+                    if (count($args) < 1 || !\is_array($args[0])) {
+                        return;
+                    }
+                    $routeInfo = $args[0];
+                    $resourceName = null;
+                    if (isset($routeInfo[1]['uses'])) {
+                        $action = $routeInfo[1]['uses'];
+                        $rootSpan->setTag('lumen.route.action', $action);
+                        $rootSpan->overwriteOperationName($action);
+                        $resourceName = $action;
+                    }
+                    if (isset($routeInfo[1]['as'])) {
+                        $rootSpan->setTag('lumen.route.name', $routeInfo[1]['as']);
+                        $resourceName = $routeInfo[1]['as'];
+                    }
+
+                    if (null !== $resourceName) {
+                        $rootSpan->setTag(
+                            Tag::RESOURCE_NAME,
+                            $rootSpan->getTag(Tag::HTTP_METHOD) . ' ' . $resourceName
+                        );
+                    }
+                },
+            ]
+        );
+
+        $exceptionRender = function (SpanData $span, $args) use ($rootSpan) {
+            $span->type = 'web';
+            $span->meta[Tag::COMPONENT] = 'lumen';
+            if (count($args) < 1 || !\is_a($args[0], 'Throwable')) {
+                return;
             }
-            return dd_trace_forward_call();
-        });
+            $exception = $args[0];
+            $rootSpan->setError($exception);
+        };
+
+        \DDTrace\trace_method('Laravel\Lumen\Application', 'handleUncaughtException', [$hook => $exceptionRender]);
+        \DDTrace\trace_method('Laravel\Lumen\Application', 'sendExceptionToHandler', [$hook => $exceptionRender]);
+
+        // View is rendered in laravel as the method name overlaps
 
         return Integration::LOADED;
     }

@@ -3,7 +3,7 @@
 namespace DDTrace\Tests\Unit\Transport;
 
 use DDTrace\Encoders\JsonZipkinV2;
-use DDTrace\Tests\Unit\BaseTestCase;
+use DDTrace\Tests\Common\BaseTestCase;
 use DDTrace\Tests\Unit\CleanEnvTrait;
 use DDTrace\Transport\HttpSignalFx;
 

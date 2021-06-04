@@ -2,7 +2,6 @@
 
 namespace DDTrace\Transport;
 
-use DDTrace\Configuration;
 use DDTrace\Contracts\Tracer;
 use DDTrace\Log\LoggingTrait;
 use DDTrace\Encoder;
@@ -41,16 +40,16 @@ final class HttpSignalFx implements Transport
      */
     protected function configure($config)
     {
-        $globalConfig = Configuration::get();
-        $endpoint = $globalConfig->getEndpointURL();
-        if ($globalConfig->getAccessToken() !== "") {
-            $this->setHeader('X-SF-Token', $globalConfig->getAccessToken());
+        $endpoint = \sfx_trace_config_endpoint_url();
+        $accessToken = \sfx_trace_config_access_token();
+        if ($accessToken !== "") {
+            $this->setHeader('X-SF-Token', $accessToken);
         }
 
 
         $this->config = array_merge([
             'endpoint' => $endpoint,
-            'debug' => $globalConfig->isDebugModeEnabled(),
+            'debug' => \ddtrace_config_debug_enabled(),
         ], $config);
     }
 
@@ -90,7 +89,7 @@ final class HttpSignalFx implements Transport
         curl_setopt($handle, CURLOPT_HTTPHEADER, $curlHeaders);
 
         if ($this->config["debug"]) {
-            self::logDebug('Sending spans: {body}', ['body' => $body]);
+            self::logDebug('Sending spans: {body} to {url}', ['body' => $body, 'url' => $url]);
         }
 
         $resp = curl_exec($handle);
