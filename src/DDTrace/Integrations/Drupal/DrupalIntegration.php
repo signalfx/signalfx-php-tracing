@@ -58,10 +58,8 @@ class DrupalIntegration extends Integration
 
                 $route = $req->getPathInfo();
                 $rootSpan->overwriteOperationName($route);
-                $rootSpan->setTag(Tag::COMPONENT, 'drupal');
 
                 $span->name = 'drupal.kernel.handle';
-                $span->type = Type::WEB_SERVLET;
             }
         );
 
