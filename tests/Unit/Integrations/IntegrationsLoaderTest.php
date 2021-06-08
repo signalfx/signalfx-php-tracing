@@ -157,6 +157,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         $excluded = [];
         if (\PHP_MAJOR_VERSION < 7) {
             $excluded[] = 'phpredis'; // PHP 7 only integration
+            $excluded[] = 'drupal';
         } else {
             // Deferred loading integrations
             $excluded[] = 'elasticsearch';
@@ -174,6 +175,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
             $excluded[] = 'lumen';
             $excluded[] = 'mongo';
             $excluded[] = 'zendframework';
+            $excluded[] = 'drupal';
         }
         foreach ($excluded as $integrationToExclude) {
             $index = array_search($integrationToExclude, $expected, true);

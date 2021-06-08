@@ -464,7 +464,8 @@ TEST_WEB_73 := \
 	test_web_wordpress_55 \
 	test_web_yii_2 \
 	test_web_zend_1 \
-	test_web_custom
+	test_web_custom \
+	test_web_drupal_89
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
@@ -499,7 +500,8 @@ TEST_WEB_74 := \
 	test_web_wordpress_55 \
 	test_web_yii_2 \
 	test_web_zend_1 \
-	test_web_custom
+	test_web_custom \
+	test_web_drupal_89
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
 # shows up in debug builds of PHP (https://github.com/phpredis/phpredis/issues/1869).
@@ -698,6 +700,9 @@ test_web_wordpress_48:
 	$(call run_tests,tests/Integrations/WordPress/V4_8)
 test_web_wordpress_55:
 	$(call run_tests,tests/Integrations/WordPress/V5_5)
+test_web_drupal_89:
+	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_8_9 update
+	$(call run_tests,tests/Integrations/Drupal/V8_9)
 test_web_yii_2:
 	$(COMPOSER) --working-dir=tests/Frameworks/Yii/Version_2_0 update
 	$(call run_tests,tests/Integrations/Yii/V2_0)

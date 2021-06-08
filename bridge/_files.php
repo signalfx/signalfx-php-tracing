@@ -82,6 +82,7 @@ return [
     __DIR__ . '/../src/DDTrace/Integrations/WordPress/WordPressIntegration.php',
     __DIR__ . '/../src/DDTrace/Integrations/WordPress/V4/WordPressIntegrationLoader.php',
     __DIR__ . '/../src/DDTrace/Integrations/ZendFramework/ZendFrameworkIntegration.php',
+    __DIR__ . '/../src/DDTrace/Integrations/Drupal/DrupalIntegration.php',
 
     __DIR__ . '/../src/DDTrace/Log/Logger.php',
     __DIR__ . '/../src/api/Log/LoggerInterface.php',
