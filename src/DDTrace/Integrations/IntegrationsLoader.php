@@ -168,7 +168,7 @@ class IntegrationsLoader
             if (in_array(
                 $integrationLoadingStatus,
                 [Integration::LOADED, Integration::NOT_AVAILABLE]
-            )) {
+                )) {
                 continue;
             }
 
