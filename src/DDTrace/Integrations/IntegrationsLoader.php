@@ -165,12 +165,10 @@ class IntegrationsLoader
             // auto-instrumentation this method may be called many times as the hook is the autoloader callback.
             // So we want to make sure that we do not load the same integration twice if not required.
             $integrationLoadingStatus = $this->getLoadingStatus($name);
-            if (
-            in_array(
+            if (in_array(
                 $integrationLoadingStatus,
                 [Integration::LOADED, Integration::NOT_AVAILABLE]
-            )
-            ) {
+            )) {
                 continue;
             }
 

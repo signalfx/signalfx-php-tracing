@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file - [read more](docs/changelog.md).
 
 ## [Unreleased]
+### Added
+- Drupal 8 and 9 support.
 
 ## [0.30.1-beta-sfx4]
 
