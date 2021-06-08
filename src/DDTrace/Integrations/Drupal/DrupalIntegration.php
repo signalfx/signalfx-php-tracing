@@ -90,7 +90,7 @@ class DrupalIntegration extends Integration
             'invokeAll',
             function (SpanData $span, $args) {
                 if (!empty($args[0])) {
-                    $span->name = 'drupal.hook' . $args[0];
+                    $span->name = 'drupal.hook.' . $args[0];
                 } else {
                     $span->name = 'drupal.moduleHandler.invokeAll';
                 }
