@@ -71,9 +71,7 @@ class DrupalIntegration extends Integration
             function (SpanData $span, $args, $retval) use ($rootSpan) {
                 $span->name = 'drupal.kernel.handleException';
                 $span->meta[Tag::COMPONENT] = 'drupal';
-                if (!(isset($retval) && \method_exists($retval, 'getStatusCode') && $retval->getStatusCode() < 500)) {
-                    $rootSpan->setError($args[0]);
-                }
+                $rootSpan->setError($args[0]);
             }
         );
 
