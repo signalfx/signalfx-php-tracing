@@ -56,8 +56,10 @@ class DrupalIntegration extends Integration
 
                 $req = $args[0];
 
-                $route = $req->getPathInfo();
-                $rootSpan->overwriteOperationName($route);
+                $route = $req->get('_route');
+                if (null !== $route) {
+                    $rootSpan->overwriteOperationName($route);
+                }
 
                 $span->name = 'drupal.kernel.handle';
             }
