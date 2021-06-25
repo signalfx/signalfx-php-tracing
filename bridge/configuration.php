@@ -433,5 +433,5 @@ function sfx_trace_config_max_attribute_length()
 
 function sfx_trace_config_drupal_rename_span()
 {
-    return _ddtrace_config_bool(\getenv('SIGNALFX_DRUPAL_RENAME_SPAN'), true);
+    return _ddtrace_config_bool(\getenv('SIGNALFX_DRUPAL_RENAME_ROOT_SPAN'), true);
 }
