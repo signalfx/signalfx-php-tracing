@@ -122,7 +122,7 @@ class DrupalCommon
         }
 
         if ($partCount >= 3) {
-            $parts[$partCount - 1] = '*';
+            $parts[$partCount - 1] = '?';
         }
 
         return '/' . implode('/', $parts);
