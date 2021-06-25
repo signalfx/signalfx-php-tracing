@@ -2,7 +2,7 @@
 
 namespace DDTrace\Tests\Unit\Integrations;
 
-use DDTrace\Integrations\Drupal;
+use DDTrace\Integrations\Drupal\DrupalCommon;
 use DDTrace\Tests\Common\BaseTestCase;
 
 final class DrupalCommonTest extends BaseTestCase

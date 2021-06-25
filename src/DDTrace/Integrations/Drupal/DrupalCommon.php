@@ -102,9 +102,8 @@ class DrupalCommon
 
     public static function normalizeRoute($route)
     {
-        print_r($route);
         $route = trim($route);
-        return $route;
+
         if ($route == '') {
             return '/';
         }
