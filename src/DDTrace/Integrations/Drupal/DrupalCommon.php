@@ -104,7 +104,7 @@ class DrupalCommon
 
     public static function normalizeRoute($route)
     {
-        $route = (new Urls())->normalize(trim($route));
+        $route = (new Urls())->normalize(strtolower(trim($route)));
 
         if ($route == '') {
             return '/';
