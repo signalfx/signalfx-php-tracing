@@ -4,7 +4,7 @@ namespace DDTrace\Integrations\Drupal;
 
 class DrupalCommon
 {
-    const DRUPAL_LANG_CODES = array(
+    private static $drupalLangCodes = array(
         'af' => true,
         'am' => true,
         'ar' => true,
@@ -129,6 +129,6 @@ class DrupalCommon
 
     private static function isLanguage($lang)
     {
-        return isset(self::DRUPAL_LANG_CODES[$lang]);
+        return isset(self::$drupalLangCodes[$lang]);
     }
 }
