@@ -40,10 +40,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'user.login',
+                    '/user/login',
                     'drupal_app',
                     SpanAssertion::NOT_TESTED,
-                    ''
+                    'user.login'
                 )->withExactTags([
                     // Drupal 8+ is based on symfony
                     'symfony.route.name' => 'user.login',

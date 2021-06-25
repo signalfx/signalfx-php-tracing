@@ -430,3 +430,8 @@ function sfx_trace_config_max_attribute_length()
 {
     return (int)\_ddtrace_config_float(\getenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH'), 1200);
 }
+
+function sfx_trace_config_drupal_rename_span()
+{
+    return _ddtrace_config_bool(\getenv('SIGNALFX_DRUPAL_RENAME_SPAN'), true);
+}

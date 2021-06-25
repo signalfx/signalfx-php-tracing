@@ -28,6 +28,11 @@ class DrupalIntegration extends Integration
         return false;
     }
 
+    public function shouldRenameRootSpan()
+    {
+        return \sfx_trace_config_drupal_rename_span();
+    }
+
     /**
      * @return int
      */
@@ -49,15 +54,15 @@ class DrupalIntegration extends Integration
         \DDTrace\trace_method(
             'Drupal\Core\DrupalKernel',
             'handle',
-            function (SpanData $span, $args) use ($rootSpan) {
+            function (SpanData $span, $args) use ($rootSpan, $integration) {
                 if (!isset($args[0])) {
                     return;
                 }
 
                 $req = $args[0];
 
-                $route = $req->get('_route');
-                if (null !== $route) {
+                if ($integration->shouldRenameRootSpan()) {
+                    $route = DrupalCommon::normalizeRoute($req->getPathInfo());
                     $rootSpan->overwriteOperationName($route);
                 }
 
