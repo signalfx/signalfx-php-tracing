@@ -2,6 +2,8 @@
 
 namespace DDTrace\Integrations\Drupal;
 
+use DDTrace\Http\Urls;
+
 class DrupalCommon
 {
     private static $drupalLangCodes = array(
@@ -102,7 +104,7 @@ class DrupalCommon
 
     public static function normalizeRoute($route)
     {
-        $route = trim($route);
+        $route = (new Urls())->normalize(trim($route));
 
         if ($route == '') {
             return '/';
