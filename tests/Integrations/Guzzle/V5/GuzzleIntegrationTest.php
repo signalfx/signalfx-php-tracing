@@ -146,7 +146,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         });
 
         // trace is: custom
-        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
+        self::assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
 
         // Find either the guzzle or curl span; prefer the latter
         $guzzleSpan = find_span_name($traces[0], 'GuzzleHttp\\Client.send');
@@ -191,48 +191,27 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         $headers1 = [];
         $headers2 = [];
 
-        $traces = $this->isolateTracer(function () use (&$headers1, &$headers2) {
-            /** @var Tracer $tracer */
-            $tracer = GlobalTracer::get();
-            $tracer->setPrioritySampling(PrioritySampling::AUTO_KEEP);
-            $span = $tracer->startActiveSpan('custom')->getSpan();
+        $traces = $this->inWebServer(
+            function ($execute) use (&$headers1, &$headers2) {
+                list($headers1, $headers2) = json_decode($execute(GetSpec::create(
+                    __FUNCTION__,
+                    '/guzzle_in_distributed_web_request.php',
+                    [
+                    'x-datadog-sampling-priority: ' . PrioritySampling::AUTO_KEEP,
+                    ]
+                )), 1);
+            },
+            __DIR__ . '/guzzle_in_distributed_web_request.php'
+        );
 
-            $curl = new CurlMultiHandler();
-            $client = new Client(['handler' => $curl]);
-
-            $future1 = $client->get(self::URL . '/headers', [
-                'future' => true,
-                'headers' => [
-                    'honored' => 'preserved_value',
-                ],
-            ]);
-            $future1->then(function ($response) use (&$headers1) {
-                $headers1 = $response->json();
-            });
-
-            $future2 = $client->get(self::URL . '/headers', [
-                'future' => true,
-                'headers' => [
-                    'honored' => 'preserved_value',
-                ],
-            ]);
-            $future2->then(function ($response) use (&$headers2) {
-                $headers2 = $response->json();
-            });
-
-            $future1->wait();
-            $future2->wait();
-
-            $span->finish();
-        });
-
-        $this->assertFlameGraph($traces, [
-            SpanAssertion::build('custom', 'cli', '', 'custom')
+        $this->assertOneSpan(
+            $traces,
+            SpanAssertion::forOperation('web.request')
                 ->withChildren([
                     SpanAssertion::exists('GuzzleHttp\Client.send'),
                     SpanAssertion::exists('GuzzleHttp\Client.send'),
-                ]),
-        ]);
+                ])
+        );
 
         /*
          * Unlike Guzzle 6, async requests in Guzzle 5 are not truly async
@@ -292,7 +271,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         self::assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
-        self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
+        self::assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
         self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
 
         // existing headers are honored
