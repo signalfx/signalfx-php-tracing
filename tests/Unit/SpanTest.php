@@ -4,6 +4,7 @@ namespace DDTrace\Tests\Unit;
 
 use DDTrace\Span;
 use DDTrace\SpanContext;
+use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\GlobalTracer;
@@ -68,7 +69,7 @@ final class SpanTest extends BaseTestCase
 
     public function testSpanTagsRemainImmutableAfterFinishing()
     {
-        $span = $this->createSpan();
+        $span = $this->createSpan(true);
         $span->finish();
 
         $span->setTag(self::TAG_KEY, self::TAG_VALUE);
@@ -198,7 +199,7 @@ final class SpanTest extends BaseTestCase
 
     public function testSpanErrorRemainsMutableAfterFinishing()
     {
-        $span = $this->createSpan();
+        $span = $this->createSpan(true);
         $span->finish();
 
         $span->setError(new Exception());
@@ -287,16 +288,6 @@ final class SpanTest extends BaseTestCase
         $this->assertSame(1.0, $span->getMetrics()['exists']);
     }
 
-    public function testIsTraceAnalyticsConfigCandidate()
-    {
-        $span = $this->createSpan();
-        $this->assertFalse($span->isTraceAnalyticsCandidate());
-        $span->setTraceAnalyticsCandidate();
-        $this->assertTrue($span->isTraceAnalyticsCandidate());
-        $span->setTraceAnalyticsCandidate(false);
-        $this->assertFalse($span->isTraceAnalyticsCandidate());
-    }
-
     public function testTraceAnalyticsConfigEnabledByTag()
     {
         $span = $this->createSpan();
@@ -354,16 +345,24 @@ final class SpanTest extends BaseTestCase
         $this->assertSame([1710563033, 2041643438], $randInts);
     }
 
-    private function createSpan()
+    private function createSpan($realSpan = false)
     {
         $context = SpanContext::createAsRoot();
 
-        $span = new Span(
-            self::OPERATION_NAME,
-            $context,
-            self::SERVICE,
-            self::RESOURCE
-        );
+        if (PHP_VERSION_ID < 80000) {
+            $span = new Span(
+                self::OPERATION_NAME,
+                $context,
+                self::SERVICE,
+                self::RESOURCE
+            );
+        } else {
+            $internalSpan = $realSpan ? \DDTrace\start_span() : new SpanData();
+            $internalSpan->name = self::OPERATION_NAME;
+            $internalSpan->service = self::SERVICE;
+            $internalSpan->resource = self::RESOURCE;
+            $span = new Span($internalSpan, $context);
+        }
 
         return $span;
     }
