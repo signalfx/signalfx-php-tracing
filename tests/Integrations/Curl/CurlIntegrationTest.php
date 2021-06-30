@@ -533,14 +533,18 @@ final class CurlIntegrationTest extends IntegrationTestCase
     public function testTracerRunningAtLimitedCapacityCurlWorksWithoutARootSpan()
     {
         $found = [];
-        $traces = $this->isolateLimitedTracer(function () use (&$found) {
-            $ch = curl_init(self::URL . '/headers');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'honored: preserved_value',
-            ]);
-            $found = json_decode(curl_exec($ch), 1);
-        });
+        $traces = $this->inWebServer(
+            function ($execute) use (&$found) {
+                $found = json_decode($execute(GetSpec::create(
+                    __FUNCTION__,
+                    '/curl_request_headers_with_copied_handle.php'
+                )), 1);
+            },
+            __DIR__ . '/curl_request_headers_with_copied_handle.php',
+            [
+                'DD_TRACE_GENERATE_ROOT_SPAN' => '0'
+            ]
+        );
 
         // existing headers are honored
         $this->assertSame('preserved_value', $found['headers']['Honored']);
@@ -548,7 +552,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
         $this->assertArrayNotHasKey('X-B3-Traceid', $found['headers']);
         $this->assertArrayNotHasKey('X-B3-Spanid', $found['headers']);
 
-        $this->assertEmpty($traces);
+        $this->assertSame('curl_exec', $traces[0][0]['name']);
     }
 
     public function testAppendHostnameToServiceName()
@@ -616,10 +620,6 @@ final class CurlIntegrationTest extends IntegrationTestCase
             $env
         );
 
-        $metrics = ['_sampling_priority_v1' => 1];
-        if (null !== $expectedSampleRate) {
-            $metrics = array_merge($metrics, ['_dd1.sr.eausr' => $expectedSampleRate]);
-        }
 
         $this->assertFlameGraph($traces, [
             SpanAssertion::build(
@@ -632,6 +632,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'component' => 'web.request',
                 ])
                 ->withExistingTagsNames(['http.method', 'http.url', 'http.status_code'])
+                ->withExactMetrics(['_sampling_priority_v1' => 1, '_dd.rule_psr' => 1])
                 ->withChildren([
                     SpanAssertion::build(
                         'curl_exec',
@@ -647,7 +648,6 @@ final class CurlIntegrationTest extends IntegrationTestCase
                             'component' => 'curl',
                         ])
                         ->withExistingTagsNames(self::commonCurlInfoTags())
-                        ->withExactMetrics($metrics)
                         ->skipTagsLike('/^curl\..*/'),
                 ]),
         ]);

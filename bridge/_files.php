@@ -20,6 +20,7 @@ return [
     __DIR__ . '/../src/DDTrace/StartSpanOptionsFactory.php',
     __DIR__ . '/../src/DDTrace/Time.php',
     __DIR__ . '/../src/DDTrace/Transport/HttpSignalFx.php',
+    __DIR__ . '/../src/DDTrace/Transport/Internal.php',
     __DIR__ . '/../src/api/Type.php',
     __DIR__ . '/../src/DDTrace/Encoder.php',
     __DIR__ . '/../src/DDTrace/Util/HexConversion.php',

@@ -147,7 +147,7 @@ final class PCNTLTest extends IntegrationTestCase
         $this->markTestSkipped('Not applicable to ZipkinV2+HttpSignalFx encoder/transport combination');
 
         if ($this->matchesPhpVersion('5')) {
-            $this->markTestSkipped('autoflushing is not implelented on 5');
+            $this->markTestSkipped('autoflushing is not implemented on 5');
             return;
         }
 
@@ -157,6 +157,7 @@ final class PCNTLTest extends IntegrationTestCase
                 'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_AUTO_FLUSH_ENABLED' => 'true',
                 'DD_TRACE_GENERATE_ROOT_SPAN' => 'false',
+                'DD_TRACE_AGENT_FLUSH_INTERVAL' => 0,
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
