@@ -8,7 +8,7 @@ use DDTrace\Encoders\SpanEncoder;
 use DDTrace\GlobalTracer;
 use DDTrace\Span;
 use DDTrace\SpanContext;
-use DDTrace\Tag;
+use DDTrace\SpanData;
 use DDTrace\Tests\DebugTransport;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
@@ -20,9 +20,27 @@ use DDTrace\Util\HexConversion;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
+if (PHP_VERSION_ID >= 80000) {
+    class FakeSpan extends Span
+    {
+        public $startTime;
+        public $duration;
+    }
+}
+
 trait TracerTestTrait
 {
     protected static $agentRequestDumperUrl = 'http://request-replayer';
+
+    public function resetTracer($tracer = null, $config = [])
+    {
+        // Reset the current C-level array of generated spans
+        dd_trace_serialize_closed_spans();
+        $transport = new DebugTransport();
+        $tracer = $tracer ?: new Tracer($transport, null, $config);
+        GlobalTracer::set($tracer);
+        return $transport;
+    }
 
     /**
      * @param $fn
@@ -31,12 +49,12 @@ trait TracerTestTrait
      */
     public function isolateTracer($fn, $tracer = null, $config = [])
     {
-        // Reset the current C-level array of generated spans
-        dd_trace_serialize_closed_spans();
-        $transport = new DebugTransport();
-        $tracer = $tracer ?: new Tracer($transport, null, $config);
-        GlobalTracer::set($tracer);
+        $transport = $this->resetTracer($tracer, $config);
 
+        $tracer = GlobalTracer::get();
+        if (\dd_trace_env_config('DD_TRACE_GENERATE_ROOT_SPAN')) {
+            $tracer->startRootSpan("root span");
+        }
         $fn($tracer);
 
         return $this->flushAndGetTraces($transport);
@@ -72,6 +90,7 @@ trait TracerTestTrait
         // Reset the current C-level array of generated spans
         dd_trace_serialize_closed_spans();
         putenv('DD_TRACE_SPANS_LIMIT=0');
+        putenv('DD_TRACE_GENERATE_ROOT_SPAN=0');
         dd_trace_internal_fn('ddtrace_reload_config');
 
         $transport = new DebugTransport();
@@ -83,6 +102,7 @@ trait TracerTestTrait
         $traces = $this->flushAndGetTraces($transport);
 
         putenv('DD_TRACE_SPANS_LIMIT');
+        putenv('DD_TRACE_GENERATE_ROOT_SPAN');
         dd_trace_internal_fn('ddtrace_reload_config');
 
         return $traces;
@@ -131,6 +151,7 @@ trait TracerTestTrait
      */
     public function inWebServer($fn, $rootPath, $envs = [], $inis = [], &$curlInfo = null)
     {
+        $this->resetTracer();
         $this->resetRequestDumper();
         $webServer = new WebServer($rootPath, '0.0.0.0', 6666);
         $webServer->mergeEnvs($envs);
@@ -225,6 +246,70 @@ trait TracerTestTrait
         return $this->parseTracesFromDumpedData();
     }
 
+    private function parseRawDumpedTraces($rawTraces)
+    {
+        $traces = [];
+
+        foreach ($rawTraces as $spansInTrace) {
+            $spans = [];
+            foreach ($spansInTrace as $rawSpan) {
+                $spanContext = new SpanContext(
+                    (string) $rawSpan['trace_id'],
+                    (string) $rawSpan['span_id'],
+                    isset($rawSpan['parent_id']) ? (string) $rawSpan['parent_id'] : null
+                );
+
+                if (empty($rawSpan['resource'])) {
+                    TestCase::fail(sprintf("Span '%s' has empty resource name", $rawSpan['name']));
+                    return;
+                }
+
+
+                if (PHP_VERSION_ID < 80000) {
+                    $span = new Span(
+                        $rawSpan['name'],
+                        $spanContext,
+                        isset($rawSpan['service']) ? $rawSpan['service'] : null,
+                        $rawSpan['resource'],
+                        $rawSpan['start']
+                    );
+
+                    // We want to use reflection to set properties so that we do not fire
+                    // potentials changes in setters.
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'operationName', 'name');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'service');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'resource');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'startTime', 'start');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'type');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'duration');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'tags', 'meta');
+                    $this->setRawPropertyFromArray($span, $rawSpan, 'metrics', 'metrics');
+                } else {
+                    $internalSpan = new SpanData();
+                    $internalSpan->name = $rawSpan["name"];
+                    $internalSpan->service = isset($rawSpan['service']) ? $rawSpan['service'] : null;
+                    $internalSpan->resource = $rawSpan['resource'];
+                    if (isset($rawSpan['type'])) {
+                        $internalSpan->type = $rawSpan['type'];
+                    }
+                    $internalSpan->meta = isset($rawSpan['meta']) ? $rawSpan['meta'] : [];
+                    $internalSpan->metrics = isset($rawSpan['metrics']) ? $rawSpan['metrics'] : [];
+                    $span = new FakeSpan($internalSpan, $spanContext);
+                    $span->duration = $rawSpan["duration"] / 1000;
+                    $span->startTime = $rawSpan["start"] / 1000;
+                }
+                $this->setRawPropertyFromArray($span, $rawSpan, 'hasError', 'error', function ($value) {
+                    return $value == 1 || $value == true;
+                });
+
+                $spans[] = SpanEncoder::encode($span);
+            }
+            $traces[] = $spans;
+        }
+
+        return $traces;
+    }
+
     /**
      * Parses the data dumped by the fake agent and returns the parsed traces.
      *
@@ -254,69 +339,8 @@ trait TracerTestTrait
             return [];
         }
 
-        $rawTraces = [json_decode($uniqueRequest['body'], true)];
-
-        return $this->parseRawTraces($rawTraces);
-    }
-
-    public function parseRawTraces($rawTraces)
-    {
-        $traces = [];
-
-        foreach ($rawTraces as $spansInTrace) {
-            $spans = [];
-            foreach ($spansInTrace as $rawSpan) {
-                $spanContext = new SpanContext(
-                    sfx_trace_convert_hex_id($rawSpan['traceId']),
-                    sfx_trace_convert_hex_id($rawSpan['id']),
-                    isset($rawSpan['parentId']) ? sfx_trace_convert_hex_id($rawSpan['parentId']) : null
-                );
-                $resource = isset($rawSpan['tags'][Tag::RESOURCE_NAME]) ? $rawSpan['tags'][Tag::RESOURCE_NAME] : null;
-
-                if (isset($rawSpan['remoteEndpoint']['serviceName'])) {
-                    $service = $rawSpan['remoteEndpoint']['serviceName'];
-                } else {
-                    $service = $rawSpan['localEndpoint']['serviceName'];
-                }
-
-                $span = new Span(
-                    $rawSpan['name'],
-                    $spanContext,
-                    $service,
-                    $resource,
-                    $rawSpan['timestamp']
-                );
-
-                unset($rawSpan['tags'][Tag::RESOURCE_NAME]);
-                if (isset($rawSpan['tags'][Tag::SPAN_TYPE])) {
-                    $rawSpan['type'] = $rawSpan['tags'][Tag::SPAN_TYPE];
-                    unset($rawSpan['tags'][Tag::SPAN_TYPE]);
-                }
-                if (isset($rawSpan['tags']['error'])) {
-                    $rawSpan['error'] = $rawSpan['tags']['error'] === "true";
-                    unset($rawSpan['tags'][Tag::ERROR]);
-                }
-
-                // We want to use reflection to set properties so that we do not fire
-                // potentials changes in setters.
-                $this->setRawPropertyFromArray($span, $rawSpan, 'operationName', 'name');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'service');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'resource');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'startTime', 'start');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'hasError', 'error', function ($value) {
-                    return $value == 1 || $value == true;
-                });
-                $this->setRawPropertyFromArray($span, $rawSpan, 'type');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'duration');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'tags');
-                $this->setRawPropertyFromArray($span, $rawSpan, 'metrics', 'metrics');
-
-                $spans[] = SpanEncoder::encode($span);
-            }
-            $traces[] = $spans;
-        }
-
-        return $traces;
+        $rawTraces = json_decode($uniqueRequest['body'], true);
+        return $this->parseRawDumpedTraces($rawTraces);
     }
 
     public function parseMultipleRequestsFromDumpedData()
@@ -334,53 +358,11 @@ trait TracerTestTrait
         foreach ($manyRequests as $uniqueRequest) {
             // error_log('Request: ' . print_r($uniqueRequest, 1));
             $rawTraces = json_decode($uniqueRequest['body'], true);
-            $tracesOneRequest = [];
-
-            foreach ($rawTraces as $spansInTrace) {
-                $spans = [];
-                foreach ($spansInTrace as $rawSpan) {
-                    $spanContext = new SpanContext(
-                        $rawSpan['trace_id'],
-                        $rawSpan['span_id'],
-                        isset($rawSpan['parent_id']) ? $rawSpan['parent_id'] : null
-                    );
-
-                    if (empty($rawSpan['resource'])) {
-                        TestCase::fail(sprintf("Span '%s' has empty resource name", $rawSpan['name']));
-                        return;
-                    }
-
-                    $span = new Span(
-                        $rawSpan['name'],
-                        $spanContext,
-                        isset($rawSpan['service']) ? $rawSpan['service'] : null,
-                        $rawSpan['resource'],
-                        $rawSpan['start']
-                    );
-
-                    // We want to use reflection to set properties so that we do not fire
-                    // potentials changes in setters.
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'operationName', 'name');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'service');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'resource');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'startTime', 'start');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'hasError', 'error', function ($value) {
-                        return $value == 1 || $value == true;
-                    });
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'type');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'duration');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'tags', 'meta');
-                    $this->setRawPropertyFromArray($span, $rawSpan, 'metrics', 'metrics');
-
-                    $spans[] = SpanEncoder::encode($span);
-                }
-                $tracesOneRequest[] = $spans;
-            }
-
-            $tracesAllRequests[] = $tracesOneRequest;
+            $tracesAllRequests[] = $this->parseRawDumpedTraces($rawTraces);
         }
 
-        return $tracesAllRequests;
+        // We need to handle potential empty flushes (without internal flushing)...
+        return PHP_VERSION_ID >= 80000 ? $tracesAllRequests : array_values(array_filter($tracesAllRequests));
     }
 
     /**
@@ -474,11 +456,15 @@ trait TracerTestTrait
      */
     protected function flushAndGetTraces($transport)
     {
-        /** @var Tracer $tracer */
-        $tracer = GlobalTracer::get();
-        /** @var DebugTransport $transport */
-        $tracer->flush();
-        return $transport->getTraces();
+        if (PHP_VERSION_ID < 80000) {
+            /** @var Tracer $tracer */
+            $tracer = GlobalTracer::get();
+            /** @var DebugTransport $transport */
+            $tracer->flush();
+            return $transport->getTraces();
+        }
+        $traces = \dd_trace_serialize_closed_spans();
+        return $traces ? [$traces] : [];
     }
 
     /**
