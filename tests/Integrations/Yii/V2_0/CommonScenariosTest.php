@@ -131,7 +131,11 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'app.route.path' => '/error',
                         'component' => 'yii',
                     ])
-                        ->setError()
+                        ->setError(
+                            PHP_VERSION_ID >= 80000 ? 'Exception' : null,
+                            PHP_VERSION_ID >= 80000 ? 'datadog' : null,
+                            PHP_VERSION_ID >= 80000
+                        )
                         ->withChildren([
                             SpanAssertion::build(
                                 'yii\web\Application.runAction',
