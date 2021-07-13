@@ -2,7 +2,7 @@
 Return value from finally block is passed to tracing closure
 --SKIPIF--
 <?php if (PHP_VERSION_ID < 70100) die('skip: This causes an unpatched memory leak from php-src on PHP 5.6 and 7.0'); ?>
-<?php if (PHP_VERSION_ID < 80000) die('skip: requires improved exception handling'); ?>
+<?php if (PHP_VERSION_ID >= 80000) die('skip: legacy test for old exception handling'); ?>
 --FILE--
 <?php
 use DDTrace\SpanData;
@@ -38,11 +38,11 @@ echo doCatchWithFinally() . PHP_EOL;
 array_map(function($span) {
     echo $span['name'];
     echo isset($span['resource']) ? ', ' . $span['resource'] : '';
-    echo isset($span['meta']['sfx.error.message']) ? ', ' . $span['meta']['sfx.error.message'] : '';
+    echo isset($span['meta']['error.msg']) ? ', ' . $span['meta']['error.msg'] : '';
     echo PHP_EOL;
 }, dd_trace_serialize_closed_spans());
 ?>
---EXPECTF--
+--EXPECT--
 Finally retval
 doCatchWithFinally, Finally retval
-throwException, throwException, Uncaught FooException: Oops! in %s:%d
+throwException, throwException, Oops!

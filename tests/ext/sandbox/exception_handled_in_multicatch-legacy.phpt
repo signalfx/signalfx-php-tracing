@@ -5,7 +5,7 @@ Even though multi-catch syntax is equivalent to using multiple catch blocks from
 the VM perspective, this test exists in case that changes in the future.
 --SKIPIF--
 <?php if (PHP_VERSION_ID < 70100) die('skip: Multi-catch was added in PHP 7.1'); ?>
-<?php if (PHP_VERSION_ID < 80000) die('skip: requires improved exception handling'); ?>
+<?php if (PHP_VERSION_ID >= 80000) die('skip: legacy test for old exception handling'); ?>
 --FILE--
 <?php
 use DDTrace\SpanData;
@@ -39,11 +39,11 @@ echo multiCatch() . PHP_EOL;
 array_map(function($span) {
     echo $span['name'];
     echo isset($span['resource']) ? ', ' . $span['resource'] : '';
-    echo isset($span['meta']['sfx.error.message']) ? ', ' . $span['meta']['sfx.error.message'] : '';
+    echo isset($span['meta']['error.msg']) ? ', ' . $span['meta']['error.msg'] : '';
     echo PHP_EOL;
 }, dd_trace_serialize_closed_spans());
 ?>
---EXPECTF--
+--EXPECT--
 FooException caught
 multiCatch, FooException caught
-throwException, throwException, Uncaught FooException: Oops! in %s:%d
+throwException, throwException, Oops!

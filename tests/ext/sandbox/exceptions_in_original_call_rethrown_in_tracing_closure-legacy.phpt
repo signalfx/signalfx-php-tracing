@@ -1,8 +1,8 @@
 --TEST--
 Exceptions from original call rethrown in tracing closure (PHP 7)
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 80000) die('skip: requires improved exception handling'); ?>
 <?php if (PHP_VERSION_ID < 70000) die('skip PHP 5 tested in separate test'); ?>
+<?php if (PHP_VERSION_ID >= 80000) die('skip: legacy test for old exception handling'); ?>
 --FILE--
 <?php
 
@@ -26,10 +26,10 @@ array_map(function($span) {
     printf(
         "%s with exception: %s\n",
         $span['name'],
-        $span['meta']['sfx.error.message']
+        $span['meta']['error.msg']
     );
 }, dd_trace_serialize_closed_spans());
 ?>
 --EXPECTF--
 a()
-a with exception: Uncaught Exception: Oops! in %s:%d
+a with exception: Oops!
