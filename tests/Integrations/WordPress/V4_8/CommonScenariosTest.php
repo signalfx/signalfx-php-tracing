@@ -227,8 +227,8 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             ? "Uncaught Exception: Oops! in %s:%d"
                             : "Uncaught exception 'Exception' with message 'Oops!' in %s:%d";
                         $assertion
-                            ->setError("E_ERROR", $message)
-                            ->withExistingTagsNames(['sfx.error.stack']);
+                            ->setError(PHP_VERSION_ID >= 80000 ? "Exception" : "E_ERROR", $message)
+                            ->withExistingTagsNames(['error.stack']);
                     })->withChildren([
                         SpanAssertion::exists('WP.main')
                             // There's no way to propagate this to the root span in userland yet

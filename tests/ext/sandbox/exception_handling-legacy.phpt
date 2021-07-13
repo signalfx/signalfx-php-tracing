@@ -4,7 +4,7 @@ Exceptions get attached to spans
 ; for PHP 7.4+ we want to ensure that even if args are present that we don't print them
 zend.exception_ignore_args=Off
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 80000) die('skip: requires improved exception handling'); ?>
+<?php if (PHP_VERSION_ID >= 80000) die('skip: legacy test for old exception handling'); ?>
 --FILE--
 <?php
 
@@ -32,15 +32,15 @@ try {
 
     $span = $stack[0];
     echo "error: ", $span['error'], "\n";
-    echo "Exception type: ", $span['meta']['sfx.error.kind'], "\n";
-    echo "Exception msg: ", $span['meta']['sfx.error.message'], "\n";
-    echo "Exception stack:\n", $span['meta']['sfx.error.stack'], "\n";
+    echo "Exception type: ", $span['meta']['error.type'], "\n";
+    echo "Exception msg: ", $span['meta']['error.msg'], "\n";
+    echo "Exception stack:\n", $span['meta']['error.stack'], "\n";
 
     $span = $stack[1];
     echo "error: ", $span['error'], "\n";
-    echo "Exception type: ", $span['meta']['sfx.error.kind'], "\n";
-    echo "Exception msg: ", $span['meta']['sfx.error.message'], "\n";
-    echo "Exception stack:\n", $span['meta']['sfx.error.stack'], "\n";
+    echo "Exception type: ", $span['meta']['error.type'], "\n";
+    echo "Exception msg: ", $span['meta']['error.msg'], "\n";
+    echo "Exception stack:\n", $span['meta']['error.stack'], "\n";
 }
 
 ?>
@@ -48,14 +48,14 @@ try {
 Stack size: 2
 error: 1
 Exception type: Exception
-Exception msg: Uncaught Exception: datadog in %s:%d
+Exception msg: datadog
 Exception stack:
 #0 %s: inner()
 #1 %s: outer()
 #2 {main}
 error: 1
 Exception type: Exception
-Exception msg: Uncaught Exception: datadog in %s:%d
+Exception msg: datadog
 Exception stack:
 #0 %s: inner()
 #1 %s: outer()
