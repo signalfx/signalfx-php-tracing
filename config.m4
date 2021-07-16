@@ -28,6 +28,8 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       [PHP_ADD_LIBRARY(execinfo, , EXTRA_LDFLAGS)])
   )
 
+  AC_CHECK_HEADERS([linux/securebits.h])
+
   if test "$PHP_SIGNALFX_TRACING_SANITIZE" != "no"; then
     EXTRA_LDFLAGS="-fsanitize=address"
     EXTRA_CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
