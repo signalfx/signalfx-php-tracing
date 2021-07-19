@@ -188,7 +188,9 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
 
     ZAI_SOURCES="\
       zend_abstract_interface/env/env.c \
+      zend_abstract_interface/exceptions/php7-8/exceptions.c \
       zend_abstract_interface/headers/php7-8/headers.c \
+      zend_abstract_interface/properties/php7-8/properties.c \
       zend_abstract_interface/sandbox/php7/sandbox.c \
       zend_abstract_interface/zai_sapi/php7/zai_sapi.c \
       zend_abstract_interface/zai_sapi/zai_sapi_extension.c \
@@ -239,7 +241,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
 
     ZAI_SOURCES="\
       zend_abstract_interface/env/env.c \
-      zend_abstract_interface/exceptions/php8/exceptions.c \
+      zend_abstract_interface/exceptions/php7-8/exceptions.c \
       zend_abstract_interface/functions/php8/functions.c \
       zend_abstract_interface/headers/php7-8/headers.c \
       zend_abstract_interface/properties/php7-8/properties.c \
@@ -278,7 +280,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/env])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/exceptions])
-  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/exceptions/php8])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/exceptions/php7-8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions/php8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/headers])
