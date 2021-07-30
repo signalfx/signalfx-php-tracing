@@ -12,6 +12,8 @@ class DrupalIntegration extends Integration
 {
     const NAME = 'drupal';
 
+    protected $drupalVersion = null;
+
     /**
      * @return string The integration name.
      */
@@ -49,6 +51,54 @@ class DrupalIntegration extends Integration
             return Integration::NOT_LOADED;
         }
 
+        $integration = $this;
+
+        \DDTrace\hook_function('drupal_bootstrap', function () use ($integration, $rootSpan) {
+            if ($integration->drupalVersion || !defined('DRUPAL_CORE_COMPATIBILITY') || DRUPAL_CORE_COMPATIBILITY !== '7.x') {
+                return false;
+            }
+
+            // Only load integration once
+            $integration->drupalVersion = DRUPAL_CORE_COMPATIBILITY;
+            $this->drupal7($rootSpan);
+        });
+
+        $this->drupalSymfony($rootSpan);
+
+        return Integration::LOADED;
+    }
+
+    protected function drupal7($rootSpan)
+    {
+        $integration = $this;
+
+        // Trace some methods
+        $methods = array(
+            '_drupal_bootstrap_full', '_drupal_bootstrap_page_cache', '_drupal_bootstrap_database',
+            '_drupal_bootstrap_variables', 'drupal_session_initialize', '_drupal_bootstrap_page_header',
+            'drupal_language_initialize', 'menu_execute_active_handler', 'drupal_deliver_page'
+        );
+        foreach ($methods as $method) {
+            \DDTrace\trace_function($method, function (SpanData $span) use($method) {
+                $span->name = $method;
+            });
+        }
+
+        // Extract route
+        \DDTrace\hook_function('menu_get_item', null, function ($args, $retval) use($integration, $rootSpan) {
+            if ($args[0] !== null) {
+                return;
+            }
+
+            if ($integration->shouldRenameRootSpan()) {
+                $path = $retval['path'];
+                $rootSpan->overwriteOperationName($path);
+            }
+        });
+    }
+
+    protected function drupalSymfony($rootSpan)
+    {
         $integration = $this;
 
         \DDTrace\trace_method(
@@ -123,7 +173,5 @@ class DrupalIntegration extends Integration
                 $span->name = 'drupal.event.' . $name;
             }
         );
-
-        return Integration::LOADED;
     }
 }
