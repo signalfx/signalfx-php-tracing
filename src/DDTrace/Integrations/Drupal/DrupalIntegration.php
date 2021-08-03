@@ -79,13 +79,14 @@ class DrupalIntegration extends Integration
             'drupal_language_initialize', 'menu_execute_active_handler', 'drupal_deliver_page'
         );
         foreach ($methods as $method) {
-            \DDTrace\trace_function($method, function (SpanData $span) use($method) {
+            \DDTrace\trace_function($method, function (SpanData $span) use ($method) {
                 $span->name = $method;
+                $span->meta[Tag::COMPONENT] = 'drupal';
             });
         }
 
         // Extract route
-        \DDTrace\hook_function('menu_get_item', null, function ($args, $retval) use($integration, $rootSpan) {
+        \DDTrace\hook_function('menu_get_item', null, function ($args, $retval) use ($integration, $rootSpan) {
             if ($args[0] !== null) {
                 return;
             }
@@ -94,6 +95,22 @@ class DrupalIntegration extends Integration
                 $path = $retval['path'];
                 $rootSpan->overwriteOperationName($path);
             }
+        });
+
+        // Can't directly trace functions called by set_error_handler & set_exception_handler
+        \DDTrace\trace_function('_drupal_error_handler_real', function (SpanData $span, $args) use ($rootSpan) {
+            $span->name = '_drupal_error_handler';
+            $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta[Tag::ERROR_MSG] = $args[1];
+            $span->meta[TAG::ERROR_TYPE] = 'error handler';
+            $span->meta[Tag::ERROR_STACK] = $args[2].':'.$args[3];
+        });
+
+        \DDTrace\trace_function('_drupal_decode_exception', function (SpanData $span, $args) use ($integration, $rootSpan) {
+            $span->name = '_drupal_exception_handler';
+            $span->meta[Tag::COMPONENT] = 'drupal';
+            $integration->setError($span, $args[0]);
+            $rootSpan->setError($args[0]);
         });
     }
 
