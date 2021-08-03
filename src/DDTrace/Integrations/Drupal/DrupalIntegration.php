@@ -106,7 +106,7 @@ class DrupalIntegration extends Integration
             $span->name = '_drupal_error_handler';
             $span->meta[Tag::COMPONENT] = 'drupal';
             $span->meta[Tag::ERROR_MSG] = $args[1];
-            $span->meta[TAG::ERROR_TYPE] = 'error handler';
+            $span->meta[Tag::ERROR_TYPE] = 'error handler';
             $span->meta[Tag::ERROR_STACK] = $args[2] . ':' . $args[3];
         });
 
