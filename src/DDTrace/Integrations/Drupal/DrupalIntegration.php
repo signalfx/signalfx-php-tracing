@@ -54,7 +54,11 @@ class DrupalIntegration extends Integration
         $integration = $this;
 
         \DDTrace\hook_function('drupal_bootstrap', function () use ($integration, $rootSpan) {
-            if ($integration->drupalVersion || !defined('DRUPAL_CORE_COMPATIBILITY') || DRUPAL_CORE_COMPATIBILITY !== '7.x') {
+            if (
+                $integration->drupalVersion ||
+                !defined('DRUPAL_CORE_COMPATIBILITY') ||
+                DRUPAL_CORE_COMPATIBILITY !== '7.x'
+            ) {
                 return false;
             }
 
@@ -98,20 +102,23 @@ class DrupalIntegration extends Integration
         });
 
         // Can't directly trace functions called by set_error_handler & set_exception_handler
-        \DDTrace\trace_function('_drupal_error_handler_real', function (SpanData $span, $args) use ($rootSpan) {
+        \DDTrace\trace_function('_drupal_error_handler_real', function (SpanData $span, $args) {
             $span->name = '_drupal_error_handler';
             $span->meta[Tag::COMPONENT] = 'drupal';
             $span->meta[Tag::ERROR_MSG] = $args[1];
             $span->meta[TAG::ERROR_TYPE] = 'error handler';
-            $span->meta[Tag::ERROR_STACK] = $args[2].':'.$args[3];
+            $span->meta[Tag::ERROR_STACK] = $args[2] . ':' . $args[3];
         });
 
-        \DDTrace\trace_function('_drupal_decode_exception', function (SpanData $span, $args) use ($integration, $rootSpan) {
-            $span->name = '_drupal_exception_handler';
-            $span->meta[Tag::COMPONENT] = 'drupal';
-            $integration->setError($span, $args[0]);
-            $rootSpan->setError($args[0]);
-        });
+        \DDTrace\trace_function(
+            '_drupal_decode_exception',
+            function (SpanData $span, $args) use ($integration, $rootSpan) {
+                $span->name = '_drupal_exception_handler';
+                $span->meta[Tag::COMPONENT] = 'drupal';
+                $integration->setError($span, $args[0]);
+                $rootSpan->setError($args[0]);
+            }
+        );
     }
 
     protected function drupalSymfony($rootSpan)
