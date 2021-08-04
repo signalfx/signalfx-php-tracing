@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file - [read more
 
 ## [Unreleased]
 ### Added
-- Drupal 8 and 9 support.
+- Drupal 7, 8 and 9 support.
 
 ## [0.30.1-beta-sfx4]
 

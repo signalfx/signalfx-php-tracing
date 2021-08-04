@@ -700,6 +700,8 @@ test_web_wordpress_48:
 	$(call run_tests,tests/Integrations/WordPress/V4_8)
 test_web_wordpress_55:
 	$(call run_tests,tests/Integrations/WordPress/V5_5)
+test_web_drupal_7:
+	$(call run_tests,tests/Integrations/Drupal/V7)
 test_web_drupal_89:
 	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_8_9 update
 	$(call run_tests,tests/Integrations/Drupal/V8_9)
