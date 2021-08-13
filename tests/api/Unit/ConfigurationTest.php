@@ -31,32 +31,24 @@ EOD;
 
     private function cleanUpEnvs()
     {
-        putenv('SIGNALFX_DISTRIBUTED_TRACING');
-        putenv('SIGNALFX_ENDPOINT_HOST');
-        putenv('SIGNALFX_ENDPOINT_HTTPS');
-        putenv('SIGNALFX_ENDPOINT_PATH');
-        putenv('SIGNALFX_ENDPOINT_PORT');
-        putenv('SIGNALFX_ENDPOINT_URL');
-        putenv('SIGNALFX_SERVICE_NAME');
-        putenv('SIGNALFX_TRACE_APP_NAME');
-        putenv('SIGNALFX_TRACE_DEBUG');
-        putenv('SIGNALFX_TRACING_ENABLED');
-        putenv('SIGNALFX_RECORDED_VALUE_MAX_LENGTH');
-        putenv('SIGNALFX_SERVICE');
-        putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
-        putenv('SIGNALFX_TAGS');
-
-        putenv('DD_INTEGRATIONS_DISABLED');
-        putenv('DD_PRIORITY_SAMPLING');
-        putenv('DD_TRACE_ANALYTICS_ENABLED');
-        putenv('DD_ENV');
-        putenv('DD_SAMPLING_RATE');
-        putenv('DD_SERVICE_MAPPING');
-        putenv('DD_TRACE_SAMPLE_RATE');
-        putenv('DD_TRACE_SAMPLING_RULES');
-        putenv('DD_TRACE_SLIM_ENABLED');
-        putenv('DD_TRACE_PDO_ENABLED');
-        putenv('DD_VERSION');
+        self::putenv('SIGNALFX_DISTRIBUTED_TRACING');
+        self::putenv('DD_ENV');
+        self::putenv('DD_INTEGRATIONS_DISABLED');
+        self::putenv('DD_PRIORITY_SAMPLING');
+        self::putenv('DD_SAMPLING_RATE');
+        self::putenv('DD_SERVICE_MAPPING');
+        self::putenv('SIGNALFX_SERVICE_NAME');
+        self::putenv('SIGNALFX_SERVICE');
+        self::putenv('SIGNALFX_TAGS');
+        self::putenv('DD_TRACE_ANALYTICS_ENABLED');
+        self::putenv('SIGNALFX_TRACE_DEBUG');
+        self::putenv('SIGNALFX_TRACING_ENABLED');
+        self::putenv('SIGNALFX_TRACE_GLOBAL_TAGS');
+        self::putenv('DD_TRACE_SAMPLE_RATE');
+        self::putenv('DD_TRACE_SAMPLING_RULES');
+        self::putenv('DD_TRACE_SLIM_ENABLED');
+        self::putenv('DD_TRACE_PDO_ENABLED');
+        self::putenv('DD_VERSION');
     }
 
     public function testTracerEnabledByDefault()
@@ -141,7 +133,12 @@ EOD;
     public function testIntegrationsDisabledPrecedenceWithDeprecatedEnv()
     {
         $this->putEnvAndReloadConfig(['DD_TRACE_PDO_ENABLED=true', 'DD_INTEGRATIONS_DISABLED=pdo,slim']);
-        $this->assertTrue(Configuration::get()->isIntegrationEnabled('pdo'));
+        if (PHP_VERSION_ID < 80000) {
+            $this->assertTrue(Configuration::get()->isIntegrationEnabled('pdo'));
+        } else {
+            // We cannot distinguish not set vs set to default value anymore, hence the behaviour is changed slightly
+            $this->assertFalse(Configuration::get()->isIntegrationEnabled('pdo'));
+        }
         $this->assertFalse(Configuration::get()->isIntegrationEnabled('slim'));
     }
 
@@ -156,7 +153,7 @@ EOD;
             self::assertFalse(Configuration::get()->isIntegrationEnabled($lower), $error);
 
             // Reset
-            putenv("DD_TRACE_{$integration}_ENABLED");
+            self::putenv("DD_TRACE_{$integration}_ENABLED");
         }
 
         // Make sure we're not testing the default fallback
@@ -200,9 +197,9 @@ EOD;
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
 
-    public function testServiceNameViaDDServiceWinsOverDDServiceName()
+    public function testServiceNameViaDDServiceNameForBackwardCompatibility()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE=my_app', 'SIGNALFX_SERVICE_NAME=legacy']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME=my_app']);
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
 
@@ -437,7 +434,7 @@ EOD;
     public function testEnvNotSet()
     {
         $this->putEnvAndReloadConfig(['DD_ENV']);
-        $this->assertNull(Configuration::get()->getEnv());
+        $this->assertEmpty(Configuration::get()->getEnv());
     }
 
     public function testVersion()
@@ -449,7 +446,7 @@ EOD;
     public function testVersionNotSet()
     {
         $this->putEnvAndReloadConfig(['DD_VERSION']);
-        $this->assertNull(Configuration::get()->getServiceVersion());
+        $this->assertEmpty(Configuration::get()->getServiceVersion());
     }
 
     public function testUriAsResourceNameEnabledDefault()
