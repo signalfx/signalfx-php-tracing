@@ -319,6 +319,7 @@ TEST_WEB_56 := \
 	test_web_wordpress_48 \
 	test_web_wordpress_55 \
 	test_web_zend_1 \
+	test_web_drupal_7 \
 	test_web_custom
 
 TEST_INTEGRATIONS_70 := \
@@ -465,7 +466,8 @@ TEST_WEB_73 := \
 	test_web_yii_2 \
 	test_web_zend_1 \
 	test_web_custom \
-	test_web_drupal_89
+	test_web_drupal_7 \
+	test_web_drupal_89 \
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
@@ -501,6 +503,7 @@ TEST_WEB_74 := \
 	test_web_yii_2 \
 	test_web_zend_1 \
 	test_web_custom \
+	test_web_drupal_7 \
 	test_web_drupal_89
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
