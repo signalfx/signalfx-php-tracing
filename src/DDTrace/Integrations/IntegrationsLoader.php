@@ -73,6 +73,8 @@ class IntegrationsLoader
                 '\DDTrace\Integrations\Mysqli\MysqliIntegration';
             $this->integrations[SymfonyIntegration::NAME] =
                 '\DDTrace\Integrations\Symfony\SymfonyIntegration';
+            $this->integrations[DrupalIntegration::NAME] =
+                '\DDTrace\Integrations\Drupal\DrupalIntegration';
             return;
         }
 
@@ -96,11 +98,8 @@ class IntegrationsLoader
             '\DDTrace\Integrations\Symfony\SymfonyIntegration';
         $this->integrations[ZendFrameworkIntegration::NAME] =
             '\DDTrace\Integrations\ZendFramework\ZendFrameworkIntegration';
-
-        if (\PHP_MAJOR_VERSION == 7) {
-            $this->integrations[DrupalIntegration::NAME] =
-                '\DDTrace\Integrations\Drupal\DrupalIntegration';
-        }
+        $this->integrations[DrupalIntegration::NAME] =
+            '\DDTrace\Integrations\Drupal\DrupalIntegration';
 
         // For PHP 7.0+ use C level deferred integration loader
         if (\PHP_MAJOR_VERSION < 7) {

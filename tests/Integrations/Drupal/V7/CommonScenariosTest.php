@@ -91,7 +91,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                     [
                                         SpanAssertion::exists('module_invoke', 'system_cron')->withChildren(array_merge(
                                             array_fill(0, 15, SpanAssertion::exists('PDO.prepare')),
-                                            array_fill(0, 15, SpanAssertion::exists('PDOStatement.execute')),
+                                            array_fill(0, 15, SpanAssertion::exists('PDOStatement.execute'))
                                         )),
                                         SpanAssertion::exists('module_invoke', 'search_cron')->withChildren([
                                             SpanAssertion::exists('PDO.prepare'),
@@ -103,7 +103,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                         ]),
                                         SpanAssertion::exists('module_invoke', 'field_cron')->withChildren(array_merge(
                                             array_fill(0, 11, SpanAssertion::exists('PDO.prepare')),
-                                            array_fill(0, 11, SpanAssertion::exists('PDOStatement.execute')),
+                                            array_fill(0, 11, SpanAssertion::exists('PDOStatement.execute'))
                                         )),
                                         SpanAssertion::exists('module_invoke', 'dblog_cron')->withChildren([
                                             SpanAssertion::exists('PDO.prepare'),
