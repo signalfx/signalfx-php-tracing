@@ -73,6 +73,8 @@ class IntegrationsLoader
                 '\DDTrace\Integrations\Mysqli\MysqliIntegration';
             $this->integrations[SymfonyIntegration::NAME] =
                 '\DDTrace\Integrations\Symfony\SymfonyIntegration';
+            $this->integrations[DrupalIntegration::NAME] =
+                '\DDTrace\Integrations\Drupal\DrupalIntegration';
             return;
         }
 
