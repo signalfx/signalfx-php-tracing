@@ -306,7 +306,6 @@ TEST_INTEGRATIONS_56 := \
 	test_integrations_predis1
 
 TEST_WEB_56 := \
-	test_web_drupal_7 \
 	test_web_laravel_42 \
 	test_web_cakephp_28 \
 	test_web_lumen_52 \
@@ -320,6 +319,7 @@ TEST_WEB_56 := \
 	test_web_wordpress_48 \
 	test_web_wordpress_55 \
 	test_web_zend_1 \
+	test_web_drupal_7 \
 	test_web_custom
 
 TEST_INTEGRATIONS_70 := \
