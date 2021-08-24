@@ -330,7 +330,7 @@ jobs:
             composer scenario:update
       - run:
           name: Running phpstan
-          command: composer scenario << parameters.scenario >> ; PATH=$PATH:~/.composer/vendor/bin composer static-analyze
+          command: composer scenario << parameters.scenario >> ; PATH=$PATH:$(composer --global config home)/vendor/bin composer static-analyze
 
   opcache_tests:
     parameters:
@@ -1984,4 +1984,16 @@ workflows:
           ext_name: "curl"
           docker_image: "datadog/dd-trace-ci:php-8.0-shared-ext"
       - "Lint files":
+          requires: [ 'Prepare Code' ]
+      - static_analysis:
+          requires: [ 'Prepare Code' ]
+          name: "Static Analysis 71"
+          docker_image: circleci/php:7.1
+          scenario: opentracing_beta6
+      - static_analysis:
+          requires: [ 'Prepare Code' ]
+          name: "Static Analysis 80"
+          docker_image: cimg/php:8.0
+          scenario: opentracing10
+      - "Post-Install Hook":
           requires: [ 'Prepare Code' ]
