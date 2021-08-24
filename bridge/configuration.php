@@ -249,7 +249,8 @@ function sfx_trace_config_access_token()
  */
 function ddtrace_config_debug_enabled()
 {
-    return \getenv('SIGNALFX_TRACE_DEBUG'),\_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('DD_TRACE_DEBUG'), false);
+    return \_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('DD_TRACE_DEBUG'), false);
+    //return \getenv('SIGNALFX_TRACE_DEBUG'),\_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('DD_TRACE_DEBUG'), false);
 }
 
 /**
