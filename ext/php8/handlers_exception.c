@@ -183,33 +183,35 @@ static PHP_METHOD(DDTrace_ExceptionOrErrorHandler, execute) {
     if (is_error_handler) {
         zend_long type;
         zend_string *message;
-        zend_string *error_filename;
+        zval *error_filename;
         zend_long error_lineno;
 
         ZEND_PARSE_PARAMETERS_START(4, 4)
         Z_PARAM_LONG(type)
         Z_PARAM_STR(message)
-        Z_PARAM_STR(error_filename)
+        Z_PARAM_ZVAL(error_filename)  // may be null
         Z_PARAM_LONG(error_lineno)
         ZEND_PARSE_PARAMETERS_END();
 
         DDTRACE_G(active_error).type = (int)type;
         DDTRACE_G(active_error).message = message;
 
-        zval params[4];
-        ZVAL_LONG(&params[0], type);
-        ZVAL_STR(&params[1], message);
-        ZVAL_STR(&params[2], error_filename);
-        ZVAL_LONG(&params[3], error_lineno);
+        if (!Z_ISUNDEF_P(handler)) {
+            zval params[4];
+            ZVAL_LONG(&params[0], type);
+            ZVAL_STR(&params[1], message);
+            ZVAL_COPY_VALUE(&params[2], error_filename);
+            ZVAL_LONG(&params[3], error_lineno);
 
-        zend_try {
-            // remove ourselves from the stacktrace
-            EG(current_execute_data) = execute_data->prev_execute_data;
-            // this calls into PHP, but without sandbox, as we do not want to interfere with normal operation
-            call_user_function(CG(function_table), NULL, handler, return_value, 4, params);
+            zend_try {
+                // remove ourselves from the stacktrace
+                EG(current_execute_data) = execute_data->prev_execute_data;
+                // this calls into PHP, but without sandbox, as we do not want to interfere with normal operation
+                call_user_function(CG(function_table), NULL, handler, return_value, 4, params);
+            }
+            zend_catch { has_bailout = true; }
+            zend_end_try();
         }
-        zend_catch { has_bailout = true; }
-        zend_end_try();
 
         DDTRACE_G(active_error).type = 0;
     } else {
@@ -252,7 +254,7 @@ static PHP_METHOD(DDTrace_ExceptionOrErrorHandler, execute) {
         // Now that we left the main interaction scope with userland:
         // we can attach this exception without visible user impact as previous exception
         // Note that the change will leak into shutdown sequence though, but this is a minor tradeoff we make here.
-        // If this ever tunrs out to be problematic, we have to store it somewhere in DDTRACE_G()
+        // If this ever turns out to be problematic, we have to store it somewhere in DDTRACE_G()
         // and delay attaching until serialization.
         if (root_span && Z_TYPE_P((zval *)&old_exception) > IS_FALSE) {
             zval *previous = ZAI_EXCEPTION_PROPERTY(exception, ZEND_STR_PREVIOUS);
@@ -262,7 +264,7 @@ static PHP_METHOD(DDTrace_ExceptionOrErrorHandler, execute) {
                 previous = ZAI_EXCEPTION_PROPERTY(Z_OBJ_P(previous), ZEND_STR_PREVIOUS);
             }
 
-            if (Z_IS_RECURSIVE_P(previous) || Z_TYPE_P(previous) > IS_FALSE) {
+            if (Z_TYPE_P(previous) > IS_FALSE) {
                 // okay, let's not touch this, there's a cycle (or something weird)
                 GC_DELREF(exception);
                 ZVAL_COPY_VALUE(span_exception, (zval *)&old_exception);
@@ -271,7 +273,7 @@ static PHP_METHOD(DDTrace_ExceptionOrErrorHandler, execute) {
             }
 
             previous = ZAI_EXCEPTION_PROPERTY(exception, ZEND_STR_PREVIOUS);
-            while (Z_TYPE_P(previous) == IS_OBJECT && !Z_IS_RECURSIVE_P(previous)) {
+            while (Z_TYPE_P(previous) == IS_OBJECT && Z_IS_RECURSIVE_P(previous)) {
                 Z_UNPROTECT_RECURSION_P(previous);
                 previous = ZAI_EXCEPTION_PROPERTY(Z_OBJ_P(previous), ZEND_STR_PREVIOUS);
             }
