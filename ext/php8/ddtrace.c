@@ -431,7 +431,7 @@ static PHP_MSHUTDOWN_FUNCTION(signalfx_tracing) {
     return SUCCESS;
 }
 
-static void dd_rinit_once() {
+static void dd_rinit_once(void) {
     ddtrace_config_first_rinit();
 
     /* The env vars are memoized on MINIT before the SAPI env vars are available.
@@ -455,6 +455,8 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
     }
 
     if (DDTRACE_G(disable)) {
+        pthread_once(&dd_rinit_once_control, ddtrace_config_first_rinit);
+        zai_config_rinit();
         return SUCCESS;
     }
 
@@ -505,6 +507,7 @@ static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (DDTRACE_G(disable)) {
+        zai_config_rshutdown();
         return SUCCESS;
     }
 
