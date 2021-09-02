@@ -97,6 +97,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/config/php5/config_ini.c \
       zend_abstract_interface/config/php5/config_runtime.c \
       zend_abstract_interface/env/env.c \
+      zend_abstract_interface/functions/php5/functions.c \
       zend_abstract_interface/methods/php5/methods.c \
       zend_abstract_interface/sandbox/php5/sandbox.c \
       zend_abstract_interface/zai_sapi/php5/zai_sapi.c \
@@ -147,6 +148,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/config/php5/config_ini.c \
       zend_abstract_interface/config/php5/config_runtime.c \
       zend_abstract_interface/env/env.c \
+      zend_abstract_interface/functions/php5/functions.c \
       zend_abstract_interface/methods/php5/methods.c \
       zend_abstract_interface/sandbox/php5/sandbox.c \
       zend_abstract_interface/zai_sapi/php5/zai_sapi.c \
@@ -200,6 +202,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/config/php7-8/config_runtime.c \
       zend_abstract_interface/env/env.c \
       zend_abstract_interface/exceptions/php7-8/exceptions.c \
+      zend_abstract_interface/functions/php7-8/functions.c \
       zend_abstract_interface/headers/php7-8/headers.c \
       zend_abstract_interface/properties/php7-8/properties.c \
       zend_abstract_interface/sandbox/php7/sandbox.c \
@@ -254,7 +257,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/config/php7-8/config_runtime.c \
       zend_abstract_interface/env/env.c \
       zend_abstract_interface/exceptions/php7-8/exceptions.c \
-      zend_abstract_interface/functions/php8/functions.c \
+      zend_abstract_interface/functions/php7-8/functions.c \
       zend_abstract_interface/headers/php7-8/headers.c \
       zend_abstract_interface/properties/php7-8/properties.c \
       zend_abstract_interface/sandbox/php8/sandbox.c \
@@ -297,7 +300,8 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/exceptions])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/exceptions/php7-8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions])
-  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions/php8])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions/php5])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/functions/php7-8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/headers])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/headers/php7-8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/methods])

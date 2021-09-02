@@ -20,8 +20,6 @@ extern int ddtrace_op_array_extension;
 ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing)
 
 void ddtrace_engine_hooks_minit(void);
-void ddtrace_engine_hooks_rinit(void);
-void ddtrace_engine_hooks_rshutdown(void);
 void ddtrace_engine_hooks_mshutdown(void);
 
 void ddtrace_compile_time_reset(void);
