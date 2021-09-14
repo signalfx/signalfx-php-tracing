@@ -426,8 +426,6 @@ static PHP_MSHUTDOWN_FUNCTION(signalfx_tracing) {
 }
 
 static void dd_rinit_once(void) {
-    ddtrace_config_first_rinit();
-
     /* The env vars are memoized on MINIT before the SAPI env vars are available.
      * We use the first RINIT to bust the env var cache and use the SAPI env vars.
      * TODO Audit/remove config usages before RINIT and move config init to RINIT.
@@ -439,6 +437,7 @@ static void dd_rinit_once(void) {
     ddtrace_coms_init_and_start_writer();
 }
 
+static pthread_once_t dd_rinit_config_once_control = PTHREAD_ONCE_INIT;
 static pthread_once_t dd_rinit_once_control = PTHREAD_ONCE_INIT;
 
 static PHP_RINIT_FUNCTION(signalfx_tracing) {
@@ -448,9 +447,15 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
         DDTRACE_G(disable) = 1;
     }
 
+    // ZAI config is always set up
+    pthread_once(&dd_rinit_config_once_control, ddtrace_config_first_rinit);
+    zai_config_rinit();
+
+    if (strcmp(sapi_module.name, "cli") == 0 && !get_DD_TRACE_CLI_ENABLED()) {
+        DDTRACE_G(disable) = 1;
+    }
+
     if (DDTRACE_G(disable)) {
-        pthread_once(&dd_rinit_once_control, ddtrace_config_first_rinit);
-        zai_config_rinit();
         return SUCCESS;
     }
 
@@ -459,8 +464,6 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
 
     // Things that should only run on the first RINIT
     pthread_once(&dd_rinit_once_control, dd_rinit_once);
-
-    zai_config_rinit();
 
     DDTRACE_G(request_init_hook_loaded) = 0;
     if (ZSTR_LEN(get_DD_TRACE_REQUEST_INIT_HOOK())) {
@@ -863,6 +866,10 @@ static PHP_FUNCTION(add_global_tag) {
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "SS", &key, &val) == FAILURE) {
         ddtrace_log_debug(
             "Unable to parse parameters for DDTrace\\add_global_tag; expected (string $key, string $value)");
+        RETURN_NULL();
+    }
+
+    if (DDTRACE_G(disable)) {
         RETURN_NULL();
     }
 
@@ -1406,6 +1413,9 @@ static PHP_FUNCTION(dd_trace_peek_span_id) {
 /* {{{ proto string DDTrace\active_span() */
 static PHP_FUNCTION(active_span) {
     UNUSED(execute_data);
+    if (DDTRACE_G(disable)) {
+        RETURN_NULL();
+    }
     if (!DDTRACE_G(open_spans_top)) {
         if (get_DD_TRACE_GENERATE_ROOT_SPAN()) {
             ddtrace_push_root_span();  // ensure root span always exists, especially after serialization for testing
@@ -1419,6 +1429,9 @@ static PHP_FUNCTION(active_span) {
 /* {{{ proto string DDTrace\root_span() */
 static PHP_FUNCTION(root_span) {
     UNUSED(execute_data);
+    if (DDTRACE_G(disable)) {
+        RETURN_NULL();
+    }
     if (!DDTRACE_G(open_spans_top)) {
         if (get_DD_TRACE_GENERATE_ROOT_SPAN()) {
             ddtrace_push_root_span();  // ensure root span always exists, especially after serialization for testing
@@ -1442,13 +1455,17 @@ static PHP_FUNCTION(start_span) {
     }
 
     ddtrace_span_fci *span_fci = ddtrace_init_span();
-    ddtrace_open_span(span_fci);
+
+    if (!DDTRACE_G(disable)) {
+        GC_ADDREF(&span_fci->span.std);
+        ddtrace_open_span(span_fci);
+    }
 
     if (start_time_seconds > 0) {
         span_fci->span.start = (uint64_t)(start_time_seconds * 1000000000);
     }
 
-    RETURN_OBJ_COPY(&span_fci->span.std);
+    RETURN_OBJ(&span_fci->span.std);
 }
 
 /* {{{ proto string DDTrace\close_span() */
