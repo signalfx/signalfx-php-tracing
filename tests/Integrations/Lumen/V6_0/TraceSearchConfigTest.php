@@ -35,10 +35,10 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
             $traces,
             [
                 SpanAssertion::build(
-                    'simple_route',
-                    'unnamed-php-service',
-                    SpanAssertion::NOT_TESTED,
-                    SpanAssertion::NOT_TESTED
+                    'lumen.request',
+                    'lumen',
+                    'web',
+                    'GET /simple'
                 )
                     ->withExactTags([
                         'lumen.route.name' => 'simple_route',
@@ -53,6 +53,16 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                         '_dd1.sr.eausr' => 0.3,
                         '_dd.rule_psr' => 1,
                         '_sampling_priority_v1' => 1,
+                    ])
+                    ->withChildren([
+                        SpanAssertion::build(
+                            'Laravel\Lumen\Application.handleFoundRoute',
+                            'lumen',
+                            'web',
+                            'simple_route'
+                        )->withExactTags([
+                            'lumen.route.action' => 'App\Http\Controllers\ExampleController@simple',
+                        ]),
                     ]),
             ]
         );
