@@ -80,15 +80,15 @@ class LumenIntegration extends Integration
                     if (isset($routeInfo[1]['uses'])) {
                         $action = $routeInfo[1]['uses'];
                         $rootSpan->setTag('lumen.route.action', $action);
-                        $rootSpan->overwriteOperationName($action);
-                        $resourceName = $action;
+                        $span->meta['lumen.route.action'] = $action;
                     }
                     if (isset($routeInfo[1]['as'])) {
-                        $rootSpan->setTag('lumen.route.name', $routeInfo[1]['as']);
-                        $resourceName = $routeInfo[1]['as'];
+                        $routeAlias = $routeInfo[1]['as'];
+                        $rootSpan->setTag('lumen.route.name', $routeAlias);
+                        $span->resource = $routeAlias;
+                        $resourceName = $routeAlias;
                     }
-
-                    if (null !== $resourceName) {
+                    if (null !== $resourceName && !\ddtrace_config_url_resource_name_enabled()) {
                         $rootSpan->setTag(
                             Tag::RESOURCE_NAME,
                             $rootSpan->getTag(Tag::HTTP_METHOD) . ' ' . $resourceName
