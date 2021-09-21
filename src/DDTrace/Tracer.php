@@ -253,7 +253,9 @@ final class Tracer implements TracerInterface
      */
     public function startRootSpan($operationName, $options = [])
     {
-        return $this->rootScope = $this->startActiveSpan($operationName, $options);
+        $this->rootScope = $this->startActiveSpan($operationName, $options);
+        $this->setPrioritySamplingFromSpan($this->rootScope->getSpan()); // make it the source of truth
+        return $this->rootScope;
     }
 
     /**
@@ -326,7 +328,7 @@ final class Tracer implements TracerInterface
             throw UnsupportedFormat::forFormat($format);
         }
 
-        $this->enforcePrioritySamplingOnRootSpan();
+        $this->setPrioritySampling($this->getPrioritySampling());
         $this->propagators[$format]->inject($spanContext, $carrier);
     }
 
@@ -363,9 +365,8 @@ final class Tracer implements TracerInterface
         }
 
         // At this time, for sure we need to enforce a decision on priority sampling.
-        // Most probably, especially if a distributed tracing request has been done, priority sampling
-        // will be already defined.
-        $this->enforcePrioritySamplingOnRootSpan();
+        // If the user has removed the priority sampling (e.g. due to directly assigning metrics), put it back.
+        $this->setPrioritySampling($this->getPrioritySampling());
         $this->transport->send($this);
     }
 
@@ -556,6 +557,11 @@ final class Tracer implements TracerInterface
      */
     public function getPrioritySampling()
     {
+        // root span is source of truth for priority sampling (if it exists)
+        // @phpstan-ignore-next-line 'Undefined property $metrics' in an isset() check?! Must be a phpstan bug...
+        if (($rootSpan = $this->getSafeRootSpan()) && isset($rootSpan->metrics['_sampling_priority_v1'])) {
+            return $rootSpan->metrics['_sampling_priority_v1'];
+        }
         return $this->prioritySampling;
     }
 
@@ -595,22 +601,5 @@ final class Tracer implements TracerInterface
     public function getTracesCount()
     {
         return count($this->traces);
-    }
-
-    /**
-     * Enforce priority sampling on the root span.
-     */
-    public function enforcePrioritySamplingOnRootSpan()
-    {
-        if ($this->prioritySampling !== Sampling\PrioritySampling::UNKNOWN) {
-            return;
-        }
-
-        $rootSpan = $this->getSafeRootSpan();
-        if (null === $rootSpan) {
-            return;
-        }
-
-        $this->setPrioritySamplingFromSpan($rootSpan);
     }
 }
