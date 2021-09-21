@@ -26,7 +26,7 @@ x-aliases:
       environment:
         - REDIS_HOSTNAME=redis_integration
         - DDAGENT_HOSTNAME=ddagent_integration
-        - AGENT_HOSTNAME=signalfx_agent_integration
+        - HTTPBIN_HOSTNAME=signalfx_agent_integration
         - COMPOSER_MEMORY_LIMIT=-1
         - PHP_IDE_CONFIG=serverName=docker
         - DD_TRACE_DOCKER_DEBUG
