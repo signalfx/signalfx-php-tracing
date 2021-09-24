@@ -15,7 +15,7 @@ function testErrorFromUserland()
 
 DDTrace\trace_function('testErrorFromUserland', function (SpanData $span) {
     $span->name = 'testErrorFromUserland';
-    $span->meta = ['sfx.error.message' => 'Foo error'];
+    $span->meta += ['sfx.error.message' => 'Foo error'];
 });
 
 testErrorFromUserland();
@@ -26,7 +26,7 @@ var_dump(dd_trace_serialize_closed_spans());
 testErrorFromUserland()
 array(1) {
   [0]=>
-  array(9) {
+  array(11) {
     ["trace_id"]=>
     string(%d) "%d"
     ["span_id"]=>
@@ -39,14 +39,18 @@ array(1) {
     string(21) "testErrorFromUserland"
     ["resource"]=>
     string(21) "testErrorFromUserland"
+    ["service"]=>
+    string(36) "errors_are_flagged_from_userland.php"
+    ["type"]=>
+    string(3) "cli"
     ["error"]=>
     int(1)
     ["meta"]=>
     array(2) {
-      ["sfx.error.message"]=>
-      string(9) "Foo error"
       ["system.pid"]=>
       string(%d) "%d"
+      ["sfx.error.messages"]=>
+      string(9) "Foo error"
     }
     ["metrics"]=>
     array(1) {
