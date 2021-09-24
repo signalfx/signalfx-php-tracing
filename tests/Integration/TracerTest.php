@@ -279,7 +279,7 @@ final class TracerTest extends BaseTestCase
             'noopEnvPrecedence',
             function (SpanData $span) {
                 $span->name = 'custom.child.2';
-                $span->meta = ['local_tag' => 'local'];
+                $span->meta['local_tag'] = 'local';
             }
         );
 

@@ -60,12 +60,14 @@ final class Bootstrap
                         Bootstrap::flushTracerShutdown();
                     } else {
                         $tracer = GlobalTracer::get();
-                        // this also gets set when creating a root span, but may not have the latest up-to-date data
-                        if (
-                            'cli' !== PHP_SAPI && \ddtrace_config_url_resource_name_enabled()
-                            && $rootSpan = $tracer->getSafeRootSpan()
-                        ) {
-                            $tracer->addUrlAsResourceNameToSpan($rootSpan);
+                        if (PHP_VERSION_ID < 70000) {
+                            // this also gets set when creating a root span, but may not have the latest up-to-date data
+                            if (
+                                'cli' !== PHP_SAPI && \ddtrace_config_url_resource_name_enabled()
+                                && $rootSpan = $tracer->getSafeRootSpan()
+                            ) {
+                                $tracer->addUrlAsResourceNameToSpan($rootSpan);
+                            }
                         }
                         /*
                          * Having this priority sampling here is actually a bug (should happen after service name
@@ -134,104 +136,73 @@ final class Bootstrap
                     $httpHeaders
                 )
             )->getSpan();
-            $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
-            if (isset($_SERVER['REQUEST_METHOD'])) {
-                $span->setTag(Tag::HTTP_METHOD, $_SERVER['REQUEST_METHOD']);
-            }
-            if (isset($_SERVER['REQUEST_URI'])) {
-                $span->setTag(Tag::HTTP_URL, $_SERVER['REQUEST_URI']);
-            }
-            // Status code defaults to 200, will be later on changed when http_response_code will be called
-            $span->setTag(Tag::HTTP_STATUS_CODE, 200);
+            if (PHP_VERSION_ID < 70000) {
+                $span->setTag(Tag::SPAN_TYPE, Type::WEB_SERVLET);
+                if (isset($_SERVER['REQUEST_METHOD'])) {
+                    $span->setTag(Tag::HTTP_METHOD, $_SERVER['REQUEST_METHOD']);
+                }
+                if (isset($_SERVER['REQUEST_URI'])) {
+                    $span->setTag(Tag::HTTP_URL, $_SERVER['REQUEST_URI']);
+                }
+                // Status code defaults to 200, will be later on changed when http_response_code will be called
+                $span->setTag(Tag::HTTP_STATUS_CODE, 200);
 
-
-            // Adding configured incoming request http headers
-            foreach (Private_\util_extract_configured_headers_as_tags($httpHeaders, true) as $tag => $value) {
-                $span->setTag($tag, $value);
+                // Adding configured incoming request http headers
+                foreach (Private_\util_extract_configured_headers_as_tags($httpHeaders, true) as $tag => $value) {
+                    $span->setTag($tag, $value);
+                }
             }
 
-            if (PHP_VERSION_ID >= 70000) {
+            if (PHP_VERSION_ID >= 70000 && PHP_VERSION_ID < 80000) {
                 foreach ($httpHeaders as $header => $value) {
                     if (stripos($header, Propagator::DEFAULT_ORIGIN_HEADER) === 0) {
                         add_global_tag(Tag::ORIGIN, $value);
+                        $span->setTag(Tag::ORIGIN, $value);
                     }
                 }
             }
         }
         $integration = WebIntegration::getInstance();
         $integration->addTraceAnalyticsIfEnabledLegacy($span);
+
+        // is reset during span init, we need to re-set it again here
         $span->setTag(Tag::SERVICE_NAME, \ddtrace_config_app_name($operationName));
         $span->setTag(Tag::COMPONENT, 'web.request');
 
-        $rootSpan = $span;
-        \DDTrace\hook_function('header', null, function ($args) use ($rootSpan) {
-            if (isset($args[2])) {
-                $parsedHttpStatusCode = $args[2];
-            } elseif (isset($args[0])) {
-                $parsedHttpStatusCode = Bootstrap::parseStatusCode($args[0]);
-            }
-
-            if (isset($parsedHttpStatusCode)) {
-                $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $parsedHttpStatusCode);
-            }
-
-            // Adding configured outgoing response http headers
-            if (isset($args[0]) && \is_string($args[0])) {
-                $headerParts = explode(':', $args[0], 2);
-                if (count($headerParts) == 2) {
-                    foreach (
-                        Private_\util_extract_configured_headers_as_tags(
-                            [$headerParts[0] => $headerParts[1]],
-                            false
-                        ) as $tag => $value
-                    ) {
-                        $rootSpan->setTag($tag, $value);
-                    }
+        if (PHP_VERSION_ID < 70000) {
+            $rootSpan = $span;
+            \DDTrace\hook_function('header', null, function ($args) use ($rootSpan) {
+                if (isset($args[2])) {
+                    $parsedHttpStatusCode = $args[2];
+                } elseif (isset($args[0])) {
+                    $parsedHttpStatusCode = Bootstrap::parseStatusCode($args[0]);
                 }
-            }
-        });
 
-        \DDTrace\hook_function('http_response_code', null, function ($args) use ($rootSpan) {
-            if (isset($args[0]) && \is_numeric($code = $args[0])) {
-                $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $code);
-            }
-        });
+                if (isset($parsedHttpStatusCode)) {
+                    $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $parsedHttpStatusCode);
+                }
 
-        if (\sfx_trace_config_trace_file_get_contents()) {
-            \DDTrace\trace_function('file_get_contents', function (SpanData $span, $args, $result) {
-                $span->name = 'file_get_contents';
-                $span->meta['file.name'] = $args[0];
-                if ($result === false) {
-                    $span->meta[Tag::ERROR] = 'true';
-                    $err = \error_get_last();
-                    if ($err) {
-                        $span->meta[Tag::ERROR_MSG] = $err['message'];
+                // Adding configured outgoing response http headers
+                if (isset($args[0]) && \is_string($args[0])) {
+                    $headerParts = explode(':', $args[0], 2);
+                    if (count($headerParts) == 2) {
+                        foreach (
+                            Private_\util_extract_configured_headers_as_tags(
+                                [$headerParts[0] => $headerParts[1]],
+                                false
+                            ) as $tag => $value
+                        ) {
+                            $rootSpan->setTag($tag, $value);
+                        }
                     }
                 }
             });
-        }
 
-        if (\sfx_trace_config_trace_json()) {
-            \DDTrace\trace_function('json_encode', function (SpanData $span) {
-                $span->name = 'json_encode';
+            \DDTrace\hook_function('http_response_code', null, function ($args) use ($rootSpan) {
+                if (isset($args[0]) && \is_numeric($code = $args[0])) {
+                    $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $code);
+                }
             });
-
-            \DDTrace\trace_function('json_decode', function (SpanData $span) {
-                $span->name = 'json_decode';
-            });
-        }
-
-        foreach (\sfx_trace_config_capture_env_vars() as $captured_env_key => $normalized_key) {
-            $val = getenv($captured_env_key);
-            if ($val !== false) {
-                $rootSpan->setTag($normalized_key, $val);
-            }
-        }
-
-        foreach (\sfx_trace_config_capture_request_headers() as $key => $tag) {
-            if (!empty($_SERVER[$key])) {
-                $rootSpan->setTag($tag, $_SERVER[$key]);
-            }
         }
     }
 
