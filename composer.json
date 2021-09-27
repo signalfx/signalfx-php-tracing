@@ -50,6 +50,7 @@
             "DDTrace\\Tests\\": "./tests/"
         }
     },
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
         "compile": [
