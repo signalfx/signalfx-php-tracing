@@ -12,7 +12,7 @@ $ini = [
 $env = [
     'DD_ENV=my-env',
     'SIGNALFX_SERVICE=my-service',
-    'SIGNALFX_TRACE_CLI_ENABLED=1',
+    'SIGNALFX_TRACE_CLI_ENABLED=0',
     'SIGNALFX_TRACE_DEBUG=1',
     'DD_TRACE_SAMPLE_RATE=0.42',
     'DD_TRACE_SAMPLING_RULES=\'[{"service": "a.*", "name": "b", "sample_rate": 0.1}, {"sample_rate": 0.2}]\'',
@@ -65,7 +65,7 @@ dd_dump_startup_logs($logs, [
 --EXPECT--
 env: "my-env"
 service: "my-service"
-enabled_cli: true
+enabled_cli: false
 debug: true
 sample_rate: 0.4200
 sampling_rules: "[{"service": "a.*", "name": "b", "sample_rate": 0.1}, {"sample_rate": 0.2}]"
@@ -85,4 +85,4 @@ report_hostname_on_root_span: true
 traced_internal_functions: "array_sum,mt_rand,DateTime::add"
 auto_prepend_file_configured: true
 integrations_disabled: "curl,mysqli"
-enabled_from_env: false
+enabled_from_env: true
