@@ -132,9 +132,9 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'component' => 'yii',
                     ])
                         ->setError(
-                            PHP_VERSION_ID >= 70000 ? 'Exception' : null,
-                            PHP_VERSION_ID >= 70000 ? 'datadog' : null,
-                            PHP_VERSION_ID >= 70000
+                            'Exception',
+                            'datadog',
+                            true
                         )
                         ->withChildren([
                             SpanAssertion::build(
