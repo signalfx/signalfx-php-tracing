@@ -77,24 +77,24 @@ static int ddtrace_startup(struct _zend_extension *extension) {
     return SUCCESS;
 }
 
-static void ddtrace_shutdown(struct _zend_extension *extension) {
+static void signalfx_tracing_shutdown(struct _zend_extension *extension) {
     UNUSED(extension);
 
     ddtrace_internal_handlers_shutdown();
 }
 
-static void ddtrace_activate(void) {}
-static void ddtrace_deactivate(void) {}
+static void signalfx_tracing_activate(void) {}
+static void signalfx_tracing_deactivate(void) {}
 
 static zend_extension _dd_zend_extension_entry = {"ddtrace",
                                                   PHP_DDTRACE_VERSION,
                                                   "Datadog",
                                                   "https://github.com/DataDog/dd-trace-php",
                                                   "Copyright Datadog",
-                                                  ddtrace_startup,
-                                                  ddtrace_shutdown,
-                                                  ddtrace_activate,
-                                                  ddtrace_deactivate,
+                                                  signalfx_tracing_startup,
+                                                  signalfx_tracing_shutdown,
+                                                  signalfx_tracing_activate,
+                                                  signalfx_tracing_deactivate,
                                                   NULL,
                                                   NULL,
                                                   NULL,
@@ -141,16 +141,8 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_env_config, 0, 0, 1)
 ZEND_ARG_INFO(0, env_name)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id, 0, 0, 1)
-ZEND_ARG_INFO(0, trace_id)
-ZEND_END_ARG_INFO()
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_set_trace_id_hex, 0, 0, 1)
 ZEND_ARG_INFO(0, trace_id)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id, 0, 0, 0)
-ZEND_ARG_INFO(0, existing_id)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dd_trace_push_span_id_hex, 0, 0, 0)
@@ -513,7 +505,7 @@ static void dd_initialize_request() {
     }
 }
 
-static PHP_RINIT_FUNCTION(ddtrace) {
+static PHP_RINIT_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (ddtrace_has_excluded_module == true) {
@@ -1103,7 +1095,7 @@ static PHP_FUNCTION(dd_trace_dd_get_memory_limit) {
 /* {{{ proto bool dd_trace_check_memory_under_limit() */
 static PHP_FUNCTION(dd_trace_check_memory_under_limit) {
     UNUSED(execute_data);
-    RETURN_BOOL(ddtrace_check_memory_under_limit() == true ? 1 : 0);
+    RETURN_BOOL(ddtrace_is_memory_under_limit());
 }
 
 static PHP_FUNCTION(dd_tracer_circuit_breaker_register_error) {
@@ -1396,13 +1388,13 @@ static PHP_FUNCTION(dd_trace_internal_fn) {
     }
 }
 
-/* {{{ proto string dd_trace_set_trace_id() */
-static PHP_FUNCTION(dd_trace_set_trace_id) {
+/* {{{ proto string dd_trace_set_trace_id_hex() */
+static PHP_FUNCTION(dd_trace_set_trace_id_hex) {
     UNUSED(execute_data);
 
     zval *trace_id = NULL;
     if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "|z!", &trace_id) == SUCCESS) {
-        if (ddtrace_set_userland_trace_id(trace_id) == true) {
+        if (ddtrace_set_userland_trace_id_hex(trace_id) == true) {
             RETURN_BOOL(1);
         }
     }
@@ -1623,7 +1615,7 @@ bool ddtrace_tracer_is_limited(void) {
             return true;
         }
     }
-    return ddtrace_check_memory_under_limit() == true ? false : true;
+    return !ddtrace_is_memory_under_limit();
 }
 
 /* {{{ proto string dd_trace_tracer_is_limited() */
@@ -1741,7 +1733,7 @@ static const zend_function_entry signalfx_tracing_functions[] = {
     DDTRACE_SUB_NS_FE("Testing\\", trigger_error, arginfo_ddtrace_testing_trigger_error),
     DDTRACE_FE_END};
 
-zend_module_entry ddtrace_module_entry = {
+zend_module_entry signalfx_tracing_module_entry = {
     STANDARD_MODULE_HEADER,  PHP_DDTRACE_EXTNAME,          signalfx_tracing_functions,      PHP_MINIT(signalfx_tracing),
     PHP_MSHUTDOWN(signalfx_tracing),  PHP_RINIT(signalfx_tracing),           PHP_RSHUTDOWN(signalfx_tracing), PHP_MINFO(signalfx_tracing),
     PHP_DDTRACE_VERSION,     PHP_MODULE_GLOBALS(signalfx_tracing),  PHP_GINIT(signalfx_tracing),     NULL,
