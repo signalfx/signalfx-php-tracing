@@ -512,7 +512,7 @@ static PHP_MSHUTDOWN_FUNCTION(signalfx_tracing) {
 
     UNREGISTER_INI_ENTRIES();
 
-    if (DDTRACE_G(disable)) {
+    if (DDTRACE_G(disable) == 1) {
         zai_config_mshutdown();
         return SUCCESS;
     }
@@ -598,7 +598,7 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (ddtrace_has_excluded_module == true) {
-        DDTRACE_G(disable) = 1;
+        DDTRACE_G(disable) = 2;
     }
 
     // ZAI config is always set up
@@ -606,7 +606,7 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
     zai_config_rinit();
 
     if (strcmp(sapi_module.name, "cli") == 0 && !get_DD_TRACE_CLI_ENABLED()) {
-        DDTRACE_G(disable) = 1;
+        DDTRACE_G(disable) = 2;
     }
 
     if (DDTRACE_G(disable)) {
