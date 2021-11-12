@@ -64,8 +64,7 @@ class PDOIntegration extends Integration
             }
             $span->name = 'PDO.exec';
             $span->type = Type::SQL;
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
-            $span->meta[Tag::COMPONENT] = 'PDO';
+            $span->resource = Integration::toString($args[0]);
             if (is_numeric($retval)) {
                 $span->meta['db.rowcount'] = $retval;
             }
@@ -85,9 +84,7 @@ class PDOIntegration extends Integration
             }
             $span->name = 'PDO.query';
             $span->type = Type::SQL;
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
-            $span->meta[Tag::COMPONENT] = 'PDO';
-
+            $span->resource = Integration::toString($args[0]);
             if ($retval instanceof \PDOStatement) {
                 PDOIntegration::storeStatementFromConnection($this, $retval);
             }
@@ -114,8 +111,9 @@ class PDOIntegration extends Integration
                 return false;
             }
             $span->name = 'PDO.prepare';
-            $span->meta[Tag::COMPONENT] = 'PDO';
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
+            $span->service = 'pdo';
+            $span->type = Type::SQL;
+            $span->resource = Integration::toString($args[0]);
             PDOIntegration::setConnectionTags($this, $span);
             PDOIntegration::storeStatementFromConnection($this, $retval);
         });
