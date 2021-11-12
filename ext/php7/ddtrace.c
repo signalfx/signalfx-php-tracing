@@ -584,7 +584,6 @@ static void dd_clean_globals() {
     ddtrace_dogstatsd_client_rshutdown();
 
     ddtrace_dispatch_destroy();
-    ddtrace_free_span_id_stack();
     ddtrace_free_span_stacks();
     ddtrace_coms_rshutdown();
 
@@ -597,6 +596,7 @@ static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     UNUSED(module_number, type);
 
     if (!get_DD_TRACE_ENABLED()) {
+        ddtrace_free_span_id_stack();
         return SUCCESS;
     }
 
@@ -611,6 +611,7 @@ static PHP_RSHUTDOWN_FUNCTION(signalfx_tracing) {
     }
 
     dd_clean_globals();
+    ddtrace_free_span_id_stack();
 
     return SUCCESS;
 }
@@ -821,6 +822,10 @@ static PHP_FUNCTION(dd_trace) {
     }
 
     if (ddtrace_should_warn_legacy()) {
+        if (class_name) {
+            convert_to_string(class_name);
+        }
+        convert_to_string(function);
         char *message =
             "dd_trace DEPRECATION NOTICE: the function `dd_trace` (target: %s%s%s) is deprecated and has become a "
             "no-op since 0.48.0, and will eventually be removed. Please follow "
