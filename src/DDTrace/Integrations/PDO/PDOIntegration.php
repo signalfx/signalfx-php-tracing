@@ -58,8 +58,7 @@ class PDOIntegration extends Integration
         \DDTrace\trace_method('PDO', 'exec', function (SpanData $span, array $args, $retval) use ($integration) {
             $span->name = 'PDO.exec';
             $span->type = Type::SQL;
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
-            $span->meta[Tag::COMPONENT] = 'PDO';
+            $span->resource = Integration::toString($args[0]);
             if (is_numeric($retval)) {
                 $span->meta['db.rowcount'] = $retval;
             }
@@ -76,9 +75,7 @@ class PDOIntegration extends Integration
         \DDTrace\trace_method('PDO', 'query', function (SpanData $span, array $args, $retval) use ($integration) {
             $span->name = 'PDO.query';
             $span->type = Type::SQL;
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
-            $span->meta[Tag::COMPONENT] = 'PDO';
-
+            $span->resource = Integration::toString($args[0]);
             if ($retval instanceof \PDOStatement) {
                 PDOIntegration::storeStatementFromConnection($this, $retval);
             }
@@ -99,8 +96,9 @@ class PDOIntegration extends Integration
         // public PDOStatement PDO::prepare ( string $statement [, array $driver_options = array() ] )
         \DDTrace\trace_method('PDO', 'prepare', function (SpanData $span, array $args, $retval) {
             $span->name = 'PDO.prepare';
-            $span->meta[Tag::COMPONENT] = 'PDO';
-            $span->meta[Tag::DB_STATEMENT] = PDOIntegration::truncate($args[0]);
+            $span->service = 'pdo';
+            $span->type = Type::SQL;
+            $span->resource = Integration::toString($args[0]);
             PDOIntegration::setConnectionTags($this, $span);
             PDOIntegration::storeStatementFromConnection($this, $retval);
         });
