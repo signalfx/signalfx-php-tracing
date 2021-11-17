@@ -50,7 +50,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'GET simple-route'
                         )->withExactTags([
                             'http.method' => 'GET',
-                            'http.url' => '/simple',
+                            'http.url' => 'http://localhost:' . self::PORT . '/simple',
                             'http.status_code' => '200',
                             'component' => 'slim',
                         ]),
@@ -63,7 +63,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'GET /simple_view'
                         )->withExactTags([
                             'http.method' => 'GET',
-                            'http.url' => '/simple_view',
+                            'http.url' => 'http://localhost:' . self::PORT . '/simple_view',
                             'http.status_code' => '200',
                             'component' => 'slim',
                         ])->withChildren([
@@ -86,7 +86,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             'GET /error'
                         )->withExactTags([
                             'http.method' => 'GET',
-                            'http.url' => '/error',
+                            'http.url' => 'http://localhost:' . self::PORT . '/error',
                             'http.status_code' => '500',
                             'component' => 'slim',
                         ])->setError(null, null /* On PHP 5.6 slim error messages are not traced on sandboxed */),
