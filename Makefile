@@ -262,7 +262,6 @@ TEST_INTEGRATIONS_54 := \
 TEST_WEB_54 := \
 	test_web_laravel_42 \
 	test_web_cakephp_28 \
-	test_web_yii_2 \
 	test_web_zend_1 \
 	test_web_custom
 
