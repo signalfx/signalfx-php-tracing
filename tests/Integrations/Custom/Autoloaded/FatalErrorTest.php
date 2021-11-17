@@ -40,7 +40,7 @@ final class FatalErrorTest extends WebFrameworkTestCase
                     'GET /fatal'
                 )->withExactTags([
                     'http.method' => 'GET',
-                    'http.url' => '/fatal',
+                    'http.url' => 'http://localhost:' . self::PORT . '/fatal',
                     'http.status_code' => '200',
                     'component' => 'web.request',
                 ])
