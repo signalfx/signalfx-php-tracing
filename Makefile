@@ -287,7 +287,6 @@ TEST_WEB_55 := \
 	test_web_symfony_30 \
 	test_web_symfony_33 \
 	test_web_symfony_34 \
-	test_web_yii_2 \
 	test_web_wordpress_48 \
 	test_web_zend_1 \
 	test_web_custom
@@ -314,7 +313,6 @@ TEST_WEB_56 := \
 	test_web_symfony_30 \
 	test_web_symfony_33 \
 	test_web_symfony_34 \
-	test_web_yii_2 \
 	test_web_wordpress_48 \
 	test_web_wordpress_55 \
 	test_web_zend_1 \
