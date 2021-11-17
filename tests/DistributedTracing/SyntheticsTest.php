@@ -60,7 +60,7 @@ class SyntheticsTest extends WebFrameworkTestCase
                 'GET /index.php'
             )->withExactTags([
                 'http.method' => 'GET',
-                'http.url' => '/index.php',
+                'http.url' => 'http://localhost:9999/index.php',
                 'http.status_code' => '200',
                 // SFX: origin not extracted at B3TextMap
                 // '_dd.origin' => 'synthetics-browser',

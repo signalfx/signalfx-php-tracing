@@ -47,7 +47,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'GET /simple'
                     )->withExactTags([
                         'http.method' => 'GET',
-                        'http.url' => '/simple',
+                        'http.url' => 'http://localhost:' . self::PORT . '/simple',
                         'http.status_code' => '200',
                         'component' => 'web.request',
                     ]),
@@ -60,7 +60,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'GET /simple_view'
                     )->withExactTags([
                         'http.method' => 'GET',
-                        'http.url' => '/simple_view',
+                        'http.url' => 'http://localhost:' . self::PORT . '/simple_view',
                         'http.status_code' => '200',
                         'component' => 'web.request',
                     ]),
@@ -73,7 +73,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'GET /error'
                     )->withExactTags([
                         'http.method' => 'GET',
-                        'http.url' => '/error',
+                        'http.url' => 'http://localhost:' . self::PORT . '/error',
                         'http.status_code' => '500',
                         'component' => 'web.request',
                     ])->setError(),

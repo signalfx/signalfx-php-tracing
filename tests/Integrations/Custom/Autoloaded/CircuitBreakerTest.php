@@ -6,8 +6,10 @@ use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 
-final class TraceSearchConfigTest extends WebFrameworkTestCase
+final class CircuitBreakerTest extends WebFrameworkTestCase
 {
+    const FLUSH_INTERVAL_MS = 500;
+
     protected static function getAppIndexScript()
     {
         return __DIR__ . '/../../../Frameworks/Custom/Version_Autoloaded/public/index.php';
@@ -16,18 +18,28 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_ANALYTICS_ENABLED' => 'true',
-            'DD_WEB_ANALYTICS_SAMPLE_RATE' => '0.3',
+            'DD_TRACE_BETA_SEND_TRACES_VIA_THREAD' => true,
+            'DD_TRACE_BGS_ENABLED' => true,
+            'DD_TRACE_ENCODER' => 'msgpack',
+            'DD_TRACE_AGENT_MAX_CONSECUTIVE_FAILURES' => 2,
+            'DD_TRACE_AGENT_FLUSH_INTERVAL' => self::FLUSH_INTERVAL_MS,
         ]);
     }
 
-    /**
-     * @throws \Exception
-     */
+    protected function ddTearDown()
+    {
+        parent::ddTearDown();
+        \dd_tracer_circuit_breaker_register_success();
+    }
+
     public function testScenario()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $this->call(GetSpec::create('Testing trace analytics config metric', '/simple'));
+            $spec = GetSpec::create('Failed circuit breaker', '/circuit_breaker');
+            $this->call($spec);
+
+            // allow time for background sender to trigger
+            usleep(self::FLUSH_INTERVAL_MS * 2 * 1000);
         });
 
         $this->assertExpectedSpans(
@@ -37,15 +49,11 @@ final class TraceSearchConfigTest extends WebFrameworkTestCase
                     'web.request',
                     'web.request',
                     'web',
-                    'GET /simple'
+                    'GET /circuit_breaker'
                 )->withExactTags([
                     'http.method' => 'GET',
-                    'http.url' => 'http://localhost:' . self::PORT . '/simple',
+                    'http.url' => 'http://localhost:' . self::PORT . '/circuit_breaker',
                     'http.status_code' => '200',
-                ])->withExactMetrics([
-                    '_dd1.sr.eausr' => 0.3,
-                    '_dd.rule_psr' => 1,
-                    '_sampling_priority_v1' => 1,
                 ]),
             ]
         );
