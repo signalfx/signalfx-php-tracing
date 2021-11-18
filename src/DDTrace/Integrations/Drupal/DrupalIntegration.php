@@ -77,12 +77,20 @@ class DrupalIntegration extends Integration
     {
         $integration = $this;
 
-        // Trace some methods
+        \DDTrace\trace_function('menu_execute_active_handler', function (SpanData $span) use ($rootSpan) {
+            if (!empty($GLOBALS['user'])) {
+                $user = $GLOBALS['user'];
+                $rootSpan->setTag('drupal.user.id', $user->uid);
+                $rootSpan->setTag('drupal.user.roles', implode(',', array_values($user->roles)));
+            }
+            $span->name = 'menu_execute_active_handler';
+            $span->meta[Tag::COMPONENT] = 'drupal';
+        });
+
         $methods = array(
             '_drupal_bootstrap_full', '_drupal_bootstrap_page_cache', '_drupal_bootstrap_database',
             '_drupal_bootstrap_variables', 'drupal_session_initialize', '_drupal_bootstrap_page_header',
-            'drupal_language_initialize', 'menu_execute_active_handler', 'drupal_deliver_page',
-            'drupal_cron_run',
+            'drupal_language_initialize', 'drupal_deliver_page', 'drupal_cron_run',
         );
         foreach ($methods as $method) {
             \DDTrace\trace_function($method, function (SpanData $span) use ($method) {
@@ -180,6 +188,13 @@ class DrupalIntegration extends Integration
                 if ($integration->shouldRenameRootSpan()) {
                     $route = DrupalCommon::normalizeRoute($req->getPathInfo());
                     $rootSpan->overwriteOperationName($route);
+                }
+
+                $user = \Drupal::currentUser();
+
+                if ($user->isAuthenticated()) {
+                    $rootSpan->setTag('drupal.user.id', $user->id());
+                    $rootSpan->setTag('drupal.user.roles', implode(',', $user->getRoles()));
                 }
 
                 $span->name = 'drupal.kernel.handle';

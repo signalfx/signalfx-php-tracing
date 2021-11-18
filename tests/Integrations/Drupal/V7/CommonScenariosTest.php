@@ -49,6 +49,8 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     'http.url' => '/user/login',
                     'http.status_code' => '200',
                     'component' => 'web.request',
+                    'drupal.user.id' => '0',
+                    'drupal.user.roles' => 'anonymous user',
                 ])->withChildren([
                     SpanAssertion::exists('PDO.prepare'),
                     SpanAssertion::exists('PDO.prepare'),
