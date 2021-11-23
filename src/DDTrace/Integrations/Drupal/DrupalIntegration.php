@@ -92,12 +92,18 @@ class DrupalIntegration extends Integration
             '_drupal_bootstrap_variables', 'drupal_session_initialize', '_drupal_bootstrap_page_header',
             'drupal_language_initialize', 'drupal_deliver_page', 'drupal_cron_run',
         );
+
         foreach ($methods as $method) {
             \DDTrace\trace_function($method, function (SpanData $span) use ($method) {
                 $span->name = $method;
                 $span->meta[Tag::COMPONENT] = 'drupal';
             });
         }
+
+        \DDTrace\trace_method('view', 'execute', function (SpanData $span) {
+            $span->name = 'drupal.view.execute';
+            $span->tag['drupal.view'] = $this->name;
+        });
 
         \DDTrace\trace_function('drupal_http_request', [
             'posthook' => function (SpanData $span, $args, $retval) {
@@ -227,6 +233,23 @@ class DrupalIntegration extends Integration
                     $span->name = 'drupal.hook.' . $args[0];
                 } else {
                     $span->name = 'drupal.moduleHandler.invokeAll';
+                }
+            }
+        );
+
+        \DDTrace\trace_method(
+            'Drupal\views\ViewExecutable',
+            'execute',
+            function (SpanData $span) {
+                $span->name = 'drupal.view.execute';
+
+                $storage = $this->storage;
+                if ($storage) {
+                    $name = $storage->label();
+
+                    if ($name) {
+                        $span->meta['drupal.view.label'] = $name;
+                    }
                 }
             }
         );
