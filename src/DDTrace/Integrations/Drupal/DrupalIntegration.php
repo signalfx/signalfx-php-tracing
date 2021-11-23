@@ -248,7 +248,7 @@ class DrupalIntegration extends Integration
                     $name = $storage->label();
 
                     if ($name) {
-                        $span->meta['drupal.view.label'] = $name;
+                        $span->meta['drupal.view'] = $name;
                     }
                 }
             }
