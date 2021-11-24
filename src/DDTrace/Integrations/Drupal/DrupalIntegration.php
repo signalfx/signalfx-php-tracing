@@ -102,7 +102,7 @@ class DrupalIntegration extends Integration
 
         \DDTrace\trace_method('view', 'execute', function (SpanData $span) {
             $span->name = 'drupal.view.execute';
-            $span->tag['drupal.view'] = $this->name;
+            $span->meta['drupal.view'] = $this->name;
         });
 
         \DDTrace\trace_function('drupal_http_request', [
