@@ -137,12 +137,18 @@ class DrupalIntegration extends Integration
             $span->name = 'module_invoke';
             $span->resource = $args[0] . '_' . $args[1];
             $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta['drupal.module'] = $args[0];
         });
 
         \DDTrace\trace_function('module_invoke_all', function (SpanData $span, $args) {
             $span->name = 'module_invoke_all';
             $span->resource = $args[0];
             $span->meta[Tag::COMPONENT] = 'drupal';
+            $modules = module_implements($args[0]);
+
+            if ($modules) {
+                $span->meta['drupal.module'] = implode(',', $modules);
+            }
         });
 
         // Extract route
@@ -227,10 +233,32 @@ class DrupalIntegration extends Integration
 
         \DDTrace\trace_method(
             'Drupal\Core\Extension\ModuleHandler',
+            'invoke',
+            function (SpanData $span, $args) {
+                $module = $args[0];
+                $hook = $args[1];
+                if (!empty($hook)) {
+                    $span->name = 'drupal.hook.' . $hook;
+                } else {
+                    $span->name = 'drupal.moduleHandler.invoke';
+                }
+                if ($this->implementsHook($module, $hook)) {
+                    $span->meta['drupal.module'] = $module;
+                }
+            }
+        );
+
+        \DDTrace\trace_method(
+            'Drupal\Core\Extension\ModuleHandler',
             'invokeAll',
             function (SpanData $span, $args) {
                 if (!empty($args[0])) {
-                    $span->name = 'drupal.hook.' . $args[0];
+                    $hook = $args[0];
+                    $span->name = 'drupal.hook.' . $hook;
+                    $modules = $this->getImplementations($hook);
+                    if ($modules) {
+                        $span->meta['drupal.module'] = implode(',', $modules);
+                    }
                 } else {
                     $span->name = 'drupal.moduleHandler.invokeAll';
                 }
