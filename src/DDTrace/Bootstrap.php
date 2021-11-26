@@ -192,6 +192,13 @@ final class Bootstrap
                 $span->name = 'json_decode';
             });
         }
+
+        foreach (\sfx_trace_config_capture_env_vars() as $captured_env_key => $normalized_key) {
+            $val = getenv($captured_env_key);
+            if ($val !== false) {
+                $rootSpan->setTag($normalized_key, $val);
+            }
+        }
     }
 
     /**
