@@ -435,3 +435,13 @@ function sfx_trace_config_drupal_rename_span()
 {
     return _ddtrace_config_bool(\getenv('SIGNALFX_DRUPAL_RENAME_ROOT_SPAN'), true);
 }
+
+function sfx_trace_config_trace_json()
+{
+    return _ddtrace_config_bool(\getenv('SIGNALFX_TRACE_JSON'), false);
+}
+
+function sfx_trace_config_trace_file_get_contents()
+{
+    return _ddtrace_config_bool(\getenv('SIGNALFX_TRACE_FILE_GET_CONTENTS'), false);
+}

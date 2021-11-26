@@ -168,6 +168,30 @@ final class Bootstrap
                 $rootSpan->setTag(Tag::HTTP_STATUS_CODE, $code);
             }
         });
+
+        if (\sfx_trace_config_trace_file_get_contents()) {
+            \DDTrace\trace_function('file_get_contents', function (SpanData $span, $args, $result) {
+                $span->name = 'file_get_contents';
+                $span->meta['file.name'] = $args[0];
+                if ($result === false) {
+                    $span->meta[Tag::ERROR] = 'true';
+                    $err = \error_get_last();
+                    if ($err) {
+                        $span->meta[Tag::ERROR_MSG] = $err['message'];
+                    }
+                }
+            });
+        }
+
+        if (\sfx_trace_config_trace_json()) {
+            \DDTrace\trace_function('json_encode', function (SpanData $span) {
+                $span->name = 'json_encode';
+            });
+
+            \DDTrace\trace_function('json_decode', function (SpanData $span) {
+                $span->name = 'json_decode';
+            });
+        }
     }
 
     /**
