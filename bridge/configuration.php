@@ -445,3 +445,13 @@ function sfx_trace_config_trace_file_get_contents()
 {
     return _ddtrace_config_bool(\getenv('SIGNALFX_TRACE_FILE_GET_CONTENTS'), false);
 }
+
+function sfx_trace_config_capture_env_vars()
+{
+    $to_capture = _ddtrace_config_indexed_array(\getenv('SIGNALFX_CAPTURE_ENV_VARS'), []);
+    $normalized = [];
+    foreach ($to_capture as $key) {
+        $normalized[$key] = 'php.env.' . strtolower($key);
+    }
+    return $normalized;
+}
