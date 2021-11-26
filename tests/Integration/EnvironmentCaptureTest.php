@@ -19,7 +19,7 @@ class EnvironmentCaptureTest extends WebFrameworkTestCase
             'DD_TRACE_NO_AUTOLOADER' => '1',
             'MY_FOO' => '42',
             'MY_BAR' => 'xyz',
-            'SIGNALFX_CAPTURE_ENV_VARS' => ['MY_FOO', 'MY_BAR'],
+            'SIGNALFX_CAPTURE_ENV_VARS' => 'MY_FOO,MY_BAR',
         ]);
     }
 
