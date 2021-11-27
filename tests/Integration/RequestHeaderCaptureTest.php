@@ -25,10 +25,11 @@ class RequestHeaderCaptureTest extends WebFrameworkTestCase
     {
         $traces = $this->tracesFromWebRequest(
             function () {
-                $headers = array(
-                    'X-Foo' => '42',
-                );
-                $this->call(GetSpec::create('Root', '/success', $headers));
+                $this->call(GetSpec::create('Root', '/success', [
+                    'X-Foo: 42',
+                    'X-Foo: abc',
+                    'Content-Type: application/whatever'
+                ]));
             }
         );
 
@@ -40,7 +41,8 @@ class RequestHeaderCaptureTest extends WebFrameworkTestCase
                     'http.url' => '/success',
                     'http.status_code' => '200',
                     'component' => 'web.request',
-                    'http.request.header.x_foo' => '42',
+                    'http.request.header.x_foo' => '42, abc',
+                    'http.request.header.content_type' => 'application/whatever',
                 ]),
             ]
         );
