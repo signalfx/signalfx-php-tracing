@@ -199,6 +199,13 @@ final class Bootstrap
                 $rootSpan->setTag($normalized_key, $val);
             }
         }
+
+        foreach (\sfx_trace_config_capture_request_headers() as $key => $tag) {
+            $val = $_SERVER[$key];
+            if (!is_null($val)) {
+                $rootSpan->setTag($tag, $val);
+            }
+        }
     }
 
     /**

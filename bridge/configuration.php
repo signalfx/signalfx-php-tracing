@@ -455,3 +455,14 @@ function sfx_trace_config_capture_env_vars()
     }
     return $normalized;
 }
+
+function sfx_trace_config_capture_request_headers()
+{
+    $to_capture = _ddtrace_config_indexed_array(\getenv('SIGNALFX_CAPTURE_REQUEST_HEADERS'), []);
+    $normalized = [];
+    foreach ($to_capture as $key) {
+        $php_key = 'HTTP_' . str_replace('-', '_', strtoupper($key));
+        $normalized[$php_key] = 'http.request.header.' . str_replace('-', '_', strtolower($key));
+    }
+    return $normalized;
+}
