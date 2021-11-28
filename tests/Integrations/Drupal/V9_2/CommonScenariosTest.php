@@ -19,7 +19,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     {
         parent::ddSetUpBeforeClass();
         $pdo = new \PDO('mysql:host=mysql_integration;dbname=test', 'test', 'test');
-        $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/version-9.2.10/db.sql'));
+        $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/drupal-9.2.10/db.sql'));
     }
 
     protected static function getEnvs()
