@@ -304,10 +304,10 @@ class DrupalIntegration extends Integration
 
                 $span->name = 'drupal.event.' . $name;
                 if (method_exists($retval, 'getRequest')) {
-                   $controller = $retval->getRequest()->get('_controller');
-                   if ($controller) {
-                       $span->meta['drupal.controller'] = $controller;
-                   }
+                    $controller = $retval->getRequest()->get('_controller');
+                    if ($controller) {
+                        $span->meta['drupal.controller'] = $controller;
+                    }
                 }
             }
         );
