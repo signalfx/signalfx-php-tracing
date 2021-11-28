@@ -70,13 +70,12 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                             SpanAssertion::forOperation('drupal.event.kernel.controller')
                                 ->resource('')
                                 ->withExactTags([
-                                  'drupal.controller' => 'controller.form:getContentResult',
+                                    'drupal.controller' => 'controller.form:getContentResult',
                                 ]),
                             SpanAssertion::exists('drupal.event.kernel.controller_arguments'),
                             SpanAssertion::exists('drupal.event.kernel.finish_request'),
                             SpanAssertion::exists('drupal.event.kernel.request')->withChildren([
-                                SpanAssertion::exists('drupal.hook.language_types_info')->withChildren([
-                                ]),
+                                SpanAssertion::exists('drupal.hook.language_types_info'),
                             ]),
                             SpanAssertion::exists('drupal.event.kernel.response')->withChildren([
                                 SpanAssertion::exists('drupal.hook.theme_suggestions_block'),
@@ -105,10 +104,10 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                 SpanAssertion::exists('drupal.hook.block_content_access'),
                                 SpanAssertion::exists('drupal.hook.block_content_access'),
                                 SpanAssertion::forOperation('drupal.hook.entity_access')
-                                  ->resource('')
-                                  ->withExactTags([
-                                    'drupal.module' => 'content_moderation,media'
-                                  ]),
+                                    ->resource('')
+                                    ->withExactTags([
+                                        'drupal.module' => 'content_moderation,media'
+                                    ]),
                                 SpanAssertion::exists('drupal.hook.entity_access'),
                                 SpanAssertion::exists('drupal.hook.entity_access'),
                                 SpanAssertion::exists('drupal.hook.entity_access'),
