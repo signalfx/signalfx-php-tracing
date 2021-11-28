@@ -285,7 +285,7 @@ class DrupalIntegration extends Integration
         \DDTrace\trace_method(
             'Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher',
             'dispatch',
-            function (SpanData $span, $args, $ret) {
+            function (SpanData $span, $args, $retval) {
                 if (!empty($args[0]) && is_string($args[0])) {
                     $name = $args[0];
                 } elseif (!empty($args[1]) && is_string($args[1])) {
@@ -303,8 +303,8 @@ class DrupalIntegration extends Integration
                 }
 
                 $span->name = 'drupal.event.' . $name;
-                if (method_exists($ret, 'getRequest')) {
-                   $controller = $ret->getRequest()->get('_controller');
+                if (method_exists($retval, 'getRequest')) {
+                   $controller = $retval->getRequest()->get('_controller');
                    if ($controller) {
                        $span->meta['drupal.controller'] = $controller;
                    }
