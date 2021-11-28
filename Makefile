@@ -442,6 +442,7 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_predis1
 
 TEST_WEB_73 := \
+	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -464,8 +465,7 @@ TEST_WEB_73 := \
 	test_web_zend_1 \
 	test_web_custom \
 	test_web_drupal_7 \
-	test_web_drupal_89 \
-	test_web_drupal_9_2
+	test_web_drupal_89
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
@@ -481,6 +481,7 @@ TEST_INTEGRATIONS_74 := \
 	test_integrations_predis1
 
 TEST_WEB_74 := \
+	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -502,8 +503,7 @@ TEST_WEB_74 := \
 	test_web_zend_1 \
 	test_web_custom \
 	test_web_drupal_7 \
-	test_web_drupal_89 \
-	test_web_drupal_9_2
+	test_web_drupal_89
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
 # shows up in debug builds of PHP (https://github.com/phpredis/phpredis/issues/1869).
