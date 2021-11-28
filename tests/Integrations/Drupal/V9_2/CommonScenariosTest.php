@@ -7,6 +7,7 @@ use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 use Exception;
+use PHPUnit\Framework\TestCase;
 
 final class CommonScenariosTest extends WebFrameworkTestCase
 {
@@ -36,6 +37,13 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         $traces = $this->tracesFromWebRequest(function () {
             $this->call(GetSpec::create('Test simple page', '/user/login'));
         });
+
+        TestCase::fail(
+            sprintf(
+                "Spans %s\n",
+                json_encode($traces)
+            )
+        );
 
         $this->assertFlameGraph(
             $traces,
