@@ -7,7 +7,6 @@ use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
 use Exception;
-use PHPUnit\Framework\TestCase;
 
 final class CommonScenariosTest extends WebFrameworkTestCase
 {
@@ -20,8 +19,6 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     {
         parent::ddSetUpBeforeClass();
         $pdo = new \PDO('mysql:host=mysql_integration;dbname=test', 'test', 'test');
-        $content = file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/drupal-9.2.10/db.sql');
-        TestCase::fail('SQL: ' . $content);
         $ret = $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/drupal-9.2.10/db.sql'));
     }
 
