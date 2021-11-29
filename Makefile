@@ -710,7 +710,7 @@ test_web_drupal_89:
 	$(call run_tests,tests/Integrations/Drupal/V8_9)
 test_web_drupal_9_2:
 	#tar xf tests/Frameworks/Drupal/drupal-9.2.10.tar.gz -C tests/Frameworks/Drupal
-	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/drupal-9.2.10 update
+	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_9_2 update
 	$(call run_tests,tests/Integrations/Drupal/V9_2)
 test_web_yii_2:
 	$(COMPOSER) --working-dir=tests/Frameworks/Yii/Version_2_0 update
