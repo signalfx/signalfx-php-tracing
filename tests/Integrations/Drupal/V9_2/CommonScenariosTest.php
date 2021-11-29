@@ -34,7 +34,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     public function testSuccessfulRequest()
     {
         $traces = $this->tracesFromWebRequest(function () {
-            $this->call(GetSpec::create('Test simple page', '/'));
+            $this->call(GetSpec::create('Test simple page', '/user/login'));
         });
 
         $this->assertFlameGraph(
