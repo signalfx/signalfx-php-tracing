@@ -442,6 +442,8 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_predis1
 
 TEST_WEB_73 := \
+	test_web_drupal_7 \
+	test_web_drupal_89 \
 	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_57 \
@@ -463,9 +465,7 @@ TEST_WEB_73 := \
 	test_web_wordpress_55 \
 	test_web_yii_2 \
 	test_web_zend_1 \
-	test_web_custom \
-	test_web_drupal_7 \
-	test_web_drupal_89
+	test_web_custom
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
