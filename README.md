@@ -48,6 +48,8 @@ Configure the tracer and instrumentation with these environment variables:
 | `SIGNALFX_TRACE_DEBUG` | Whether to enable debug-level logging. | `false` |
 | `SIGNALFX_DISTRIBUTED_TRACING` | Whether to enable B3 context propagation for applicable client and server libraries. | `true` |
 | `SIGNALFX_RECORDED_VALUE_MAX_LENGTH` | Maximum length an attribute value can have. Values longer than this are truncated. | `1200` |
+| `SIGNALFX_CAPTURE_ENV_VARS` | Comma separated list of environment variables to attach to the root span. | ` ` |
+| `SIGNALFX_CAPTURE_REQUEST_HEADERS` | Comma separated list of incoming request headers to turn into spans. For example `User-Agent` will be captured as `http.request.headers.user_agent`. | ` ` |
 
 Because auto-instrumentation is applied during initialization, all configuration
 environment variables MUST be set by launch time. Anything set via `putenv()`
