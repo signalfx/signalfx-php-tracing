@@ -44,6 +44,7 @@ aliases:
       - MYSQL_PASSWORD=test
       - MYSQL_USER=test
       - MYSQL_DATABASE=test
+    command: [--max-allowed-packet=67108864]
 
   - &IMAGE_DOCKER_MONGO
     image: "circleci/mongo:4.0"
