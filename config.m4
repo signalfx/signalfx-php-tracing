@@ -98,6 +98,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/exceptions/php5/exceptions.c \
       zend_abstract_interface/functions/php5/functions.c \
       zend_abstract_interface/headers/php5/headers.c \
+      zend_abstract_interface/json/json.c \
       zend_abstract_interface/methods/php5/methods.c \
       zend_abstract_interface/properties/php5/properties.c \
       zend_abstract_interface/sandbox/php5/sandbox.c \
@@ -146,6 +147,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       zend_abstract_interface/exceptions/php5/exceptions.c \
       zend_abstract_interface/functions/php5/functions.c \
       zend_abstract_interface/headers/php5/headers.c \
+      zend_abstract_interface/json/json.c \
       zend_abstract_interface/methods/php5/methods.c \
       zend_abstract_interface/properties/php5/properties.c \
       zend_abstract_interface/sandbox/php5/sandbox.c \
