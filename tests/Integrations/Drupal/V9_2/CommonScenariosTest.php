@@ -27,7 +27,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_SERVICE' => 'drupal_app',
             'SIGNALFX_TRACE_DEBUG' => 'true',
-            'DD_TRACE_PDO_ENABLED' => 'false',
+            //'DD_TRACE_PDO_ENABLED' => 'false',
         ]);
     }
 
