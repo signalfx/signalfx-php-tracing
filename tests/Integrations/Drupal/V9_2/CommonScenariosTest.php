@@ -12,14 +12,14 @@ final class CommonScenariosTest extends WebFrameworkTestCase
 {
     protected static function getAppIndexScript()
     {
-        return __DIR__ . '/../../../Frameworks/Drupal/Version_9_2/index.php';
+        return __DIR__ . '/../../../Frameworks/Drupal/drupal-9.2.10/index.php';
     }
 
     public static function ddSetUpBeforeClass()
     {
         parent::ddSetUpBeforeClass();
         $pdo = new \PDO('mysql:host=mysql_integration;dbname=test', 'test', 'test');
-        $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/Version_9_2/db.sql'));
+        $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/drupal-9.2.10/db.sql'));
     }
 
     protected static function getEnvs()

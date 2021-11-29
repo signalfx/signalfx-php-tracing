@@ -442,9 +442,6 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_predis1
 
 TEST_WEB_73 := \
-	test_web_drupal_7 \
-	test_web_drupal_89 \
-	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -465,7 +462,10 @@ TEST_WEB_73 := \
 	test_web_wordpress_55 \
 	test_web_yii_2 \
 	test_web_zend_1 \
-	test_web_custom
+	test_web_custom \
+	test_web_drupal_7 \
+	test_web_drupal_89 \
+	test_web_drupal_9_2
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
@@ -481,7 +481,6 @@ TEST_INTEGRATIONS_74 := \
 	test_integrations_predis1
 
 TEST_WEB_74 := \
-	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_57 \
 	test_web_laravel_58 \
@@ -503,7 +502,8 @@ TEST_WEB_74 := \
 	test_web_zend_1 \
 	test_web_custom \
 	test_web_drupal_7 \
-	test_web_drupal_89
+	test_web_drupal_89 \
+	test_web_drupal_9_2
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
 # shows up in debug builds of PHP (https://github.com/phpredis/phpredis/issues/1869).
@@ -520,7 +520,6 @@ TEST_INTEGRATIONS_80 := \
 	test_integrations_predis1
 
 TEST_WEB_80 := \
-	test_web_drupal_9_2 \
 	test_metrics \
 	test_web_laravel_8x \
 	test_web_slim_312 \
@@ -709,8 +708,8 @@ test_web_drupal_89:
 	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_8_9 update
 	$(call run_tests,tests/Integrations/Drupal/V8_9)
 test_web_drupal_9_2:
-	#tar xf tests/Frameworks/Drupal/drupal-9.2.10.tar.gz -C tests/Frameworks/Drupal
-	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_9_2 update
+	tar xf tests/Frameworks/Drupal/drupal-9.2.10.tar.gz -C tests/Frameworks/Drupal
+	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/drupal-9.2.10 update
 	$(call run_tests,tests/Integrations/Drupal/V9_2)
 test_web_yii_2:
 	$(COMPOSER) --working-dir=tests/Frameworks/Yii/Version_2_0 update
