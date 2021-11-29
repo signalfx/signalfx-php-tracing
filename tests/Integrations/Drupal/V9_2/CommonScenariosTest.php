@@ -20,7 +20,6 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         parent::ddSetUpBeforeClass();
         $pdo = new \PDO('mysql:host=mysql_integration;dbname=test', 'test', 'test');
         $pdo->exec(file_get_contents(__DIR__ . '/../../../Frameworks/Drupal/Version_9_2/db.sql'));
-        TestCase::fail(sprintf('pdo err: %s', json_encode($pdo->errorInfo())));
     }
 
     protected static function getEnvs()
@@ -28,7 +27,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
         return array_merge(parent::getEnvs(), [
             'SIGNALFX_SERVICE' => 'drupal_app',
             'SIGNALFX_TRACE_DEBUG' => 'true',
-            //'DD_TRACE_PDO_ENABLED' => 'false',
+            'DD_TRACE_PDO_ENABLED' => 'false',
         ]);
     }
 
