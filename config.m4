@@ -278,7 +278,6 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
   PHP_ADD_INCLUDE([$ext_srcdir])
   PHP_ADD_INCLUDE([$ext_srcdir/ext])
 
-  PHP_ADD_INCLUDE([$ext_srcdir/components])
   PHP_ADD_BUILD_DIR([$ext_builddir/components])
   PHP_ADD_BUILD_DIR([$ext_builddir/components/container_id])
   PHP_ADD_BUILD_DIR([$ext_builddir/components/sapi])
