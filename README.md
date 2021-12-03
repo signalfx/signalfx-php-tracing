@@ -2,6 +2,11 @@
 
 [![CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master.svg?style=svg)](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master)
 [![Packagist Version](https://img.shields.io/packagist/v/signalfx/signalfx-tracing.svg)](https://packagist.org/packages/signalfx/signalfx-tracing)
+[![CodeCov](https://codecov.io/gh/DataDog/dd-trace-php/branch/master/graph/badge.svg?token=eXio8H7vwF)](https://codecov.io/gh/DataDog/dd-trace-php)
+[![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.4-8892BF.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
+[![Total Downloads](https://img.shields.io/packagist/dt/datadog/dd-trace.svg)](https://packagist.org/packages/datadog/dd-trace)
 
 This library provides an OpenTracing-compatible tracer and automatically
 configurable instrumentations for many popular PHP libraries and frameworks.
