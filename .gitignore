@@ -20,6 +20,7 @@ aclocal.m4
 autom4te*
 build
 configure
+coverage/
 /configure.*
 /config.*
 *.la
