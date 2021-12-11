@@ -65,7 +65,7 @@ final class CurlIntegration extends Integration
                 }
 
                 $info = \curl_getinfo($ch);
-                $sanitizedUrl = Urls::sanitize($info['url']);
+                $sanitizedUrl = \DDtrace\Private_\util_url_sanitize($info['url']);
                 $normalizedPath = \DDtrace\Private_\util_uri_normalize_outgoing_path($info['url']);
                 unset($info['url']);
 
