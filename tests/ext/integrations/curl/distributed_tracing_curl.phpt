@@ -10,6 +10,8 @@ SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_TRACED_INTERNAL_FUNCTIONS=curl_exec
 --FILE--
 <?php
+include 'curl_helper.inc';
+
 DDTrace\trace_function('curl_exec', function (\DDTrace\SpanData $span) {
     $span->name = 'curl_exec';
 });
@@ -20,6 +22,7 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
+show_curl_error_on_fail($ch);
 curl_close($ch);
 
 include 'distributed_tracing.inc';

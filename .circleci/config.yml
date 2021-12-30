@@ -144,6 +144,19 @@ aliases:
       name: Waiting for Dockerized request replayer
       command: dockerize -wait tcp://request-replayer:80/clear-dumped-data -timeout 2m
 
+  # Fix intermittent error: "Could not resolve host: httpbin_integration"
+  - &STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
+    run:
+      name: Resolving HTTPBIN_HOSTNAME to IP address
+      command: |
+        export HTTPBIN_HOSTNAME=$( \
+          curl --verbose "http://httpbin_integration:80/headers" 2>&1 | \
+          grep '* Connected to' | \
+          awk -F' ' '{print $5}' | \
+          sed 's/[()]//g' \
+        );
+        echo "Resolved httpbin_integration: HTTPBIN_HOSTNAME=${HTTPBIN_HOSTNAME}";
+
   - &STEP_PERSIST_TO_WORKSPACE
     persist_to_workspace:
       root: '.'
@@ -398,7 +411,6 @@ jobs:
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
-      HTTPBIN_HOSTNAME: httpbin_integration
       DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
@@ -412,6 +424,7 @@ jobs:
       - <<: *STEP_PREPARE_TEST_RESULTS_DIR
       - <<: *STEP_EXPORT_CI_ENV
       - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:
           name: Run tests
           command: make << parameters.make_target >> PHPUNIT_OPTS="--log-junit test-results/php-unit/results.xml"
@@ -440,7 +453,6 @@ jobs:
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
-      HTTPBIN_HOSTNAME: httpbin_integration
       DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
@@ -451,6 +463,7 @@ jobs:
           php_version: << parameters.switch_php_version >>
       - <<: *STEP_EXPORT_CI_ENV
       - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:
           name: Run tests
           command: |
@@ -652,7 +665,6 @@ jobs:
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
-      HTTPBIN_HOSTNAME: httpbin_integration
       DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
@@ -665,6 +677,7 @@ jobs:
       - <<: *STEP_EXPORT_CI_ENV
       - <<: *STEP_WAIT_AGENT
       - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:
           name: Ensure ext/<< parameters.ext_name >> is missing
           command: |
@@ -710,7 +723,6 @@ jobs:
     environment:
       DDAGENT_HOSTNAME: 127.0.0.1
       DD_AGENT_HOST: 127.0.0.1
-      HTTPBIN_HOSTNAME: httpbin_integration
       DATADOG_HAVE_DEV_ENV: 1
     executor:
       name: with_httpbin_and_request_replayer
@@ -720,6 +732,7 @@ jobs:
       - <<: *STEP_PREPARE_TEST_RESULTS_DIR
       - <<: *STEP_EXPORT_CI_ENV
       - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:
           name: Install .deb from artifacts
           command: |
@@ -988,12 +1001,13 @@ jobs:
             echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx_tracing.ini
             php --ri=signalfx_tracing
       - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:
           name: Run phpt tests with PECL
           command: |
             sudo \
             TERM=dumb \
-            HTTPBIN_HOSTNAME=httpbin_integration \
+            HTTPBIN_HOSTNAME=${HTTPBIN_HOSTNAME} \
             DATADOG_HAVE_DEV_ENV=1 \
             pecl run-tests <<# parameters.showdiff >> --showdiff <</ parameters.showdiff >> --ini=" -d ddtrace.request_init_hook=" -p signalfx_tracing
       - run:
