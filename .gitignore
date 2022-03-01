@@ -50,3 +50,4 @@ tmp/opcache*
 .idea/
 benchmark.php
 docker-compose.override.yml
+adduid
