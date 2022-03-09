@@ -17,7 +17,6 @@ use DDTrace\Util\HexConversion;
  */
 final class JsonZipkinV2 implements Encoder
 {
-
     /**
      * @var LoggerInterface
      */
