@@ -145,11 +145,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             $span->finish();
         });
 
-<<<<<<< HEAD
-=======
         // trace is: custom
         self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
 
         // Find either the guzzle or curl span; prefer the latter
         $guzzleSpan = find_span_name($traces[0], 'GuzzleHttp\\Client.send');
@@ -161,19 +158,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             self::fail('Unable to find a guzzle or curl span!');
         }
 
-<<<<<<< HEAD
-        self::assertSame(
-            (string)$span['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
-
-        self::assertSame(
-            (string)$span['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
-=======
         self::assertSame($span['span_id'], $found['headers']['X-Datadog-Parent-Id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
 
         // existing headers are honored
         self::assertSame('preserved_value', $found['headers']['Honored']);
@@ -261,21 +246,12 @@ class GuzzleIntegrationTest extends IntegrationTestCase
     private static function assertDistributedTracingSpan($span, $headers)
     {
         self::assertSame(
-<<<<<<< HEAD
-            (string)$span['span_id'],
-            sfx_trace_convert_hex_id($headers['X-B3-Spanid'])
-        );
-        self::assertSame(
-            (string)$span['trace_id'],
-            sfx_trace_convert_hex_id($headers['X-B3-Traceid'])
-=======
             $span['span_id'],
             $headers['X-Datadog-Parent-Id']
         );
         self::assertSame(
             $span['trace_id'],
             $headers['X-Datadog-Trace-Id']
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
         );
         self::assertSame('preserved_value', $headers['Honored']);
     }
@@ -316,19 +292,8 @@ class GuzzleIntegrationTest extends IntegrationTestCase
         self::assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
-<<<<<<< HEAD
-        self::assertSame(
-            (string)$traces[0][0]['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
-        self::assertSame(
-            (string)$traces[0][0]['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
-=======
         self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Trace-Id']);
         self::assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
 
         // existing headers are honored
         self::assertSame('preserved_value', $found['headers']['Honored']);

@@ -67,11 +67,6 @@ class SyntheticsTest extends WebFrameworkTestCase
                 'component' => 'web.request',
             ])
         );
-<<<<<<< HEAD
-
-        $this->assertSame('16453819474850114513', $traces[0][0]['trace_id']);
-=======
         $this->assertSame('123456', $traces[0][0]['trace_id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
     }
 }

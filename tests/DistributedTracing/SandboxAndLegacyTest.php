@@ -47,19 +47,11 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
         $this->assertCount(2, $traces[0]);
         // Root span (userland)
         $rootSpan = $traces[0][0];
-<<<<<<< HEAD
-        $this->assertSame('1589331357723252211', $rootSpan['trace_id']);
-        $this->assertSame('1589331357723252210', $rootSpan['parent_id']);
-        // Child span (internal)
-        $childSpan = $traces[0][1];
-        $this->assertSame('1589331357723252211', $childSpan['trace_id']);
-=======
         $this->assertSame('1042', $rootSpan['trace_id']);
         $this->assertSame('1000', $rootSpan['parent_id']);
         // Child span (internal)
         $childSpan = $traces[0][1];
         $this->assertSame('1042', $childSpan['trace_id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
         $this->assertSame($rootSpan['span_id'], $childSpan['parent_id']);
     }
 
@@ -100,20 +92,11 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
 
         // Root span (userland)
         $rootSpan = $traces[0][0];
-<<<<<<< HEAD
-        $this->assertSame('1589331357723252218', $rootSpan['trace_id']);
-        // New span id is generated in case of an invalid span id (0)
-        $this->assertArrayHasKey('parent_id', $rootSpan);
-        // Child span (internal)
-        $childSpan = $traces[0][1];
-        $this->assertSame('1589331357723252218', $childSpan['trace_id']);
-=======
         $this->assertSame('6017420907356617206', $rootSpan['trace_id']);
         $this->assertArrayNotHasKey('parent_id', $rootSpan);
         // Child span (internal)
         $childSpan = $traces[0][1];
         $this->assertSame('6017420907356617206', $childSpan['trace_id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
         $this->assertSame($rootSpan['span_id'], $childSpan['parent_id']);
     }
 

@@ -441,19 +441,6 @@ final class CurlIntegrationTest extends IntegrationTestCase
 
         self::assertTrue(function_exists('DDTrace\\Bridge\\curl_inject_distributed_headers'));
 
-<<<<<<< HEAD
-        // Serialized internal span trace IDs are be integers.
-        // trace is: some_operation
-        $this->assertSame(
-            (string)$traces[0][0]['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
-        // parent is: curl_exec
-        $this->assertSame(
-            (string)$traces[0][1]['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
-=======
         // trace is: custom
         self::assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
         // parent is: curl_exec
@@ -524,7 +511,6 @@ final class CurlIntegrationTest extends IntegrationTestCase
         // parent is: curl_exec
         $this->assertSame($traces[0][1]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
         $this->assertSame('1', $found['headers']['X-Datadog-Sampling-Priority']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
         // existing headers are honored
         $this->assertSame('preserved_value', $found['headers']['Honored']);
     }
@@ -592,21 +578,9 @@ final class CurlIntegrationTest extends IntegrationTestCase
         $this->assertEquals(1, sizeof($traces[0]));
 
         // trace is: custom
-<<<<<<< HEAD
-        $this->assertSame(
-            (string)$traces[0][0]['trace_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Traceid'])
-        );
+        $this->assertSame($traces[0][0]['trace_id'], sfx_trace_convert_hex_id($found['headers']['X-Datadog-Trace-Id']));
         // parent is: custom
-        $this->assertSame(
-            (string)$traces[0][0]['span_id'],
-            sfx_trace_convert_hex_id($found['headers']['X-B3-Spanid'])
-        );
-=======
-        $this->assertSame($traces[0][0]['trace_id'], $found['headers']['X-Datadog-Trace-Id']);
-        // parent is: custom
-        $this->assertSame($traces[0][0]['span_id'], $found['headers']['X-Datadog-Parent-Id']);
->>>>>>> bd6fd2f6c (Move from uint63 to uint64 for trace_id span_id and parent_id (#1237))
+        $this->assertSame($traces[0][0]['span_id'], sfx_trace_convert_hex_id($found['headers']['X-Datadog-Parent-Id']));
     }
 
     public function testTracerRunningAtLimitedCapacityCurlWorksWithoutARootSpan()
