@@ -42,7 +42,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     ext/vendor/mpack/mpack.c \
     ext/vendor/mt19937/mt19937-64.c \
     ext/vendor/hex_utils.c \
-    src/dogstatsd/client.c \
+    src/dogstatsd/client.c \  
   "
 
   DD_TRACE_COMPONENT_SOURCES="\
