@@ -1,6 +1,4 @@
 version: "2.1"
-orbs:
-  codecov: codecov/codecov@3.2.2
 aliases:
 
   - &CACHE_COMPOSER_KEY
@@ -472,9 +470,6 @@ jobs:
       - run:
           name: Install CodeCov Uploader Dependencies
           command: sudo apt install -y gpg
-      - codecov/upload:
-          file: tmp/coverage.info
-          upload_name: "PHP<< parameters.php_major_minor >>.dd-trace-php"
       - run:
           command: |
             mkdir -p /tmp/artifacts/core_dumps
