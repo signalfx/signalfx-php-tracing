@@ -249,14 +249,7 @@ function sfx_trace_config_access_token()
  */
 function ddtrace_config_debug_enabled()
 {
-<<<<<<< HEAD
-    return \_ddtrace_config_bool(
-        \getenv('SIGNALFX_TRACE_DEBUG'),
-        \_ddtrace_config_bool(\getenv('DD_TRACE_DEBUG'), false)
-    );
-=======
-    return \_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('DD_TRACE_DEBUG'), false);
->>>>>>> 1253ff9ee (ZAI config (#1260))
+    return \_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('SIGNALFX_TRACE_DEBUG'), false);
 }
 
 /**
