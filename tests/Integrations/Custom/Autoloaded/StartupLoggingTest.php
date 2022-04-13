@@ -24,7 +24,7 @@ final class StartupLoggingTest extends WebFrameworkTestCase
             'DD_ENV' => 'my-env',
             'SIGNALFX_SERVICE_NAME' => 'my-service',
             'DD_TRACE_SAMPLE_RATE' => '0.42',
-            'DD_TAGS' => 'key1:value1,key2:value2',
+            'SIGNALFX_TAGS' => 'key1:value1,key2:value2',
             'DD_VERSION' => '4.2',
             'DD_TRACE_RESOURCE_URI_FRAGMENT_REGEX' => '^[a-f0-9]{7}$',
             'DD_TRACE_REPORT_HOSTNAME' => true,

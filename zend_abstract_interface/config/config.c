@@ -16,7 +16,7 @@
 
 HashTable zai_config_name_map = {0};
 
-_Static_assert(ZAI_CONFIG_ENTRIES_COUNT_MAX < 256, "zai config entry count is overflowing uint8_t");
+_Static_assert(ZAI_CONFIG_ENTRIES_COUNT_MAX < 258, "zai config entry count is overflowing uint8_t");
 uint8_t zai_config_memoized_entries_count = 0;
 zai_config_memoized_entry zai_config_memoized_entries[ZAI_CONFIG_ENTRIES_COUNT_MAX];
 

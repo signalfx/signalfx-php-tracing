@@ -1,7 +1,6 @@
 # SignalFx Tracing Library for PHP
 
 [![CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master.svg?style=svg)](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master)
-[![CodeCov](https://codecov.io/gh/DataDog/dd-trace-php/branch/master/graph/badge.svg?token=eXio8H7vwF)](https://codecov.io/gh/DataDog/dd-trace-php)
 [![OpenTracing Badge](https://img.shields.io/badge/OpenTracing-enabled-blue.svg)](http://opentracing.io)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.4-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
@@ -49,7 +48,7 @@ Configure the tracer and instrumentation with these environment variables:
 | `SIGNALFX_SERVICE_NAME` | The name to identify the service in SignalFx. | `'unnamed-php-service'` |
 | `SIGNALFX_ENDPOINT_URL` | The endpoint the tracer sends spans to. Send spans to a Smart Agent. | `'http://localhost:9080/v1/trace'` |
 | `SIGNALFX_TRACING_ENABLED` | Whether to enable automatic tracer creation and instrumentation. | `true` |
-| `SIGNALFX_TRACING_CLI_ENABLED` | Whether to enable automatic tracer creation and instrumentation for `cli` SAPI. | `false` |
+| `SIGNALFX_TRACE_CLI_ENABLED` | Whether to enable automatic tracer creation and instrumentation for `cli` SAPI. | `false` |
 | `SIGNALFX_TRACE_DEBUG` | Whether to enable debug-level logging. | `false` |
 | `SIGNALFX_DISTRIBUTED_TRACING` | Whether to enable B3 context propagation for applicable client and server libraries. | `true` |
 | `SIGNALFX_RECORDED_VALUE_MAX_LENGTH` | Maximum length an attribute value can have. Values longer than this are truncated. | `1200` |
@@ -128,7 +127,7 @@ root span to denote the lifetime of your `cli` session. This SAPI is disabled
 by default to avoid undesired traced system activity.
 
 ```bash
-$ export SIGNALFX_TRACING_CLI_ENABLED=true
+$ export SIGNALFX_TRACE_CLI_ENABLED=true
 $ php artisan migrate:fresh
 $ php myTracedCliScript.php
 ```

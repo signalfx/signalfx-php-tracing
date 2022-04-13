@@ -12,7 +12,7 @@ use DDTrace\Type;
      */
 
     // Required:
-    $span->service = getenv('DD_SERVICE');
+    $span->service = getenv('SIGNALFX_SERVICE');
     $span->type = Type::CLI; // or Type::MESSAGE_PRODUCER or anything appropriate from DDTrace\Type::
 });
 

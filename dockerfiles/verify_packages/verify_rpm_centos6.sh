@@ -20,7 +20,7 @@ for phpVer in $(ls ${PHP_INSTALL_DIR}); do
 
         # Uninstall the tracer
         rpm -e signalfx_tracing
-        rm -f /opt/signalfx_php_tracing/etc/ddtrace.ini
+        rm -f /opt/signalfx_php_tracing/etc/signalfx-tracing.ini
     else
         echo "Installing signalfx-php-tracing using the new PHP installer"
         php /build_src/dd-library-php-setup.php --tracer-file /build_src/build/packages/*.tar.gz --php-bin all

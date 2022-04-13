@@ -18,7 +18,7 @@ final class NetteTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_SERVICE' => 'nette_test_app',
+            'SIGNALFX_SERVICE' => 'nette_test_app',
         ]);
     }
 

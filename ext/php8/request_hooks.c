@@ -40,7 +40,7 @@ int dd_execute_php_file(const char *filename) {
     zend_string_release(fn);
 #endif
 
-    if (get_DD_TRACE_DEBUG() && PG(last_error_message) && eh_stream.message != PG(last_error_message)) {
+    if (get_SIGNALFX_TRACE_DEBUG() && PG(last_error_message) && eh_stream.message != PG(last_error_message)) {
         char *error;
         error = ZSTR_VAL(PG(last_error_message));
         ddtrace_log_errf("Error raised while opening request-init-hook stream: %s in %s on line %d", error,
@@ -78,7 +78,7 @@ int dd_execute_php_file(const char *filename) {
 
             zend_execute(new_op_array, &result);
 
-            if (get_DD_TRACE_DEBUG() && PG(last_error_message) && eh.message != PG(last_error_message)) {
+            if (get_SIGNALFX_TRACE_DEBUG() && PG(last_error_message) && eh.message != PG(last_error_message)) {
                 char *error;
                 error = ZSTR_VAL(PG(last_error_message));
 #if PHP_VERSION_ID < 80100
@@ -96,7 +96,7 @@ int dd_execute_php_file(const char *filename) {
             efree(new_op_array);
             if (!EG(exception)) {
                 zval_ptr_dtor(&result);
-            } else if (get_DD_TRACE_DEBUG()) {
+            } else if (get_SIGNALFX_TRACE_DEBUG()) {
                 zend_object *ex = EG(exception);
 
                 const char *type = ex->ce->name->val;

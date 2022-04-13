@@ -8,6 +8,7 @@
 #include "configuration.h"
 #include "ddtrace.h"
 #include "mt19937/mt19937-64.h"
+#include "hex_utils.h"
 
 ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
@@ -49,8 +50,25 @@ static inline uint64_t zval_to_uint64(zval *zid) {
     return (uid && errno == 0) ? uid : 0U;
 }
 
+uint64_t sfxtrace_hex_to_u64(zval *zid) {
+    if (!zid || Z_TYPE_P(zid) != IS_STRING) {
+        return 0U;
+    }
+    const char *hex_id = Z_STRVAL_P(zid);
+    return decode_hex_id(hex_id, Z_STRLEN_P(zid));
+}
+
 bool ddtrace_set_userland_trace_id(zval *zid) {
     uint64_t uid = zval_to_uint64(zid);
+    if (uid) {
+        DDTRACE_G(trace_id) = uid;
+        return true;
+    }
+    return false;
+}
+
+bool ddtrace_set_userland_trace_id_hex(zval *zid) {
+    uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         DDTRACE_G(trace_id) = uid;
         return true;
@@ -79,6 +97,15 @@ uint64_t ddtrace_push_span_id(uint64_t id) {
 
 bool ddtrace_push_userland_span_id(zval *zid) {
     uint64_t uid = zval_to_uint64(zid);
+    if (uid) {
+        ddtrace_push_span_id(uid);
+        return true;
+    }
+    return false;
+}
+
+bool ddtrace_push_userland_span_id_hex(zval *zid) {
+    uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         ddtrace_push_span_id(uid);
         return true;

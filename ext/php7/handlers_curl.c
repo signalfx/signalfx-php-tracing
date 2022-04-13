@@ -40,10 +40,10 @@ static void (*dd_curl_setopt_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 static void (*dd_curl_setopt_array_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 
 static bool dd_load_curl_integration(void) {
-    if (!dd_ext_curl_loaded || !get_DD_TRACE_ENABLED()) {
+    if (!dd_ext_curl_loaded || !get_SIGNALFX_TRACING_ENABLED()) {
         return false;
     }
-    return get_DD_DISTRIBUTED_TRACING();
+    return get_SIGNALFX_DISTRIBUTED_TRACING();
 }
 
 /* We need to track the curl resource liveliness.
@@ -591,7 +591,7 @@ void ddtrace_curl_handlers_startup(void) {
     dd_curl_wrap_handler_ce.type = ZEND_INTERNAL_CLASS;
     dd_curl_wrap_handler_ce.create_object = dd_curl_wrap_ctor_obj;
     zend_initialize_class_data(&dd_curl_wrap_handler_ce, false);
-    dd_curl_wrap_handler_ce.info.internal.module = &ddtrace_module_entry;
+    dd_curl_wrap_handler_ce.info.internal.module = &signalfx_tracing_module_entry;
     zend_declare_property_null(&dd_curl_wrap_handler_ce, "handler", sizeof("handler") - 1, ZEND_ACC_PUBLIC);
     memcpy(&dd_curl_wrap_handler_handlers, &std_object_handlers, sizeof(zend_object_handlers));
     dd_curl_wrap_handler_handlers.get_closure = dd_curl_wrap_get_closure;

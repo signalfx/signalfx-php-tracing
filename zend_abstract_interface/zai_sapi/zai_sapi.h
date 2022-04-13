@@ -66,7 +66,7 @@ void zai_sapi_rshutdown(void);
 
 /* Appends an INI entry to the existing 'ini_entries'.
  *
- *   zai_sapi_append_system_ini_entry("extension", "ddtrace.so");
+ *   zai_sapi_append_system_ini_entry("extension", "signalfx_tracing.so");
  *
  * Must be called:
  *   - After SAPI initialization zai_sapi_sinit()

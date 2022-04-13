@@ -39,9 +39,9 @@ extern bool runtime_config_first_init;
 #define DD_INTEGRATION_ANALYTICS_SAMPLE_RATE_DEFAULT 1
 
 #if _BUILD_FROM_PECL_
-#define DD_DEFAULT_RQUEST_INIT_HOOK_PATH "@php_dir@/datadog_trace/bridge/dd_wrap_autoloader.php"
+#define DD_DEFAULT_REQUEST_INIT_HOOK_PATH "@php_dir@/signalfx-php-tracing/bridge/dd_wrap_autoloader.php"
 #else
-#define DD_DEFAULT_RQUEST_INIT_HOOK_PATH ""
+#define DD_DEFAULT_REQUEST_INIT_HOOK_PATH ""
 #endif
 
 #define DD_CFG_STR(str) #str
@@ -54,27 +54,27 @@ extern bool runtime_config_first_init;
            CALIASES(DD_CFG_STR(DD_##id##_ANALYTICS_SAMPLE_RATE), DD_CFG_STR(DD_TRACE_##id##_ANALYTICS_SAMPLE_RATE)))
 
 #define DD_CONFIGURATION                                                                                      \
-    CALIAS(STRING, DD_TRACE_REQUEST_INIT_HOOK, DD_DEFAULT_RQUEST_INIT_HOOK_PATH,                              \
+    CALIAS(STRING, DD_TRACE_REQUEST_INIT_HOOK, DD_DEFAULT_REQUEST_INIT_HOOK_PATH,                             \
            CALIASES("DDTRACE_REQUEST_INIT_HOOK"), .ini_change = zai_config_system_ini_change)                 \
     CONFIG(STRING, DD_TRACE_AGENT_URL, "", .ini_change = zai_config_system_ini_change)                        \
     CONFIG(STRING, DD_AGENT_HOST, "localhost", .ini_change = zai_config_system_ini_change)                    \
-    CONFIG(BOOL, SIGNALFX_DISTRIBUTED_TRACING, "true")                                                              \
+    CONFIG(BOOL, SIGNALFX_DISTRIBUTED_TRACING, "true")                                                        \
     CONFIG(STRING, DD_DOGSTATSD_PORT, "8125")                                                                 \
     CONFIG(STRING, DD_ENV, "")                                                                                \
     CONFIG(BOOL, DD_AUTOFINISH_SPANS, "false")                                                                \
     CONFIG(BOOL, DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED, "true")                                              \
     CONFIG(SET, DD_INTEGRATIONS_DISABLED, "default")                                                          \
     CONFIG(BOOL, DD_PRIORITY_SAMPLING, "true")                                                                \
-    CALIAS(STRING, SIGNALFX_SERVICE, "", CALIASES("SIGNALFX_SERVICE_NAME"))                                               \
+    CALIAS(STRING, SIGNALFX_SERVICE, "", CALIASES("SIGNALFX_SERVICE_NAME"))                                   \
     CONFIG(MAP, DD_SERVICE_MAPPING, "")                                                                       \
-    CALIAS(MAP, DD_TAGS, "", CALIASES("DD_TRACE_GLOBAL_TAGS"))                                                \
+    CALIAS(MAP, SIGNALFX_TAGS, "", CALIASES("SIGNALFX_TRACE_GLOBAL_TAGS"))                                                \
     CONFIG(INT, DD_TRACE_AGENT_PORT, "8126", .ini_change = zai_config_system_ini_change)                      \
     CONFIG(BOOL, DD_TRACE_ANALYTICS_ENABLED, "false")                                                         \
     CONFIG(BOOL, DD_TRACE_AUTO_FLUSH_ENABLED, "false")                                                        \
-    CONFIG(BOOL, SIGNALFX_TRACE_CLI_ENABLED, "false")                                                               \
+    CONFIG(BOOL, SIGNALFX_TRACE_CLI_ENABLED, "false")                                                         \
     CONFIG(BOOL, DD_TRACE_MEASURE_COMPILE_TIME, "true")                                                       \
-    CONFIG(BOOL, SIGNALFX_TRACE_DEBUG, "false")                                                                     \
-    CONFIG(BOOL, SIGNALFX_TRACING_ENABLED, "true", .ini_change = ddtrace_alter_dd_trace_disabled_config)              \
+    CONFIG(BOOL, SIGNALFX_TRACE_DEBUG, "false")                                                               \
+    CONFIG(BOOL, SIGNALFX_TRACING_ENABLED, "true", .ini_change = ddtrace_alter_dd_trace_disabled_config)      \
     CONFIG(BOOL, DD_TRACE_HEALTH_METRICS_ENABLED, "false", .ini_change = zai_config_system_ini_change)        \
     CONFIG(DOUBLE, DD_TRACE_HEALTH_METRICS_HEARTBEAT_SAMPLE_RATE, "0.001")                                    \
     CONFIG(BOOL, DD_TRACE_HTTP_CLIENT_SPLIT_BY_DOMAIN, "false")                                               \

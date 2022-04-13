@@ -25,7 +25,7 @@ services:
     environment:
       - XDEBUG_ENABLE_PROFILER=${XDEBUG_ENABLE_PROFILER:-1}
       - OPCACHE_ENABLE=${OPCACHE_ENABLE:-1}
-      - DD_SERVICE_NAME=php-fpm-notracer
+      - SIGNALFX_SERVICE_NAME=php-fpm-notracer
     depends_on:
       - agent
     volumes:
@@ -37,9 +37,9 @@ services:
     environment:
       - XDEBUG_ENABLE_PROFILER=${XDEBUG_ENABLE_PROFILER:-1}
       - OPCACHE_ENABLE=${OPCACHE_ENABLE:-1}
-      - DD_TRACE_ENABLED=${DD_TRACE_ENABLED:-true}
-      - DD_TRACE_DEBUG=${DD_TRACE_DEBUG:-false}
-      - DD_SERVICE_NAME=php-fpm-master
+      - SIGNALFX_TRACING_ENABLED=${SIGNALFX_TRACING_ENABLED:-true}
+      - SIGNALFX_TRACE_DEBUG=${SIGNALFX_TRACE_DEBUG:-false}
+      - SIGNALFX_SERVICE_NAME=php-fpm-master
     depends_on:
       - agent
     volumes:
@@ -52,9 +52,9 @@ services:
     environment:
       - XDEBUG_ENABLE_PROFILER=${XDEBUG_ENABLE_PROFILER:-1}
       - OPCACHE_ENABLE=${OPCACHE_ENABLE:-1}
-      - DD_TRACE_ENABLED=${DD_TRACE_ENABLED:-true}
-      - DD_TRACE_DEBUG=${DD_TRACE_DEBUG:-false}
-      - DD_SERVICE_NAME=php-fpm-head
+      - SIGNALFX_TRACING_ENABLED=${SIGNALFX_TRACING_ENABLED:-true}
+      - SIGNALFX_TRACE_DEBUG=${SIGNALFX_TRACE_DEBUG:-false}
+      - SIGNALFX_SERVICE_NAME=php-fpm-head
     volumes:
       - ./callgrind-files:/var/www/callgrind-files
       # - ../../:/dd-trace-php
@@ -66,9 +66,9 @@ services:
       - DD_TRACE_LIBRARY_VERSION=${DD_TRACE_LIBRARY_VERSION:-0.42.0}
       - XDEBUG_ENABLE_PROFILER=${XDEBUG_ENABLE_PROFILER:-1}
       - OPCACHE_ENABLE=${OPCACHE_ENABLE:-1}
-      - DD_TRACE_ENABLED=${DD_TRACE_ENABLED:-true}
-      - DD_TRACE_DEBUG=${DD_TRACE_DEBUG:-false}
-      - DD_SERVICE_NAME=php-fpm-release-${DD_TRACE_LIBRARY_VERSION}
+      - SIGNALFX_TRACING_ENABLED=${SIGNALFX_TRACING_ENABLED:-true}
+      - SIGNALFX_TRACE_DEBUG=${SIGNALFX_TRACE_DEBUG:-false}
+      - SIGNALFX_SERVICE_NAME=php-fpm-release-${DD_TRACE_LIBRARY_VERSION}
     depends_on:
       - agent
     volumes:

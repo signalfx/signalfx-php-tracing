@@ -15,7 +15,7 @@ make -C "${PROJECT_ROOT}" sudo debug install install_ini
 echo "Done installing the extension"
 
 DD_AGENT_HOST=agent \
-    DD_TRACE_DEBUG=true \
+    SIGNALFX_TRACE_DEBUG=true \
     DD_AUTOLOAD_NO_COMPILE=true \
     php \
     -d error_log=/dev/stderr \

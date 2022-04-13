@@ -135,7 +135,7 @@ void ddtrace_config_first_rinit() {
     runtime_config_first_init = true;
 }
 
-// note: only call this if get_DD_TRACE_ENABLED() returns true
+// note: only call this if get_SIGNALFX_TRACING_ENABLED() returns true
 bool ddtrace_config_integration_enabled(ddtrace_integration_name integration_name) {
     ddtrace_integration *integration = &ddtrace_integrations[integration_name];
 

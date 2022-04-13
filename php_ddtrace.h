@@ -6,4 +6,4 @@
 #include "ext/php8/ddtrace.h"
 #endif
 
-#define phpext_ddtrace_ptr &ddtrace_module_entry
+#define phpext_ddtrace_ptr &signalfx_tracing_module_entry

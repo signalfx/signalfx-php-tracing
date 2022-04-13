@@ -26,7 +26,7 @@ RUN set -eux; \
     cd ${HOME}; \
     curl -L "${ddtracePkgUrl}" -o ./signalfx_tracing.tgz; \
     pecl install signalfx_tracing.tgz; \
-    echo "extension=signalfx-tracing.so" > /etc/php.d/signalfx-tracing.ini
+    echo "extension=signalfx_tracing.so" > /etc/php.d/signalfx-tracing.ini
 
 # Override stop signal to stop process gracefully
 # https://github.com/php/php-src/blob/17baa87faddc2550def3ae7314236826bc1b1398/sapi/fpm/php-fpm.8.in#L163

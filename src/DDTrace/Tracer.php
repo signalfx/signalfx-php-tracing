@@ -13,6 +13,7 @@ use DDTrace\Log\LoggingTrait;
 use DDTrace\Processing\TraceAnalyticsProcessor;
 use DDTrace\Propagators\B3CurlHeadersMap;
 use DDTrace\Propagators\B3TextMap;
+use DDTrace\Propagators\TextMap;
 use DDTrace\Propagators\CurlHeadersMap;
 use DDTrace\Propagators\Noop as NoopPropagator;
 use DDTrace\Sampling\ConfigurableSampler;

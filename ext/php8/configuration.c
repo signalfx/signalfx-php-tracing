@@ -83,13 +83,25 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
         dd_copy_tolower(ini_name->ptr, env_name.ptr);
         ini_name->len = env_name.len;
         ini_name->ptr[sizeof("ddtrace") - 1] = '.';
-    } else if (env_name.ptr == strstr(env_name.ptr, "DD_")) {
-        dd_copy_tolower(ini_name->ptr + DD_TO_DATADOG_INC, env_name.ptr);
-        memcpy(ini_name->ptr, "datadog.", sizeof("datadog.") - 1);
-        ini_name->len = env_name.len + DD_TO_DATADOG_INC;
+    } else if (env_name.ptr == strstr(env_name.ptr, "DD_") || env_name.ptr == strstr(env_name.ptr, "SIGNALFX_")) {
+        if (env_name.ptr == strstr(env_name.ptr, "DD_")) {
+            dd_copy_tolower(ini_name->ptr + DD_TO_DATADOG_INC, env_name.ptr);
+            memcpy(ini_name->ptr, "datadog.", sizeof("datadog.") - 1);
+            ini_name->len = env_name.len + DD_TO_DATADOG_INC;
 
-        if (env_name.ptr == strstr(env_name.ptr, "DD_TRACE_")) {
-            ini_name->ptr[sizeof("datadog.trace") - 1] = '.';
+            if (env_name.ptr == strstr(env_name.ptr, "DD_TRACE_")) {
+                ini_name->ptr[sizeof("datadog.trace") - 1] = '.';
+            }
+        } else if(env_name.ptr == strstr(env_name.ptr, "SIGNALFX_")) {
+            dd_copy_tolower(ini_name->ptr + DD_TO_DATADOG_INC, env_name.ptr);
+            memcpy(ini_name->ptr, "signalfx.", sizeof("signalfx.") - 1);
+            ini_name->len = env_name.len + DD_TO_DATADOG_INC;
+
+            if (env_name.ptr == strstr(env_name.ptr, "SIGNALFX_TRACE_")) {
+                ini_name->ptr[sizeof("signalfx.trace") - 1] = '.';
+            } else if(env_name.ptr == strstr(env_name.ptr, "SIGNALFX_TRACING_")) {
+                ini_name->ptr[sizeof("signalfx.tracing") - 1] = '.';
+            }
         }
     } else {
         ini_name->len = 0;
@@ -135,7 +147,7 @@ void ddtrace_config_first_rinit() {
     runtime_config_first_init = true;
 }
 
-// note: only call this if get_DD_TRACE_ENABLED() returns true
+// note: only call this if get_SIGNALFX_TRACING_ENABLED() returns true
 bool ddtrace_config_integration_enabled(ddtrace_integration_name integration_name) {
     ddtrace_integration *integration = &ddtrace_integrations[integration_name];
 

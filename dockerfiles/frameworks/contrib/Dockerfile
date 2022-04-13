@@ -107,7 +107,7 @@ RUN set -xe; \
 
 WORKDIR /home/laravel
 ADD laravel/patch.patch ./
-ENV DD_SERVICE=laravel
+ENV SIGNALFX_SERVICE=laravel
 RUN set -xe; \
     git apply *.patch
 
@@ -168,7 +168,7 @@ RUN set -xe; \
 CMD [ "./run.sh" ]
 
 FROM base AS wordpress
-ENV DD_SERVICE=wordpress
+ENV SIGNALFX_SERVICE=wordpress
 ARG WORDPRESS_VERSION_TAG=4.8.10
 RUN set -xe; \
   apt-get update; \
@@ -203,7 +203,7 @@ RUN set -xe; \
 
 WORKDIR /home/phpredis-${PHPREDIS_VERSION_TAG}
 
-ENV DD_SERVICE=phpredis-${PHPREDIS_VERSION_TAG}
+ENV SIGNALFX_SERVICE=phpredis-${PHPREDIS_VERSION_TAG}
 
 # Installing the correct version of redis
 RUN pecl uninstall redis
@@ -230,7 +230,7 @@ RUN set -xe; \
 
 WORKDIR /home/mongodb-driver-${MONGODB_VERSION_TAG}
 
-ENV DD_SERVICE=mongodb-driver-${MONGODB_VERSION_TAG}
+ENV SIGNALFX_SERVICE=mongodb-driver-${MONGODB_VERSION_TAG}
 
 # Building mongodb-driver
 #   https://github.com/mongodb/mongo-php-driver/blob/master/CONTRIBUTING.md

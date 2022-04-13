@@ -1,6 +1,4 @@
 version: "2.1"
-orbs:
-  codecov: codecov/codecov@3.2.2
 aliases:
 
   - &CACHE_COMPOSER_KEY
@@ -380,7 +378,7 @@ jobs:
           name: Run xdebug tests
           command: |
             export REPORT_EXIT_STATUS=1
-            export DD_TRACE_CLI_ENABLED=1
+            export SIGNALFX_TRACE_CLI_ENABLED=1
             cd tmp/build_extension
             php run-tests.php -p $(which php) --show-all -d zend_extension=xdebug-<< parameters.xdebug_version_one >>.so ../../tests/xdebug/<< parameters.xdebug_version_one >>
             if [[ ! "<<parameters.xdebug_version_two>>" == "none" ]]; then
@@ -469,12 +467,6 @@ jobs:
           command: |
             set -euo pipefail
             make << parameters.make_target >> 2>&1 | tee /dev/stderr | { ! grep -qe "=== Total [0-9]+ memory leaks detected ==="; }
-      - run:
-          name: Install CodeCov Uploader Dependencies
-          command: sudo apt install -y gpg
-      - codecov/upload:
-          file: tmp/coverage.info
-          upload_name: "PHP<< parameters.php_major_minor >>.dd-trace-php"
       - run:
           command: |
             mkdir -p /tmp/artifacts/core_dumps
@@ -747,12 +739,12 @@ jobs:
           name: Install .deb from artifacts
           command: |
             sudo dpkg -i ./build/packages/*.deb
-            php --ri=ddtrace
+            php --ri=signalfx_tracing
       - run:
           name: Run phpt tests against shippable package
           command: |
             switch-php debug
-            export DDTRACE_PKG_SO="/opt/datadog-php/extensions/ddtrace-$(php -i | awk '/^PHP[ \t]+API[ \t]+=>/ { print $NF }')-debug.so"
+            export DDTRACE_PKG_SO="/opt/datadog-php/extensions/signalfx_tracing-$(php -i | awk '/^PHP[ \t]+API[ \t]+=>/ { print $NF }')-debug.so"
             make run_tests TESTS="-d 'extension=$DDTRACE_PKG_SO'"
       - run:
           name: Run phpt tests against build from source
@@ -997,7 +989,7 @@ jobs:
           command: |
             cp ./pecl/signalfx_tracing-*.tgz ./signalfx_tracing.tgz
             sudo pecl install signalfx_tracing.tgz
-            echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx_tracing.ini
+            echo "extension=signalfx_tracing.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/signalfx-tracing.ini
             php --ri=signalfx_tracing
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - run:
@@ -1327,14 +1319,14 @@ jobs:
           command: make all CFLAGS="-std=gnu11 -O2 -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>" ECHO_ARG="-e"
       - run:
           name: Copy extension basic .so
-          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx-tracing-<< parameters.so_suffix >>.so
+          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx_tracing-<< parameters.so_suffix >>.so
       - run:
           shell: /bin/bash -eo pipefail -l
           name: Build extension debug .so
           command: make clean all CFLAGS="-std=gnu11 -g -Wall -Wextra <<# parameters.catch_warnings >> -Werror <</ parameters.catch_warnings >>" ECHO_ARG="-e"
       - run:
           name: Copy extension basic .so
-          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx-tracing-<< parameters.so_suffix >>-debug.so
+          command: cp tmp/build_extension/.libs/signalfx_tracing.so extensions/signalfx_tracing-<< parameters.so_suffix >>-debug.so
       - persist_to_workspace:
           root: '.'
           paths: ['./extensions']

@@ -33,8 +33,7 @@ final class IntegrationsLoaderTest extends BaseTestCase
         $loader = new IntegrationsLoader(self::$dummyIntegrations);
         $loader->loadAll();
         $this->putEnvAndReloadConfig(['SIGNALFX_TRACING_ENABLED']);
-
-        $this->assertSame(Integration::NOT_LOADED, $loader->getLoadingStatus('integration_1'));
+        $this->assertSame(Integration::LOADED, $loader->getLoadingStatus('integration_1'));
     }
 
     public function testSingleIntegrationLoadingCanBeDisabled()

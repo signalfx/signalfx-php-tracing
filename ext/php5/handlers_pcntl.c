@@ -4,7 +4,7 @@
 #include "ddtrace.h"
 #include "handlers_internal.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static void (*dd_pcntl_fork_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 

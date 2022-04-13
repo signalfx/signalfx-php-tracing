@@ -23,7 +23,7 @@ class SandboxAndLegacyTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_DISTRIBUTED_TRACING' => 'true',
+            'SIGNALFX_DISTRIBUTED_TRACING' => 'true',
             'DD_TRACE_NO_AUTOLOADER' => 'true',
         ]);
     }

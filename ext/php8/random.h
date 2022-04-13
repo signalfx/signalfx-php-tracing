@@ -20,9 +20,13 @@ void ddtrace_seed_prng(void);
 void ddtrace_init_span_id_stack(void);
 void ddtrace_free_span_id_stack(void);
 bool ddtrace_set_userland_trace_id(zval *zid);
+bool ddtrace_set_userland_trace_id_hex(zval *zid);
 uint64_t ddtrace_push_span_id(uint64_t id);
+uint64_t ddtrace_push_span_id_hex(uint64_t id);
 bool ddtrace_push_userland_span_id(zval *zid);
+bool ddtrace_push_userland_span_id_hex(zval *zid);
 uint64_t ddtrace_pop_span_id(void);
 uint64_t ddtrace_peek_span_id(void);
+uint64_t sfxtrace_hex_to_u64(zval *zid);
 
 #endif  // DD_RANDOM_H

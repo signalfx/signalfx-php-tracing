@@ -147,15 +147,6 @@ void ddtrace_internal_handlers_startup(void) {
     ddtrace_internal_handlers_install(get_global_DD_TRACE_TRACED_INTERNAL_FUNCTIONS());
 
     // These don't have a better place to go (yet, anyway)
-    ddtrace_string handlers[] = {
-        DDTRACE_STRING_LITERAL("header"),
-        DDTRACE_STRING_LITERAL("http_response_code"),
-        DDTRACE_STRING_LITERAL("file_get_contents"),
-        DDTRACE_STRING_LITERAL("json_encode"),
-        DDTRACE_STRING_LITERAL("json_decode"),
-    };
-    size_t handlers_len = sizeof handlers / sizeof handlers[0];
-    ddtrace_replace_internal_functions(CG(function_table), handlers_len, handlers);
 }
 
 void ddtrace_internal_handlers_shutdown(void) {

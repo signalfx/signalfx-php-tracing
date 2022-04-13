@@ -38,9 +38,9 @@ class RandomExecutionPath
             $this->generatorSnippets = new GeneratorSnippets($this);
         }
 
-        // Do not use function_exists('DDTrace\...') because if DD_TRACE_ENABLED is not false and the function does not
+        // Do not use function_exists('DDTrace\...') because if SIGNALFX_TRACING_ENABLED is not false and the function does not
         // exist then we MUST generate an error
-        if (getenv('DD_TRACE_ENABLED') !== 'false' && extension_loaded('ddtrace')) {
+        if (getenv('SIGNALFX_TRACING_ENABLED') !== 'false' && extension_loaded('ddtrace')) {
             // Tracing manual functions
             $callback = function (\DDTrace\SpanData $span) {
                 $span->service = \ddtrace_config_app_name();
@@ -226,7 +226,7 @@ class RandomExecutionPath
     private function maybeEmitAWarning()
     {
         $this->logEnter(__FUNCTION__);
-        // #1021 caused by DD_TRACE_ENABLED=true + warning emitted
+        // #1021 caused by SIGNALFX_TRACING_ENABLED=true + warning emitted
         if ($this->percentOfCases(5)) {
             \trigger_error("Some warning triggered", \E_USER_WARNING);
         }

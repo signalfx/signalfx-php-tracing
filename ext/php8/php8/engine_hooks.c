@@ -65,7 +65,7 @@ static ZEND_RESULT_CODE dd_sandbox_fci_call(zend_execute_data *call, zend_fcall_
     ddtrace_sandbox_backup backup = ddtrace_sandbox_begin();
     ret = zend_call_function(fci, fcc);
 
-    if (get_DD_TRACE_DEBUG()) {
+    if (get_SIGNALFX_TRACE_DEBUG()) {
         const char *scope, *colon, *name;
         dd_try_fetch_executing_function_name(call, &scope, &colon, &name);
 
@@ -248,7 +248,7 @@ static bool dd_execute_tracing_closure(zval *callable, zval *span_data, zend_exe
     zval *this = dd_call_this(call);
 
     if (!callable || !span_data || !user_args) {
-        if (get_DD_TRACE_DEBUG()) {
+        if (get_SIGNALFX_TRACE_DEBUG()) {
             const char *fname = call->func ? ZSTR_VAL(call->func->common.function_name) : "{unknown}";
             ddtrace_log_errf("Tracing closure could not be run for %s() because it is in an invalid state", fname);
         }
@@ -448,7 +448,7 @@ static ddtrace_span_fci *dd_create_duplicate_span(zend_execute_data *call, ddtra
 
     // if you push a span_id of 0 it makes a new span id, which we don't want
     if (span->span_id) {
-        ddtrace_push_span_id(span->span_id);
+        ddtrace_push_span_id_hex(span->span_id);
     }
 
     return span_fci;
@@ -627,7 +627,7 @@ static void dd_observer_end(zend_function *fbc, ddtrace_span_fci *span_fci, zval
         ddtrace_dispatch_t *dispatch = span_fci->dispatch;
         uint16_t offset = DDTRACE_DISPATCH_JUMP_OFFSET(dispatch->options);
         (dd_fcall_end[offset])(span_fci, user_retval);
-    } else if (fbc && get_DD_TRACE_DEBUG()) {
+    } else if (fbc && get_SIGNALFX_TRACE_DEBUG()) {
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", ZSTR_VAL(fbc->common.function_name));
     }
 }
@@ -716,7 +716,7 @@ void ddtrace_close_all_open_spans(void) {
 }
 
 static void dd_observer_begin_handler(zend_execute_data *execute_data) {
-    if (!get_DD_TRACE_ENABLED()) {
+    if (!get_SIGNALFX_TRACING_ENABLED()) {
         return;
     }
     ddtrace_dispatch_t *cached_dispatch = DDTRACE_OP_ARRAY_EXTENSION(&execute_data->func->op_array);
@@ -738,7 +738,7 @@ static void dd_observer_end_handler(zend_execute_data *execute_data, zval *retva
 
 zend_observer_fcall_handlers ddtrace_observer_fcall_init(zend_execute_data *execute_data) {
     zend_function *fbc = EX(func);
-    if (!get_DD_TRACE_ENABLED() || ddtrace_op_array_extension == 0 || fbc->common.type != ZEND_USER_FUNCTION) {
+    if (!get_SIGNALFX_TRACING_ENABLED() || ddtrace_op_array_extension == 0 || fbc->common.type != ZEND_USER_FUNCTION) {
         return (zend_observer_fcall_handlers){NULL, NULL};
     }
 
@@ -755,7 +755,7 @@ PHP_FUNCTION(ddtrace_internal_function_handler) {
     zend_function *fbc = EX(func);
     void (*handler)(INTERNAL_FUNCTION_PARAMETERS) = fbc->internal_function.reserved[ddtrace_resource];
 
-    if (!get_DD_TRACE_ENABLED()) {
+    if (!get_SIGNALFX_TRACING_ENABLED()) {
         handler(INTERNAL_FUNCTION_PARAM_PASSTHRU);
         return;
     }

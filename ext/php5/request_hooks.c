@@ -37,7 +37,7 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
 
     ret = php_stream_open_for_zend_ex(filename, &file_handle, USE_PATH | STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
 
-    if (get_DD_TRACE_DEBUG() && PG(last_error_message) && eh_stream.message != PG(last_error_message)) {
+    if (get_SIGNALFX_TRACE_DEBUG() && PG(last_error_message) && eh_stream.message != PG(last_error_message)) {
         ddtrace_log_errf("Error raised while opening request-init-hook stream: %s in %s on line %d",
                          PG(last_error_message), PG(last_error_file), PG(last_error_lineno));
     }
@@ -70,7 +70,7 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
 #if PHP_VERSION_ID < 50600
             // Cannot gracefully recover from fatal errors without crashing until PHP 5.6
             zend_catch {
-                if (get_DD_TRACE_DEBUG() && PG(last_error_message)) {
+                if (get_SIGNALFX_TRACE_DEBUG() && PG(last_error_message)) {
                     ddtrace_log_errf("Unrecoverable error raised in request init hook: %s in %s on line %d",
                                      PG(last_error_message), PG(last_error_file), PG(last_error_lineno));
                 }
@@ -79,7 +79,7 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
 #endif
             zend_end_try();
 
-            if (get_DD_TRACE_DEBUG() && PG(last_error_message) && eh.message != PG(last_error_message)) {
+            if (get_SIGNALFX_TRACE_DEBUG() && PG(last_error_message) && eh.message != PG(last_error_message)) {
                 ddtrace_log_errf("Error raised in request init hook: %s in %s on line %d", PG(last_error_message),
                                  PG(last_error_file), PG(last_error_lineno));
             }
@@ -93,7 +93,7 @@ int dd_execute_php_file(const char *filename TSRMLS_DC) {
                     zval_ptr_dtor(EG(return_value_ptr_ptr));
                 }
             } else {
-                if (get_DD_TRACE_DEBUG()) {
+                if (get_SIGNALFX_TRACE_DEBUG()) {
                     zval *ex = EG(exception), *message = NULL;
                     const char *type = Z_OBJCE_P(ex)->name;
                     message = ddtrace_exception_get_entry(ex, ZEND_STRL("message") TSRMLS_CC);

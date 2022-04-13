@@ -20,7 +20,7 @@ final class StartupLoggingDiagnosticsTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'DD_TRACE_DEBUG' => true, // Startup logs only show in debug mode
+            'SIGNALFX_TRACE_DEBUG' => true, // Startup logs only show in debug mode
             'DD_AGENT_HOST' => 'invalid_host', // Will fail diagnostic check
         ]);
     }

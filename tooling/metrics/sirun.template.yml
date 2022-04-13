@@ -2,7 +2,7 @@ run: exit 1
 cachegrind: false
 iterations: 40
 env:
-  DD_TRACE_CLI_ENABLED: 'true'
+  SIGNALFX_TRACE_CLI_ENABLED: 'true'
   DD_AGENT_HOST: 'agent'
 variants:
   - name: no-tracer

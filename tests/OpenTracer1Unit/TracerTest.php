@@ -54,7 +54,7 @@ final class TracerTest extends BaseTestCase
         $this->putEnvAndReloadConfig([
             'DD_ENV=' . self::ENVIRONMENT,
             'DD_VERSION=' . self::VERSION,
-            'DD_TAGS=env:global-tag-env,version:4.5.6',
+            'SIGNALFX_TAGS=env:global-tag-env,version:4.5.6',
         ]);
         $tracer = Tracer::make(new NoopTransport());
 

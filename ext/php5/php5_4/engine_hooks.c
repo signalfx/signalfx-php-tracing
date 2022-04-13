@@ -29,7 +29,7 @@ static zend_class_entry *dd_get_called_scope(zend_function *fbc TSRMLS_DC) {
 }
 
 static ddtrace_dispatch_t *dd_lookup_dispatch_from_fbc(zend_function *fbc TSRMLS_DC) {
-    if (!get_DD_TRACE_ENABLED() || !DDTRACE_G(class_lookup) || !DDTRACE_G(function_lookup) || !fbc) {
+    if (!get_SIGNALFX_TRACING_ENABLED() || !DDTRACE_G(class_lookup) || !DDTRACE_G(function_lookup) || !fbc) {
         return NULL;
     }
 
@@ -110,7 +110,7 @@ static int dd_sandbox_fci_call(zend_function *fbc, zend_fcall_info *fci, zend_fc
         ddtrace_log_debug("Could not execute ddtrace's closure");
     }
 
-    if (get_DD_TRACE_DEBUG()) {
+    if (get_SIGNALFX_TRACE_DEBUG()) {
         const char *scope, *colon, *name;
         dd_try_fetch_executing_function_name(fbc, &scope, &colon, &name);
 
@@ -165,7 +165,7 @@ static bool dd_tracing_posthook_impl_impl(zend_function *fbc, ddtrace_span_fci *
     ddtrace_span_attach_exception(span_fci, EG(exception));
 
     if (UNEXPECTED(!return_value)) {
-        if (get_DD_TRACE_DEBUG()) {
+        if (get_SIGNALFX_TRACE_DEBUG()) {
             const char *fname = Z_STRVAL(dispatch->function_name);
             ddtrace_log_errf("Tracing closure could not be run for %s() because it is in an invalid state", fname);
         }
@@ -323,7 +323,7 @@ static void dd_execute_tracing_posthook(zend_op_array *op_array TSRMLS_DC) {
 
     if (ddtrace_has_top_internal_span(span_fci TSRMLS_CC)) {
         dd_tracing_posthook_impl(fbc, span_fci, actual_retval TSRMLS_CC);
-    } else if (get_DD_TRACE_DEBUG() && !span_fci->span.duration) {
+    } else if (get_SIGNALFX_TRACE_DEBUG() && !span_fci->span.duration) {
         // todo: update to Classname::Methodname format
         const char *fname = Z_STRVAL(dispatch->function_name);
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", fname);
@@ -585,7 +585,7 @@ static void dd_internal_tracing_posthook(zend_execute_data *execute_data, int re
 
     if (ddtrace_has_top_internal_span(span_fci TSRMLS_CC)) {
         dd_tracing_posthook_impl(fbc, span_fci, return_value TSRMLS_CC);
-    } else if (get_DD_TRACE_DEBUG() && !span_fci->span.duration) {
+    } else if (get_SIGNALFX_TRACE_DEBUG() && !span_fci->span.duration) {
         // todo: update to Classname::Methodname format
         const char *fname = Z_STRVAL(dispatch->function_name);
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", fname);

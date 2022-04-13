@@ -29,6 +29,7 @@
     INTEGRATION(SYMFONY, "symfony")             \
     INTEGRATION(WEB, "web")                     \
     INTEGRATION(WORDPRESS, "wordpress")         \
+    INTEGRATION(DRUPAL, "drupal")               \
     INTEGRATION(YII, "yii")                     \
     INTEGRATION(ZENDFRAMEWORK, "zendframework")
 

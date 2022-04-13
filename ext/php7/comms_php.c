@@ -8,7 +8,7 @@
 ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 bool ddtrace_send_traces_via_thread(size_t num_traces, char *payload, size_t payload_len) {
-    if (!get_DD_TRACE_ENABLED()) {
+    if (!get_SIGNALFX_TRACING_ENABLED()) {
         // If the tracer is set to drop all the spans, we do not signal an error.
         ddtrace_log_debugf("Traces are dropped by PID %ld because tracing is disabled.", getpid());
         return true;

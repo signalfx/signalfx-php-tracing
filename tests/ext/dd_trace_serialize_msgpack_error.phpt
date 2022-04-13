@@ -1,7 +1,7 @@
 --TEST--
 dd_trace_serialize_msgpack() error conditions
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 --FILE--
 <?php
 array_map(function ($data) {

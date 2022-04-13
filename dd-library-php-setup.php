@@ -126,8 +126,8 @@ function install($options)
         } elseif (is_truthy(THREAD_SAFETY)) {
             $extensionSuffix = '-zts';
         }
-        $extensionRealPath = $tmpExtensionsDir . '/ddtrace-' . $extensionVersion . $extensionSuffix . '.so';
-        $extensionFileName = 'ddtrace.so';
+        $extensionRealPath = $tmpExtensionsDir . '/signalfx_tracing-' . $extensionVersion . $extensionSuffix . '.so';
+        $extensionFileName = 'signalfx_tracing.so';
         $extensionDestination = $phpProperties[EXTENSION_DIR] . '/' . $extensionFileName;
 
         /* Move - rename() - instead of copy() since copying does a fopen() and copies to the stream itself, causing a
@@ -139,7 +139,7 @@ function install($options)
         echo "Copied '$extensionRealPath' '$extensionDestination'\n";
 
         // Writing the ini file
-        $iniFileName = '98-ddtrace.ini';
+        $iniFileName = '98-signalfx-tracing.ini';
         $iniFilePaths = [$phpProperties[INI_CONF] . '/' . $iniFileName];
         if (\strpos($phpProperties[INI_CONF], '/cli/conf.d') !== false) {
             /* debian based distros have INI folders split by SAPI, in a predefined way:
@@ -178,12 +178,12 @@ function install($options)
                 // phpcs:enable Generic.Files.LineLength.TooLong
 
                 /* In order to support upgrading from legacy installation method to new installation method, we replace
-                 * "extension = /opt/datadog-php/xyz.so" with "extension =  ddtrace.so" honoring trailing `;`, hence not
+                 * "extension = /opt/datadog-php/xyz.so" with "extension =  signalfx_tracing.so" honoring trailing `;`, hence not
                  * automatically re-activating the extension if the user had commented it out.
                  */
                 execute_or_exit(
                     'Impossible to update the INI settings file.',
-                    "sed -i 's@extension \?= \?\(.*\)@extension = ddtrace.so@g' " . escapeshellarg($iniFilePath)
+                    "sed -i 's@extension \?= \?\(.*\)@extension = signalfx_tracing.so@g' " . escapeshellarg($iniFilePath)
                 );
             }
             echo "Installation to '$binaryForLog' was successful\n";
@@ -217,10 +217,10 @@ function uninstall($options)
 
         $phpProperties = ini_values($fullPath);
 
-        $extensionDestination = $phpProperties[EXTENSION_DIR] . '/ddtrace.so';
+        $extensionDestination = $phpProperties[EXTENSION_DIR] . '/signalfx_tracing.so';
 
         // Writing the ini file
-        $iniFileName = '98-ddtrace.ini';
+        $iniFileName = '98-signalfx-tracing.ini';
         $iniFilePaths = [$phpProperties[INI_CONF] . '/' . $iniFileName];
         if (\strpos('/cli/conf.d', $phpProperties[INI_CONF]) >= 0) {
             /* debian based distros have INI folders split by SAPI, in a predefined way:
@@ -235,8 +235,8 @@ function uninstall($options)
         }
 
         /* Actual uninstall
-         *  1) comment out extension=ddtrace.so
-         *  2) remove ddtrace.so
+         *  1) comment out extension=signalfx_tracing.so
+         *  2) remove signalfx_tracing.so
          */
         foreach ($iniFilePaths as $iniFilePath) {
             if (file_exists($iniFilePath)) {
@@ -760,7 +760,7 @@ function get_ini_template($requestInitHookPath)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Enables or disables tracing (set by the installer, do not change it)
-extension = ddtrace.so
+extension = signalfx_tracing.so
 
 ; Path to the request init hook (set by the installer, do not change it)
 datadog.trace.request_init_hook = $requestInitHookPath

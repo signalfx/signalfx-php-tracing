@@ -13,8 +13,8 @@ From this directory :
 
     # Edit the env appropriately in the .env file (you can use .env.example as a template)
     XDEBUG_ENABLE_PROFILER=1
-    DD_TRACE_ENABLED=true
-    DD_TRACE_DEBUG=false
+    SIGNALFX_TRACING_ENABLED=true
+    SIGNALFX_TRACE_DEBUG=false
 
     # Start the env
     make start_env

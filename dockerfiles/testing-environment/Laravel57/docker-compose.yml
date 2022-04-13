@@ -11,7 +11,7 @@ services:
     environment:
       - DD_AGENT_HOST=agent
       - TRACER_DOWNLOAD_URL=https://598250-119990860-gh.circle-artifacts.com/0/datadog-php-tracer_1.0.0-nightly_amd64.deb
-      # - DD_TRACE_DEBUG=true
+      # - SIGNALFX_TRACE_DEBUG=true
     # volumes:
     #   - ./app:/var/www/html/
     command: [ "/scripts/local-run.sh" ]

@@ -106,12 +106,12 @@ TEST_CASE("append several INI entries", "[zai_sapi_ini]") {
     ssize_t len = zai_sapi_ini_entries_alloc("foo=bar\nabc=123\n", &entries);
 
     len = zai_sapi_ini_entries_realloc_append(&entries, (size_t)len, "abc", "123");
-    len = zai_sapi_ini_entries_realloc_append(&entries, (size_t)len, "extension", "ddtrace.so");
+    len = zai_sapi_ini_entries_realloc_append(&entries, (size_t)len, "extension", "signalfx_tracing.so");
     len = zai_sapi_ini_entries_realloc_append(&entries, (size_t)len, "ddtrace.request_init_hook", "/path/to/init_hook.php");
 
     REQUIRE(entries != NULL);
     REQUIRE(len == 94);
-    REQUIRE(strcmp("foo=bar\nabc=123\nabc=123\nextension=ddtrace.so\nddtrace.request_init_hook=/path/to/init_hook.php\n", entries) == 0);
+    REQUIRE(strcmp("foo=bar\nabc=123\nabc=123\nextension=signalfx_tracing.so\nddtrace.request_init_hook=/path/to/init_hook.php\n", entries) == 0);
 
     zai_sapi_ini_entries_free(&entries);
 }

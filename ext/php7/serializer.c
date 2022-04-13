@@ -398,7 +398,7 @@ void ddtrace_set_global_span_properties(ddtrace_span_t *span) {
         add_assoc_str(meta, "_dd.origin", zend_string_copy(DDTRACE_G(dd_origin)));
     }
 
-    zend_array *global_tags = get_DD_TAGS();
+    zend_array *global_tags = get_SIGNALFX_TAGS();
     zend_string *global_key;
     zval *global_val;
     ZEND_HASH_FOREACH_STR_KEY_VAL(global_tags, global_key, global_val) {
@@ -493,7 +493,7 @@ void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
         ZVAL_STR(prop_name, zend_string_init(ZEND_STRL("web.request"), 0));
     }
     zval *prop_service = ddtrace_spandata_property_service(span);
-    ZVAL_STR_COPY(prop_service, ZSTR_LEN(get_DD_SERVICE()) ? get_DD_SERVICE() : Z_STR_P(prop_name));
+    ZVAL_STR_COPY(prop_service, ZSTR_LEN(get_SIGNALFX_SERVICE()) ? get_SIGNALFX_SERVICE() : Z_STR_P(prop_name));
 
     if (Z_TYPE(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY || zend_is_auto_global_str(ZEND_STRL("_SERVER"))) {
         zend_string *headername;
@@ -673,7 +673,7 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array) {
         _add_assoc_zval_copy(el, "resource", prop_name);
     }
 
-    // TODO: SpanData::$service defaults to parent SpanData::$service or DD_SERVICE if root span
+    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE if root span
     zval *prop_service = ddtrace_spandata_property_service(span);
     ZVAL_DEREF(prop_service);
     if (Z_TYPE_P(prop_service) > IS_NULL) {

@@ -2,6 +2,7 @@
 
 namespace DDTrace\Integrations;
 
+use DDTrace\Integrations\Codeigniter\V2\CodeigniterIntegration;
 use DDTrace\Integrations\CakePHP\CakePHPIntegration;
 use DDTrace\Integrations\Curl\CurlIntegration;
 use DDTrace\Integrations\Drupal\DrupalIntegration;
@@ -62,6 +63,8 @@ class IntegrationsLoader
 
         // Add integrations as they support PHP 8
         if (\PHP_MAJOR_VERSION >= 8) {
+            $this->integrations[CodeigniterIntegration::NAME] =
+                '\DDTrace\Integrations\Codeigniter\V2\CodeigniterIntegration';
             $this->integrations[CurlIntegration::NAME] =
                 '\DDTrace\Integrations\Curl\CurlIntegration';
             $this->integrations[EloquentIntegration::NAME] =

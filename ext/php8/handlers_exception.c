@@ -316,7 +316,7 @@ void ddtrace_exception_handlers_startup(void) {
     INIT_NS_CLASS_ENTRY(dd_exception_or_error_handler_ce, "DDTrace", "ExceptionHandler", NULL);
     dd_exception_or_error_handler_ce.type = ZEND_INTERNAL_CLASS;
     zend_initialize_class_data(&dd_exception_or_error_handler_ce, false);
-    dd_exception_or_error_handler_ce.info.internal.module = &ddtrace_module_entry;
+    dd_exception_or_error_handler_ce.info.internal.module = &signalfx_tracing_module_entry;
     zend_declare_property_null(&dd_exception_or_error_handler_ce, "handler", sizeof("handler") - 1, ZEND_ACC_PUBLIC);
     memcpy(&dd_exception_or_error_handler_handlers, &std_object_handlers, sizeof(zend_object_handlers));
     dd_exception_or_error_handler_handlers.get_closure = dd_exception_handler_get_closure;

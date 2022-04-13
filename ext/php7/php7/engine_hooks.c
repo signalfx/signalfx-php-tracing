@@ -86,7 +86,7 @@ static ZEND_RESULT_CODE dd_sandbox_fci_call(zend_execute_data *call, zend_fcall_
     ddtrace_sandbox_backup backup = ddtrace_sandbox_begin();
     ret = zend_call_function(fci, fcc);
 
-    if (get_DD_TRACE_DEBUG()) {
+    if (get_SIGNALFX_TRACE_DEBUG()) {
         const char *scope, *colon, *name;
         dd_try_fetch_executing_function_name(call, &scope, &colon, &name);
 
@@ -200,7 +200,7 @@ static bool dd_should_trace_runtime(ddtrace_dispatch_t *dispatch) {
 static bool dd_should_trace_call(zend_execute_data *call, ddtrace_dispatch_t **dispatch) {
     zend_function *fbc = call->func;
 
-    if (!get_DD_TRACE_ENABLED()) {
+    if (!get_SIGNALFX_TRACING_ENABLED()) {
         return false;
     }
 
@@ -365,7 +365,7 @@ static bool dd_execute_tracing_closure(zval *callable, zval *span_data, zend_exe
     zval *this = dd_call_this(call);
 
     if (!callable || !span_data || !user_args) {
-        if (get_DD_TRACE_DEBUG()) {
+        if (get_SIGNALFX_TRACE_DEBUG()) {
             const char *fname = call->func ? ZSTR_VAL(call->func->common.function_name) : "{unknown}";
             ddtrace_log_errf("Tracing closure could not be run for %s() because it is in an invalid state", fname);
         }
@@ -761,7 +761,7 @@ static void dd_observer_end(zend_function *fbc, ddtrace_span_fci *span_fci, zval
         ddtrace_dispatch_t *dispatch = span_fci->dispatch;
         uint16_t offset = DDTRACE_DISPATCH_JUMP_OFFSET(dispatch->options);
         (dd_fcall_end[offset])(span_fci, user_retval);
-    } else if (fbc && get_DD_TRACE_DEBUG()) {
+    } else if (fbc && get_SIGNALFX_TRACE_DEBUG()) {
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", ZSTR_VAL(fbc->common.function_name));
     }
 }

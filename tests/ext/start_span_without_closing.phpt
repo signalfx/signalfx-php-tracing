@@ -1,7 +1,7 @@
 --TEST--
 Use DDTrace\close_span() on span started within internal span
 --ENV--
-DD_TRACE_DEBUG=1
+SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_GENERATE_ROOT_SPAN=0
 --FILE--
 <?php

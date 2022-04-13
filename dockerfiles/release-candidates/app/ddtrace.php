@@ -8,7 +8,7 @@ function instrumentMethod($class, $method) {
         return;
     }
     DDTrace\trace_method($class, $method, function ($s) {
-        $s->service = getenv('DD_SERVICE') ?: getenv('DD_SERVICE_NAME');
+        $s->service = getenv('SIGNALFX_SERVICE') ?: getenv('SIGNALFX_SERVICE_NAME');
         $s->type = 'web';
     });
 }

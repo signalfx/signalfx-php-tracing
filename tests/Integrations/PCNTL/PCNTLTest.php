@@ -29,7 +29,7 @@ final class PCNTLTest extends IntegrationTestCase
         $this->executeCli(
             $scriptPath,
             [
-                'DD_TRACE_CLI_ENABLED' => 'false',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'false',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -46,7 +46,7 @@ final class PCNTLTest extends IntegrationTestCase
         $this->executeCli(
             $scriptPath,
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -71,7 +71,7 @@ final class PCNTLTest extends IntegrationTestCase
         $traces = $this->inCli(
             __DIR__ . '/scripts/synthetic.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -86,7 +86,7 @@ final class PCNTLTest extends IntegrationTestCase
         $traces = $this->inCli(
             __DIR__ . '/scripts/short-running.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -105,7 +105,7 @@ final class PCNTLTest extends IntegrationTestCase
         $traces = $this->inCli(
             __DIR__ . '/scripts/short-running-multiple.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -128,7 +128,7 @@ final class PCNTLTest extends IntegrationTestCase
         $traces = $this->inCli(
             __DIR__ . '/scripts/short-running-multiple-nested.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,
             ]
         );
@@ -152,7 +152,7 @@ final class PCNTLTest extends IntegrationTestCase
         $this->executeCli(
             __DIR__ . '/scripts/long-running-autoflush.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_AUTO_FLUSH_ENABLED' => 'true',
                 'DD_TRACE_GENERATE_ROOT_SPAN' => 'false',
                 'DD_TRACE_AGENT_FLUSH_INTERVAL' => 0,
@@ -182,7 +182,7 @@ final class PCNTLTest extends IntegrationTestCase
         $this->executeCli(
             __DIR__ . '/scripts/long-running-manual-flush.php',
             [
-                'DD_TRACE_CLI_ENABLED' => 'true',
+                'SIGNALFX_TRACE_CLI_ENABLED' => 'true',
                 'DD_TRACE_AUTO_FLUSH_ENABLED' => 'false',
                 'DD_TRACE_GENERATE_ROOT_SPAN' => 'false',
                 'DD_TRACE_SHUTDOWN_TIMEOUT' => 5000,

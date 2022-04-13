@@ -105,7 +105,7 @@ All notable changes to this project will be documented in this file - [read more
 
 ## [0.23.0]
 
-**NOTE: We changed the way the service name can be configured. Now you must use `DD_SERVICE_NAME` instead of `DD_TRACE_APP_NAME` for consistency with other tracers. Usage of `DD_TRACE_APP_NAME` is now deprecated and will be removed in a future release.**
+**NOTE: We changed the way the service name can be configured. Now you must use `SIGNALFX_SERVICE_NAME` instead of `SIGNALFX_TRACE_APP_NAME` for consistency with other tracers. Usage of `SIGNALFX_TRACE_APP_NAME` is now deprecated and will be removed in a future release.**
 
 ### Added
 - Support for [Lumen](https://lumen.laravel.com/) 5.2+ #416
@@ -113,7 +113,7 @@ All notable changes to this project will be documented in this file - [read more
 - Support for Laravel Artisan #422
 
 ### Changed
-- Now the way to configure service name is through `DD_SERVICE_NAME` instead of `DD_TRACE_APP_NAME` #432
+- Now the way to configure service name is through `SIGNALFX_SERVICE_NAME` instead of `SIGNALFX_TRACE_APP_NAME` #432
 
 ## [0.22.0]
 
@@ -290,7 +290,7 @@ of paramount importance.
 ## [0.12.0]
 
 ### Added
-- Support for global tags via the environment variable `DD_TRACE_GLOBAL_TAGS=key1:value1,key2:value2` #273
+- Support for global tags via the environment variable `SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2` #273
 
 ### Fixed
 - Memory leaks in `$this` object and return value handling in PHP 5.6 and 7.x #268

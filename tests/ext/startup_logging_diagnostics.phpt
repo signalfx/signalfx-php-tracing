@@ -14,7 +14,7 @@ $env = [
     'SIGNALFX_TRACE_DEBUG=1',
     'DD_AGENT_HOST=invalid_host',
     'SIGNALFX_SERVICE_NAME=foo_service',
-    'DD_TRACE_GLOBAL_TAGS=foo:tag',
+    'SIGNALFX_TRACE_GLOBAL_TAGS=foo:tag',
 ];
 $logs = dd_get_startup_logs($args, $env);
 
@@ -22,8 +22,8 @@ dd_dump_startup_logs($logs, [
     'agent_error',
     'open_basedir_init_hook_allowed',
     'open_basedir_container_tagging_allowed',
-    'DD_SERVICE_NAME',
-    'DD_TRACE_GLOBAL_TAGS',
+    'SIGNALFX_SERVICE_NAME',
+    'SIGNALFX_TRACE_GLOBAL_TAGS',
     'agent_url',
     'datadog.trace.request_init_hook',
     'open_basedir_configured',
@@ -33,8 +33,8 @@ dd_dump_startup_logs($logs, [
 agent_error: "%s"
 open_basedir_init_hook_allowed: false
 open_basedir_container_tagging_allowed: false
-DD_SERVICE_NAME: "'DD_SERVICE_NAME=foo_service' is deprecated, use DD_SERVICE instead."
-DD_TRACE_GLOBAL_TAGS: "'DD_TRACE_GLOBAL_TAGS=foo:tag' is deprecated, use DD_TAGS instead."
+SIGNALFX_SERVICE_NAME: "'SIGNALFX_SERVICE_NAME=foo_service' is deprecated, use SIGNALFX_SERVICE instead."
+SIGNALFX_TRACE_GLOBAL_TAGS: "'SIGNALFX_TRACE_GLOBAL_TAGS=foo:tag' is deprecated, use SIGNALFX_TAGS instead."
 agent_url: "http://invalid_host:8126"
 d%s.request_init_hook: "%s/includes/request_init_hook.inc"
 open_basedir_configured: true

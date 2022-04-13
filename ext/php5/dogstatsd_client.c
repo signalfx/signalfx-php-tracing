@@ -50,7 +50,7 @@ void ddtrace_dogstatsd_client_rinit(TSRMLS_D) {
         const char *metric = "datadog.tracer.heartbeat";
         dogstatsd_metric_t type = DOGSTATSD_METRIC_GAUGE;
         dogstatsd_client_status status = dogstatsd_client_metric_send(&client, metric, "1", type, sample_rate, NULL);
-        if (status != DOGSTATSD_CLIENT_OK && get_DD_TRACE_DEBUG()) {
+        if (status != DOGSTATSD_CLIENT_OK && get_SIGNALFX_TRACE_DEBUG()) {
             const char *status_str = dogstatsd_client_status_to_str(status) ?: "(unknown dogstatsd_client_status)";
             ddtrace_log_errf("Health metric '%s' failed to send: %s", metric, status_str);
         }

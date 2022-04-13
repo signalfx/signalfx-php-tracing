@@ -8,14 +8,14 @@ inline void ddtrace_log_err(const char *message) { php_log_err(message); }
 
 #define ddtrace_log_debugf(...)                                                               \
     do {                                                                                      \
-        if (runtime_config_first_init ? get_DD_TRACE_DEBUG() : get_global_DD_TRACE_DEBUG()) { \
+        if (runtime_config_first_init ? get_SIGNALFX_TRACE_DEBUG() : get_global_SIGNALFX_TRACE_DEBUG()) { \
             ddtrace_log_errf(__VA_ARGS__);                                                    \
         }                                                                                     \
     } while (0)
 
 #define ddtrace_log_debug(message)                                                            \
     do {                                                                                      \
-        if (runtime_config_first_init ? get_DD_TRACE_DEBUG() : get_global_DD_TRACE_DEBUG()) { \
+        if (runtime_config_first_init ? get_SIGNALFX_TRACE_DEBUG() : get_global_SIGNALFX_TRACE_DEBUG()) { \
             ddtrace_log_err(message);                                                         \
         }                                                                                     \
     } while (0)

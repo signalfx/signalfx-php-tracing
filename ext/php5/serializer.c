@@ -382,7 +382,7 @@ void ddtrace_set_global_span_properties(ddtrace_span_t *span TSRMLS_DC) {
         add_assoc_string(meta, "_dd.origin", DDTRACE_G(dd_origin), 1);
     }
 
-    HashTable *global_tags = get_DD_TAGS();
+    HashTable *global_tags = get_SIGNALFX_TAGS();
     char *key;
     uint key_len;
     ulong num_key;
@@ -508,7 +508,7 @@ void ddtrace_set_root_span_properties(ddtrace_span_t *span TSRMLS_DC) {
 
     zval **prop_service = ddtrace_spandata_property_service_write(span);
     MAKE_STD_ZVAL(*prop_service);
-    ZVAL_STRING(*prop_service, get_DD_SERVICE().len ? get_DD_SERVICE().ptr : Z_STRVAL_PP(prop_name), 1);
+    ZVAL_STRING(*prop_service, get_SIGNALFX_SERVICE().len ? get_SIGNALFX_SERVICE().ptr : Z_STRVAL_PP(prop_name), 1);
 
     if ((PG(http_globals)[TRACK_VARS_SERVER] && Z_TYPE_P(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY) ||
         zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC)) {
@@ -710,7 +710,7 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array TSR
         add_assoc_zval(el, "resource", prop_name_as_string);
     }
 
-    // TODO: SpanData::$service defaults to parent SpanData::$service or DD_SERVICE if root span
+    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE if root span
     zval *prop_service = ddtrace_spandata_property_service(span);
     zval *prop_service_as_string = NULL;
     if (prop_service && Z_TYPE_P(prop_service) != IS_NULL) {

@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Common;
 
+use DDTrace\Encoders\JsonZipkinV2;
 use DDTrace\Encoders\MessagePack;
 use DDTrace\Encoders\SpanEncoder;
 use DDTrace\GlobalTracer;

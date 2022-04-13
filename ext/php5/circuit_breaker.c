@@ -16,7 +16,7 @@ dd_trace_circuit_breaker_t *dd_trace_circuit_breaker = NULL;
 dd_trace_circuit_breaker_t local_dd_trace_circuit_breaker = {0};
 
 static void handle_prepare_error(const char *call_name) {
-    if (get_DD_TRACE_DEBUG()) {
+    if (get_SIGNALFX_TRACE_DEBUG()) {
         perror(call_name);
     }
 

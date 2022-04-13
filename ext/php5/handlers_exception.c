@@ -7,7 +7,7 @@
 #include "serializer.h"
 #include "span.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 // Keep in mind that we are currently not having special handling for uncaught exceptions thrown within the shutdown
 // sequence. This arises from the exception handlers being only invoked at the end of {main}. Additionally we currently
@@ -342,7 +342,7 @@ void ddtrace_exception_handlers_startup(TSRMLS_D) {
     dd_exception_or_error_handler_ce.type = ZEND_INTERNAL_CLASS;
     dd_exception_or_error_handler_ce.create_object = dd_exception_handler_create_object;
     zend_initialize_class_data(&dd_exception_or_error_handler_ce, false TSRMLS_CC);
-    dd_exception_or_error_handler_ce.info.internal.module = &ddtrace_module_entry;
+    dd_exception_or_error_handler_ce.info.internal.module = &signalfx_tracing_module_entry;
     memcpy(&dd_exception_or_error_handler_handlers, &std_object_handlers, sizeof(zend_object_handlers));
     dd_exception_or_error_handler_handlers.get_closure = dd_exception_handler_get_closure;
 

@@ -18,7 +18,7 @@ final class DisabledTest extends CLITestCase
     {
         $this->script = 'LongRunning/long_running_script_manual.php';
         $agentRequest = $this->getAgentRequestFromCommand('', [
-            'DD_TRACE_CLI_ENABLED' => 'false',
+            'SIGNALFX_TRACE_CLI_ENABLED' => 'false',
         ]);
 
         $this->assertEmpty($agentRequest);

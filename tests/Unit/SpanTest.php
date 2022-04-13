@@ -7,7 +7,7 @@ use DDTrace\SpanContext;
 use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Sampling\PrioritySampling;
-use DDTrace\GlobalTracer;
+//use DDTrace\GlobalTracer;
 use DDTrace\Tracer;
 use Exception;
 use DDTrace\Tests\Common\BaseTestCase;
@@ -88,7 +88,7 @@ final class SpanTest extends BaseTestCase
 
         $this->assertTrue($span->hasError());
         $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-        $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
+        $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
     }
 
     public function testSpanTagWithErrorBoolProperlyMarksError()
@@ -122,7 +122,7 @@ final class SpanTest extends BaseTestCase
             'SIGNALFX_RECORDED_VALUE_MAX_LENGTH=3',
         ]);
         $span = $this->createSpan();
-        $value = "tag value";
+        $value = "tag";
         $span->setTag("t1", $value);
         $this->assertEquals($span->getTag("t1"), "tag");
         $this->putEnvAndReloadConfig([
@@ -169,7 +169,7 @@ final class SpanTest extends BaseTestCase
 
             $this->assertTrue($span->hasError());
             $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
-            $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
+            $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
         }
     }
 
@@ -199,7 +199,7 @@ final class SpanTest extends BaseTestCase
         $this->assertTrue($span->hasError());
         $this->assertEquals($span->getTag(Tag::ERROR_MSG), self::EXCEPTION_MESSAGE);
         $this->assertNotEmpty($span->getTag(Tag::ERROR_STACK));
-        $this->assertEquals($span->getTag(Tag::ERROR_KIND), 'Exception');
+        $this->assertEquals($span->getTag(Tag::ERROR_TYPE), 'Exception');
     }
 
     public function testSpanErrorRemainsMutableAfterFinishing()

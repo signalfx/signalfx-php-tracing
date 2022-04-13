@@ -132,25 +132,25 @@ static void _dd_get_startup_config(HashTable *ht) {
     _dd_add_assoc_string(ht, ZEND_STRL("lang_version"), PHP_VERSION);
     _dd_add_assoc_string(ht, ZEND_STRL("env"), get_DD_ENV().ptr);
     _dd_add_assoc_bool(ht, ZEND_STRL("enabled"), !_dd_parse_bool(ZEND_STRL("ddtrace.disable")));
-    _dd_add_assoc_string(ht, ZEND_STRL("service"), get_DD_SERVICE().ptr);
-    _dd_add_assoc_bool(ht, ZEND_STRL("enabled_cli"), get_DD_TRACE_CLI_ENABLED());
+    _dd_add_assoc_string(ht, ZEND_STRL("service"), get_SIGNALFX_SERVICE().ptr);
+    _dd_add_assoc_bool(ht, ZEND_STRL("enabled_cli"), get_SIGNALFX_TRACE_CLI_ENABLED());
 
     _dd_add_assoc_string_free(ht, ZEND_STRL("agent_url"), ddtrace_agent_url());
 
-    _dd_add_assoc_bool(ht, ZEND_STRL("debug"), get_DD_TRACE_DEBUG());
+    _dd_add_assoc_bool(ht, ZEND_STRL("debug"), get_SIGNALFX_TRACE_DEBUG());
     _dd_add_assoc_bool(ht, ZEND_STRL("analytics_enabled"), get_DD_TRACE_ANALYTICS_ENABLED());
     _dd_add_assoc_double(ht, ZEND_STRL("sample_rate"), get_DD_TRACE_SAMPLE_RATE());
     _dd_add_assoc_string(ht, ZEND_STRL("sampling_rules"), get_DD_TRACE_SAMPLING_RULES().ptr);
     // TODO Add integration-specific config: integration_<integration>_analytics_enabled,
     // integration_<integration>_sample_rate, integrations_loaded
-    _dd_add_assoc_array(ht, ZEND_STRL("tags"), _dd_array_copy(get_DD_TAGS()));
+    _dd_add_assoc_array(ht, ZEND_STRL("tags"), _dd_array_copy(get_SIGNALFX_TAGS()));
     _dd_add_assoc_array(ht, ZEND_STRL("service_mapping"), _dd_array_copy(get_DD_SERVICE_MAPPING()));
     // "log_injection_enabled" N/A for PHP
     // "runtime_metrics_enabled" N/A for PHP
     // "configuration_file" N/A for PHP
     // "vm" N/A for PHP
     // "partial_flushing_enabled" N/A for PHP
-    _dd_add_assoc_bool(ht, ZEND_STRL("distributed_tracing_enabled"), get_DD_DISTRIBUTED_TRACING());
+    _dd_add_assoc_bool(ht, ZEND_STRL("distributed_tracing_enabled"), get_SIGNALFX_DISTRIBUTED_TRACING());
     _dd_add_assoc_bool(ht, ZEND_STRL("priority_sampling_enabled"), get_DD_PRIORITY_SAMPLING());
     // "logs_correlation_enabled" N/A for PHP
     // "profiling_enabled" N/A for PHP
@@ -180,7 +180,7 @@ static void _dd_get_startup_config(HashTable *ht) {
                               _dd_implode_keys(get_DD_TRACE_TRACED_INTERNAL_FUNCTIONS()));
     _dd_add_assoc_bool(ht, ZEND_STRL("auto_prepend_file_configured"), _dd_ini_is_set(ZEND_STRL("auto_prepend_file")));
     _dd_add_assoc_string_free(ht, ZEND_STRL("integrations_disabled"), _dd_implode_keys(get_DD_INTEGRATIONS_DISABLED()));
-    _dd_add_assoc_bool(ht, ZEND_STRL("enabled_from_env"), get_DD_TRACE_ENABLED());
+    _dd_add_assoc_bool(ht, ZEND_STRL("enabled_from_env"), get_SIGNALFX_TRACING_ENABLED());
     _dd_add_assoc_string(ht, ZEND_STRL("opcache.file_cache"), _dd_get_ini(ZEND_STRL("opcache.file_cache")));
 }
 
@@ -499,7 +499,7 @@ static void _dd_print_values_to_log(HashTable *ht) {
 
 // Only show startup logs on the first request
 void ddtrace_startup_logging_first_rinit(void) {
-    if (!get_DD_TRACE_DEBUG() || !get_DD_TRACE_STARTUP_LOGS() || strcmp("cli", sapi_module.name) == 0) {
+    if (!get_SIGNALFX_TRACE_DEBUG() || !get_DD_TRACE_STARTUP_LOGS() || strcmp("cli", sapi_module.name) == 0) {
         return;
     }
 
@@ -516,7 +516,7 @@ void ddtrace_startup_logging_first_rinit(void) {
     ddtrace_log_errf("DATADOG TRACER CONFIGURATION - %s", buf.c);
     ddtrace_log_errf(
         "For additional diagnostic checks such as Agent connectivity, see the 'ddtrace' section of a phpinfo() "
-        "page. Alternatively set DD_TRACE_DEBUG=1 to add diagnostic checks to the error logs on the first request "
+        "page. Alternatively set SIGNALFX_TRACE_DEBUG=1 to add diagnostic checks to the error logs on the first request "
         "of a new PHP process. Set DD_TRACE_STARTUP_LOGS=0 to disable this tracer configuration message.");
     smart_str_free(&buf);
 

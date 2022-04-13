@@ -59,13 +59,13 @@ bool ddtrace_set_userland_trace_id(zval *zid TSRMLS_DC) {
     return false;
 }
 
-BOOL_T ddtrace_set_userland_trace_id_hex(zval *zid TSRMLS_DC) {
+bool ddtrace_set_userland_trace_id_hex(zval *zid) {
     uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         DDTRACE_G(trace_id) = uid;
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 uint64_t ddtrace_push_span_id(uint64_t id TSRMLS_DC) {
@@ -96,10 +96,10 @@ bool ddtrace_push_userland_span_id(zval *zid TSRMLS_DC) {
     return false;
 }
 
-BOOL_T ddtrace_push_userland_span_id_hex(zval *zid TSRMLS_DC) {
+bool ddtrace_push_userland_span_id_hex(zval *zid) {
     uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
-        ddtrace_push_span_id(uid TSRMLS_CC);
+        ddtrace_push_span_id(uid);
         return TRUE;
     }
     return FALSE;

@@ -37,10 +37,10 @@ static void (*dd_curl_setopt_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static bool dd_load_curl_integration(void) {
-    if (!dd_ext_curl_loaded || !get_DD_TRACE_ENABLED()) {
+    if (!dd_ext_curl_loaded || !get_SIGNALFX_TRACING_ENABLED()) {
         return false;
     }
-    return get_DD_DISTRIBUTED_TRACING();
+    return get_SIGNALFX_DISTRIBUTED_TRACING();
 }
 
 static void dd_ht_dtor(void *pData) {

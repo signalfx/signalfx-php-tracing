@@ -203,7 +203,7 @@ final class TracerTest extends BaseTestCase
 
     public function testHonorGlobalTags()
     {
-        self::putenv('SIGNALFX_TRACE_GLOBAL_TAGS=key1:value1,key2:value2');
+        self::putenv('SIGNALFX_TAGS=key1:value1,key2:value2');
 
         \dd_trace_serialize_closed_spans();
         $transport = new DebugTransport();
@@ -213,7 +213,7 @@ final class TracerTest extends BaseTestCase
         $this->assertSame('value1', $span->getAllTags()['key1']);
         $this->assertSame('value2', $span->getAllTags()['key2']);
 
-        self::putenv('DD_TAGS='); // prevent memory leak
+        self::putenv('SIGNALFX_TAGS='); // prevent memory leak
     }
 
     public function testInternalAndUserlandSpansAreMergedIntoSameTraceOnSerialization()

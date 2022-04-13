@@ -75,7 +75,7 @@ static ZEND_RESULT_CODE dd_sandbox_fci_call(ddtrace_execute_data *dd_execute_dat
         ddtrace_log_debug("Could not execute ddtrace's closure");
     }
 
-    if (get_DD_TRACE_DEBUG()) {
+    if (get_SIGNALFX_TRACE_DEBUG()) {
         const char *scope, *colon, *name;
         dd_try_fetch_executing_function_name(dd_execute_data, &scope, &colon, &name);
 
@@ -111,7 +111,7 @@ static bool dd_execute_tracing_closure(ddtrace_span_fci *span_fci, zval *user_ar
     zval *null_zval = &EG(uninitialized_zval);
 
     if (!user_args || !user_retval) {
-        if (get_DD_TRACE_DEBUG()) {
+        if (get_SIGNALFX_TRACE_DEBUG()) {
             const char *fname = Z_STRVAL(dispatch->function_name);
             ddtrace_log_errf("Tracing closure could not be run for %s() because it is in an invalid state", fname);
         }
@@ -311,7 +311,7 @@ static int dd_exit_handler(zend_execute_data *execute_data TSRMLS_DC) {
 }
 
 static ddtrace_dispatch_t *dd_lookup_dispatch_from_fbc(zend_function *fbc TSRMLS_DC) {
-    if (!get_DD_TRACE_ENABLED() || DDTRACE_G(class_lookup) == NULL || DDTRACE_G(function_lookup) == NULL) {
+    if (!get_SIGNALFX_TRACING_ENABLED() || DDTRACE_G(class_lookup) == NULL || DDTRACE_G(function_lookup) == NULL) {
         return false;
     }
     if (!fbc) {
@@ -508,7 +508,7 @@ static void dd_execute_tracing_posthook(zend_execute_data *execute_data TSRMLS_D
      */
     if (ddtrace_has_top_internal_span(span_fci TSRMLS_CC)) {
         dd_execute_end_span(span_fci, actual_retval TSRMLS_CC);
-    } else if (get_DD_TRACE_DEBUG() && get_DD_TRACE_ENABLED()) {
+    } else if (get_SIGNALFX_TRACE_DEBUG() && get_SIGNALFX_TRACING_ENABLED()) {
         const char *fname = Z_STRVAL(dispatch->function_name);
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", fname);
     }
@@ -666,7 +666,7 @@ static void dd_internal_tracing_posthook(ddtrace_span_fci *span_fci, zend_fcall_
 
     if (ddtrace_has_top_internal_span(span_fci TSRMLS_CC)) {
         dd_execute_end_span(span_fci, *fci->retval_ptr_ptr TSRMLS_CC);
-    } else if (get_DD_TRACE_DEBUG() && get_DD_TRACE_ENABLED()) {
+    } else if (get_SIGNALFX_TRACE_DEBUG() && get_SIGNALFX_TRACING_ENABLED()) {
         const char *fname = Z_STRVAL(dispatch->function_name);
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", fname);
     }
@@ -699,7 +699,7 @@ static void dd_internal_non_tracing_posthook(ddtrace_span_fci *span_fci, zend_fc
 
     if (ddtrace_has_top_internal_span(span_fci TSRMLS_CC)) {
         ddtrace_fcall_end_non_tracing_posthook(span_fci, *fci->retval_ptr_ptr TSRMLS_CC);
-    } else if (get_DD_TRACE_DEBUG() && get_DD_TRACE_ENABLED()) {
+    } else if (get_SIGNALFX_TRACE_DEBUG() && get_SIGNALFX_TRACING_ENABLED()) {
         const char *fname = Z_STRVAL(dispatch->function_name);
         ddtrace_log_errf("Cannot run tracing closure for %s(); spans out of sync", fname);
     }

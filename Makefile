@@ -66,10 +66,10 @@ $(BUILD_DIR)/Makefile: $(BUILD_DIR)/configure
 $(SO_FILE): $(C_FILES) $(BUILD_DIR)/Makefile
 	$(Q) $(MAKE) -C $(BUILD_DIR) CFLAGS="$(CFLAGS)"
 
-$(PHP_EXTENSION_DIR)/ddtrace.so: $(SO_FILE)
+$(PHP_EXTENSION_DIR)/signalfx_tracing.so: $(SO_FILE)
 	$(Q) $(SUDO) $(MAKE) -C $(BUILD_DIR) install
 
-install: $(PHP_EXTENSION_DIR)/ddtrace.so
+install: $(PHP_EXTENSION_DIR)/signalfx_tracing.so
 
 $(INI_FILE):
 	$(Q) echo "extension=signalfx_tracing.so" | $(SUDO) tee -a $@
@@ -114,8 +114,6 @@ test_with_init_hook_asan: $(SO_FILE) $(INIT_HOOK_TEST_FILES)
 	( \
 	set -xe; \
 	export SIGNALFX_TRACE_CLI_ENABLED=1; \
-	export REPORT_EXIT_STATUS=1; \
-	export TEST_PHP_SRCDIR=$(BUILD_DIR); \
 	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/asan-extension-init-hook-test.xml; \
 	$(MAKE) -C $(BUILD_DIR) CFLAGS="-g -fsanitize=address" LDFLAGS="-fsanitize=address" clean all; \
 	$(RUN_TESTS_CMD) -d extension=$(SO_FILE) -d ddtrace.request_init_hook=$$(pwd)/bridge/dd_wrap_autoloader.php --asan $(INIT_HOOK_TEST_FILES); \
@@ -133,7 +131,7 @@ test_c_asan: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 test_extension_ci: $(SO_FILE) $(TEST_FILES) $(TEST_STUB_FILES)
 	( \
 	set -xe; \
-	export DD_TRACE_CLI_ENABLED=1; \
+	export SIGNALFX_TRACE_CLI_ENABLED=1; \
 	export TEST_PHP_JUNIT=$(JUNIT_RESULTS_DIR)/normal-extension-test.xml; \
 	$(MAKE) -C $(BUILD_DIR) CFLAGS="-g" clean all; \
 	$(RUN_TESTS_CMD) -d extension=$(SO_FILE) $(BUILD_DIR)/$(TESTS); \

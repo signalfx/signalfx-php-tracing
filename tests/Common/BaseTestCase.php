@@ -62,7 +62,10 @@ abstract class BaseTestCase extends MultiPHPUnitVersionAdapter
             $val = explode("=", $putenv, 2);
             $name = strtolower(strtr($val[0], [
                 "DD_TRACE_" => "datadog.trace.",
+                "SIGNALFX_TRACE_" => "datadog.trace.",
+                "SIGNALFX_TRACING_" => "datadog.trace.",
                 "DD_" => "datadog.",
+                "SIGNALFX_" => "datadog.",
             ]));
             if (count($val) > 1) {
                 \ini_set($name, $val[1]);
