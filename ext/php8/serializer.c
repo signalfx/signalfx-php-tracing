@@ -194,7 +194,7 @@ static zend_result dd_exception_to_error_msg(zend_object *exception, void *conte
         free(status_line);
     }
 
-    ddtrace_string key = DDTRACE_STRING_LITERAL("error.msg");
+    ddtrace_string key = DDTRACE_STRING_LITERAL("sfx.error.message");
     ddtrace_string value = {error_text, error_len};
     zend_result result = add_tag(context, key, value);
 
@@ -244,7 +244,7 @@ static zend_result dd_exception_to_error_type(zend_object *exception, void *cont
 }
 
 static zend_result dd_exception_trace_to_error_stack(zend_string *trace, void *context, add_tag_fn_t add_tag) {
-    ddtrace_string key = DDTRACE_STRING_LITERAL("error.stack");
+    ddtrace_string key = DDTRACE_STRING_LITERAL("sfx.error.stack");
     ddtrace_string value = {ZSTR_VAL(trace), ZSTR_LEN(trace)};
     zend_result result = add_tag(context, key, value);
     zend_string_release(trace);
@@ -488,7 +488,7 @@ void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
         ZVAL_STR(prop_name, zend_string_init(ZEND_STRL("web.request"), 0));
     }
     zval *prop_service = ddtrace_spandata_property_service(span);
-    ZVAL_STR_COPY(prop_service, ZSTR_LEN(get_SIGNALFX_SERVICE()) ? get_SIGNALFX_SERVICE() : Z_STR_P(prop_name));
+    ZVAL_STR_COPY(prop_service, ZSTR_LEN(get_SIGNALFX_SERVICE_NAME()) ? get_SIGNALFX_SERVICE_NAME() : Z_STR_P(prop_name));
 
     if (Z_TYPE(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY || zend_is_auto_global_str(ZEND_STRL("_SERVER"))) {
         zend_string *headername;
@@ -558,7 +558,7 @@ static void _serialize_meta(zval *el, ddtrace_span_fci *span_fci) {
             add_assoc_str(meta, "http.status_code", zend_long_to_str(SG(sapi_headers).http_response_code));
             if (SG(sapi_headers).http_response_code >= 500) {
                 zval zv = {0}, *value;
-                if ((value = zend_hash_str_add(Z_ARR_P(meta), ZEND_STRL("error.type"), &zv))) {
+                if ((value = zend_hash_str_add(Z_ARR_P(meta), ZEND_STRL("sfx.error.kind"), &zv))) {
                     ZVAL_STR(value, zend_string_init(ZEND_STRL("Internal Server Error"), 0));
                 }
             }
@@ -606,8 +606,8 @@ static void _serialize_meta(zval *el, ddtrace_span_fci *span_fci) {
         }
     }
 
-    zend_bool error = ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("error.msg")) ||
-                      ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("error.type"));
+    zend_bool error = ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("sfx.error.message")) ||
+                      ddtrace_hash_find_ptr(Z_ARR_P(meta), ZEND_STRL("sfx.error.kind"));
     if (error) {
         add_assoc_long(el, "error", 1);
     }
@@ -668,7 +668,7 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array) {
         _add_assoc_zval_copy(el, "resource", prop_name);
     }
 
-    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE if root span
+    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE_NAME if root span
     zval *prop_service = ddtrace_spandata_property_service(span);
     ZVAL_DEREF(prop_service);
     if (Z_TYPE_P(prop_service) > IS_NULL) {

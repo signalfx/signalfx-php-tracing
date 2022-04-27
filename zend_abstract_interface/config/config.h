@@ -19,7 +19,7 @@ typedef uint16_t zai_config_id;
 
 #define ZAI_CONFIG_ENTRIES_COUNT_MAX 122
 #define ZAI_CONFIG_NAMES_COUNT_MAX 4
-#define ZAI_CONFIG_NAME_BUFSIZ 60
+#define ZAI_CONFIG_NAME_BUFSIZ 65
 
 #define ZAI_CONFIG_ENTRY(_id, _name, _type, default, ...)                          \
     {                                                                              \
@@ -38,7 +38,7 @@ struct zai_config_entry_s {
     zai_config_type type;
     zai_string_view default_encoded_value;
     // Alias env names in order of precedence:
-    // (e.g. SIGNALFX_SERVICE_NAME, DD_TRACE_APP_NAME, ddtrace_app_name)
+    // (e.g. SIGNALFX_SERVICE_NAME, DD_TRACE_APP_NAME, signalfx_app_name)
     // TODO: Drop old names
     zai_string_view *aliases;
     uint8_t aliases_count;

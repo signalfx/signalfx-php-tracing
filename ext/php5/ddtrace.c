@@ -1299,7 +1299,7 @@ static PHP_FUNCTION(ddtrace_config_app_name) {
     UNUSED(return_value_used, this_ptr, return_value_ptr, ht);
     char *default_app_name = NULL;
     int default_app_name_len;
-    zai_string_view app_name = get_SIGNALFX_SERVICE();
+    zai_string_view app_name = get_SIGNALFX_SERVICE_NAME();
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &default_app_name, &default_app_name_len) != SUCCESS) {
         RETURN_NULL();
     }

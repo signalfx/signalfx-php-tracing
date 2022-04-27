@@ -1368,8 +1368,8 @@ define(
 
     var handleError = function (editor) {
       return function (error) {
-        var errorMessage = error && error.msg ?
-          'Media embed handler error: ' + error.msg :
+        var errorMessage = error && sfx.error.message ?
+          'Media embed handler error: ' + sfx.error.message :
           'Media embed handler threw unknown error.';
         editor.notificationManager.open({ type: 'error', text: errorMessage });
       };

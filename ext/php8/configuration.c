@@ -6,6 +6,7 @@
 #include "logging.h"
 
 #define DD_TO_DATADOG_INC 5 /* "DD" expanded to "datadog" */
+#define SIGNALFX_TO_SIGNALFX_INC 0 /* "SIGNALFX" is kept same */
 
 #define APPLY_0(...)
 #define APPLY_1(macro, arg, ...) macro(arg)
@@ -77,6 +78,14 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
         assert(false && "Expanded env name length is larger than the INI name buffer");
         return;
     }
+    if (env_name.len + SIGNALFX_TO_SIGNALFX_INC >= ZAI_CONFIG_NAME_BUFSIZ) {
+        assert(false && "Expanded env name length is larger than the INI name buffer");
+        return;
+    }
+    if (env_name.len + SIGNALFX_TO_SIGNALFX_INC >= ZAI_CONFIG_NAME_BUFSIZ) {
+        assert(false && "Expanded env name length is larger than the INI name buffer");
+        return;
+    }
 
     if (env_name.ptr == strstr(env_name.ptr, "DDTRACE_")) {
         // legacy names
@@ -93,9 +102,9 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
                 ini_name->ptr[sizeof("datadog.trace") - 1] = '.';
             }
         } else if(env_name.ptr == strstr(env_name.ptr, "SIGNALFX_")) {
-            dd_copy_tolower(ini_name->ptr + DD_TO_DATADOG_INC, env_name.ptr);
+            dd_copy_tolower(ini_name->ptr + SIGNALFX_TO_SIGNALFX_INC, env_name.ptr);
             memcpy(ini_name->ptr, "signalfx.", sizeof("signalfx.") - 1);
-            ini_name->len = env_name.len + DD_TO_DATADOG_INC;
+            ini_name->len = env_name.len + SIGNALFX_TO_SIGNALFX_INC;
 
             if (env_name.ptr == strstr(env_name.ptr, "SIGNALFX_TRACE_")) {
                 ini_name->ptr[sizeof("signalfx.trace") - 1] = '.';
@@ -105,7 +114,7 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
         }
     } else {
         ini_name->len = 0;
-        assert(false && "Unexpected env var name: missing 'DD_' prefix");
+        assert(false && "Unexpected env var name: missing 'DD_' or 'SIGNALFX_' prefix");
     }
 
     ini_name->ptr[ini_name->len] = '\0';

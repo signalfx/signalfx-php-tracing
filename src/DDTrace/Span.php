@@ -38,6 +38,7 @@ class Span extends DataSpan
     {
         $this->internalSpan = $internalSpan;
         $this->context = $context;
+        $this->maxAttributeLength = \sfx_trace_config_max_attribute_length();
     }
 
     /**
@@ -191,7 +192,11 @@ class Span extends DataSpan
             }
         }
 
-        $this->internalSpan->meta[$key] = (string)$value;
+        $strValue = (string)$value;
+        if ($this->maxAttributeLength > 0) {
+            $strValue = substr($strValue, 0, $this->maxAttributeLength);
+        }
+        $this->tags[$key] = $strValue;
     }
 
     /**

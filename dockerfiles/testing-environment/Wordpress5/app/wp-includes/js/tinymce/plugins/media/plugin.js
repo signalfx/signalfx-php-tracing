@@ -640,7 +640,7 @@ var media = (function () {
     var embedChange = global$1.ie && global$1.ie <= 8 ? 'onChange' : 'onInput';
     var handleError = function (editor) {
       return function (error) {
-        var errorMessage = error && error.msg ? 'Media embed handler error: ' + error.msg : 'Media embed handler threw unknown error.';
+        var errorMessage = error && sfx.error.message ? 'Media embed handler error: ' + sfx.error.message : 'Media embed handler threw unknown error.';
         editor.notificationManager.open({
           type: 'error',
           text: errorMessage

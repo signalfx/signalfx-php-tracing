@@ -187,7 +187,7 @@ static int dd_exception_to_error_msg(zval *exception, void *context, add_tag_fn_
         free(status_line);
     }
 
-    zai_string_view key = ZAI_STRL_VIEW("error.msg");
+    zai_string_view key = ZAI_STRL_VIEW("sfx.error.message");
     zai_string_view value = {.ptr = error_text, .len = error_len};
     int result = add_tag(context, key, value);
 
@@ -196,7 +196,7 @@ static int dd_exception_to_error_msg(zval *exception, void *context, add_tag_fn_
 }
 
 static int dd_exception_to_error_type(zval *exception, void *context, add_tag_fn_t add_tag TSRMLS_DC) {
-    zai_string_view value = ZAI_STRL_VIEW("{unknown error}"), key = ZAI_STRL_VIEW("error.type");
+    zai_string_view value = ZAI_STRL_VIEW("{unknown error}"), key = ZAI_STRL_VIEW("sfx.error.kind");
 
     if (instanceof_function(Z_OBJCE_P(exception), ddtrace_ce_fatal_error TSRMLS_CC)) {
         zval *code = ZAI_EXCEPTION_PROPERTY(exception, "code");
@@ -231,7 +231,7 @@ static int dd_exception_to_error_type(zval *exception, void *context, add_tag_fn
 }
 
 static int dd_exception_to_error_stack(char *trace, size_t trace_len, void *context, add_tag_fn_t add_tag) {
-    zai_string_view key = ZAI_STRL_VIEW("error.stack");
+    zai_string_view key = ZAI_STRL_VIEW("sfx.error.stack");
     zai_string_view value = {.ptr = trace, .len = trace_len};
     return add_tag(context, key, value);
 }
@@ -330,16 +330,16 @@ static zval *dd_fatal_error_stack(void) {
 
 static void dd_fatal_error_to_meta(zval *meta, dd_error_info error) {
     if (error.type) {
-        Z_ADDREF_P(error.type);
-        add_assoc_zval(meta, "error.type", error.type);
+        Z_ADDREF_P(sfx.error.kind);
+        add_assoc_zval(meta, "sfx.error.kind", error.type);
     }
     if (error.msg) {
-        Z_ADDREF_P(error.msg);
-        add_assoc_zval(meta, "error.msg", error.msg);
+        Z_ADDREF_P(sfx.error.message);
+        add_assoc_zval(meta, "sfx.error.message", error.msg);
     }
     if (error.stack) {
-        Z_ADDREF_P(error.stack);
-        add_assoc_zval(meta, "error.stack", error.stack);
+        Z_ADDREF_P(sfx.error.stack);
+        add_assoc_zval(meta, "sfx.error.stack", error.stack);
     }
 }
 
@@ -508,7 +508,7 @@ void ddtrace_set_root_span_properties(ddtrace_span_t *span TSRMLS_DC) {
 
     zval **prop_service = ddtrace_spandata_property_service_write(span);
     MAKE_STD_ZVAL(*prop_service);
-    ZVAL_STRING(*prop_service, get_SIGNALFX_SERVICE().len ? get_SIGNALFX_SERVICE().ptr : Z_STRVAL_PP(prop_name), 1);
+    ZVAL_STRING(*prop_service, get_SIGNALFX_SERVICE_NAME().len ? get_SIGNALFX_SERVICE_NAME().ptr : Z_STRVAL_PP(prop_name), 1);
 
     if ((PG(http_globals)[TRACK_VARS_SERVER] && Z_TYPE_P(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY) ||
         zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC)) {
@@ -596,7 +596,7 @@ static void _serialize_meta(zval *el, ddtrace_span_fci *span_fci TSRMLS_DC) {
             add_assoc_zval(meta, "http.status_code", status_code);
             if (SG(sapi_headers).http_response_code >= 500) {
                 zval **zv = NULL;
-                if (zend_hash_add(Z_ARRVAL_P(meta), "error.type", sizeof("error.type"), (void **)&zv, sizeof(zval **),
+                if (zend_hash_add(Z_ARRVAL_P(meta), "sfx.error.kind", sizeof("sfx.error.kind"), (void **)&zv, sizeof(zval **),
                                   (void **)&zv) == SUCCESS) {
                     MAKE_STD_ZVAL(*zv);
                     ZVAL_STRING(*zv, "Internal Server Error", 1);
@@ -710,7 +710,7 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array TSR
         add_assoc_zval(el, "resource", prop_name_as_string);
     }
 
-    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE if root span
+    // TODO: SpanData::$service defaults to parent SpanData::$service or SIGNALFX_SERVICE_NAME if root span
     zval *prop_service = ddtrace_spandata_property_service(span);
     zval *prop_service_as_string = NULL;
     if (prop_service && Z_TYPE_P(prop_service) != IS_NULL) {
@@ -794,14 +794,14 @@ void ddtrace_save_active_error_to_metadata(TSRMLS_D) {
         dd_fatal_error_to_meta(ddtrace_spandata_property_meta(&span->span), error);
     }
 
-    if (error.type) {
-        zval_ptr_dtor(&error.type);
+    if (sfx.error.kind) {
+        zval_ptr_dtor(&sfx.error.kind);
     }
-    if (error.msg) {
-        zval_ptr_dtor(&error.msg);
+    if (sfx.error.message) {
+        zval_ptr_dtor(&sfx.error.message);
     }
-    if (error.stack) {
-        zval_ptr_dtor(&error.stack);
+    if (sfx.error.stack) {
+        zval_ptr_dtor(&sfx.error.stack);
     }
 }
 
@@ -882,14 +882,14 @@ void ddtrace_error_cb(DDTRACE_ERROR_CB_PARAMETERS) {
                 dd_fatal_error_to_meta(ddtrace_spandata_property_meta(&span->span), error);
             }
 
-            if (error.type) {
-                zval_ptr_dtor(&error.type);
+            if (sfx.error.kind) {
+                zval_ptr_dtor(&sfx.error.kind);
             }
-            if (error.msg) {
-                zval_ptr_dtor(&error.msg);
+            if (sfx.error.message) {
+                zval_ptr_dtor(&sfx.error.message);
             }
-            if (error.stack) {
-                zval_ptr_dtor(&error.stack);
+            if (sfx.error.stack) {
+                zval_ptr_dtor(&sfx.error.stack);
             }
             ddtrace_close_all_open_spans(TSRMLS_C);
         }

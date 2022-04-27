@@ -166,7 +166,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
             },
             __DIR__ . '/curl_in_web_request.php',
             [
-                'SIGNALFX_SERVICE' => 'top_level_app',
+                'SIGNALFX_SERVICE_NAME' => 'top_level_app',
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );
@@ -573,7 +573,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
      */
     public function testTraceAnalytics($envsOverride, $expectedSampleRate)
     {
-        $env = array_merge(['SIGNALFX_SERVICE' => 'top_level_app'], $envsOverride);
+        $env = array_merge(['SIGNALFX_SERVICE_NAME' => 'top_level_app'], $envsOverride);
 
         $traces = $this->inWebServer(
             function ($execute) {

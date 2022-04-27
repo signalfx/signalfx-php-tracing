@@ -7462,7 +7462,7 @@ function (_Component) {
           isSecondary: true
         }, Object(external_this_wp_i18n_["__"])('Copy Post Text')), Object(external_this_wp_element_["createElement"])(external_this_wp_components_["ClipboardButton"], {
           key: "copy-error",
-          text: error.stack,
+          text: sfx.error.stack,
           isSecondary: true
         }, Object(external_this_wp_i18n_["__"])('Copy Error'))]
       }, Object(external_this_wp_i18n_["__"])('The editor has encountered an unexpected error.'));

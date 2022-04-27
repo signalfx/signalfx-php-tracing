@@ -1224,7 +1224,7 @@ static PHP_FUNCTION(dd_tracer_circuit_breaker_info) {
 typedef zend_long ddtrace_zpplong_t;
 
 static PHP_FUNCTION(ddtrace_config_app_name) {
-    zend_string *default_app_name = NULL, *app_name = get_SIGNALFX_SERVICE();
+    zend_string *default_app_name = NULL, *app_name = get_SIGNALFX_SERVICE_NAME();
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "|S", &default_app_name) != SUCCESS) {
         RETURN_NULL();
     }

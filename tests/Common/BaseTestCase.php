@@ -58,14 +58,14 @@ abstract class BaseTestCase extends MultiPHPUnitVersionAdapter
     protected static function putEnv($putenv)
     {
         // cleanup: properly replace this function by ini_set() in test code ...
-        if (strpos($putenv, "DD_") === 0) {
+        if (strpos($putenv, "DD_") === 0 || strpos($putenv, "SIGNALFX_") === 0) {
             $val = explode("=", $putenv, 2);
             $name = strtolower(strtr($val[0], [
                 "DD_TRACE_" => "datadog.trace.",
-                "SIGNALFX_TRACE_" => "datadog.trace.",
-                "SIGNALFX_TRACING_" => "datadog.trace.",
+                "SIGNALFX_TRACE_" => "signalfx.trace.",
+                "SIGNALFX_TRACING_" => "signalfx.tracing.",
                 "DD_" => "datadog.",
-                "SIGNALFX_" => "datadog.",
+                "SIGNALFX_" => "signalfx.",
             ]));
             if (count($val) > 1) {
                 \ini_set($name, $val[1]);

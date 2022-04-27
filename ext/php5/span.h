@@ -9,7 +9,7 @@
 #include "compatibility.h"
 #include "ddtrace.h"
 
-// error.type, error.type, error.stack
+// sfx.error.kind, sfx.error.kind, sfx.error.stack
 static const int ddtrace_num_error_tags = 3;
 
 struct ddtrace_dispatch_t;

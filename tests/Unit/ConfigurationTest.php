@@ -213,16 +213,16 @@ EOD;
     public function testAppNameFallbackPriorities()
     {
         // we do not support these fallbacks anymore; testing that we ignore them
-        $this->putEnvAndReloadConfig(['ddtrace_app_name', 'SIGNALFX_TRACE_APP_NAME']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name', 'SIGNALFX_TRACE_APP_NAME']);
         $this->assertSame(
             'fallback_name',
             \ddtrace_config_app_name('fallback_name')
         );
 
-        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name=foo_app']);
         $this->assertSame('fallback_name', \ddtrace_config_app_name('fallback_name'));
 
-        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app', 'SIGNALFX_TRACE_APP_NAME=bar_app']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name=foo_app', 'SIGNALFX_TRACE_APP_NAME=bar_app']);
         $this->assertSame('fallback_name', \ddtrace_config_app_name('fallback_name'));
     }
 
@@ -251,16 +251,16 @@ EOD;
 
     public function testServiceName()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE', 'SIGNALFX_TRACE_APP_NAME', 'ddtrace_app_name']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME', 'SIGNALFX_TRACE_APP_NAME', 'signalfx_app_name']);
         $this->assertSame('__default__', \ddtrace_config_app_name('__default__'));
-        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE=my_app']);
-        $this->assertSame('my_app', \ddtrace_config_app_name('my_app'));
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME=my_app']);
+        $this->assertSame('my_app', \ddtrace_config_app_name('__default__'));
     }
 
     public function testServiceNameViaDDServiceNameForBackwardCompatibility()
     {
         $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME=my_app']);
-        $this->assertSame('my_app', \ddtrace_config_app_name('my_app'));
+        $this->assertSame('my_app', \ddtrace_config_app_name('__default__'));
     }
 
     public function testAnalyticsDisabledByDefault()

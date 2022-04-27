@@ -9,7 +9,7 @@ services:
       - ./:/app
     environment:
       DD_ENV: long_running
-      SIGNALFX_SERVICE: long_running_service
+      SIGNALFX_SERVICE_NAME: long_running_service
       DD_AGENT_HOST: agent
     depends_on:
       - httpbin

@@ -10,7 +10,7 @@ const DEFAULT_ENVS = [
 // then there is an equal probability that any of the assigned values from this array can be set.
 const ENVS = [
     'DD_ENV' => ['some_env'],
-    'SIGNALFX_SERVICE' => ['my_custom_service'],
+    'SIGNALFX_SERVICE_NAME' => ['my_custom_service'],
     'SIGNALFX_TRACING_ENABLED' => ['false'],
     'SIGNALFX_TRACE_DEBUG' => ['true'],
     'SIGNALFX_DISTRIBUTED_TRACING' => ['false'],

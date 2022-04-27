@@ -122,7 +122,7 @@ final class SpanTest extends BaseTestCase
             'SIGNALFX_RECORDED_VALUE_MAX_LENGTH=3',
         ]);
         $span = $this->createSpan();
-        $value = "tag";
+        //$value = "tag";
         $span->setTag("t1", $value);
         $this->assertEquals($span->getTag("t1"), "tag");
         $this->putEnvAndReloadConfig([

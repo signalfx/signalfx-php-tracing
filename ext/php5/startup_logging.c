@@ -132,7 +132,7 @@ static void _dd_get_startup_config(HashTable *ht) {
     _dd_add_assoc_string(ht, ZEND_STRL("lang_version"), PHP_VERSION);
     _dd_add_assoc_string(ht, ZEND_STRL("env"), get_DD_ENV().ptr);
     _dd_add_assoc_bool(ht, ZEND_STRL("enabled"), !_dd_parse_bool(ZEND_STRL("ddtrace.disable")));
-    _dd_add_assoc_string(ht, ZEND_STRL("service"), get_SIGNALFX_SERVICE().ptr);
+    _dd_add_assoc_string(ht, ZEND_STRL("service"), get_SIGNALFX_SERVICE_NAME().ptr);
     _dd_add_assoc_bool(ht, ZEND_STRL("enabled_cli"), get_SIGNALFX_TRACE_CLI_ENABLED());
 
     _dd_add_assoc_string_free(ht, ZEND_STRL("agent_url"), ddtrace_agent_url());

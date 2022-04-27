@@ -18,7 +18,7 @@ final class NetteTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_SERVICE' => 'nette_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'nette_test_app',
         ]);
     }
 
@@ -159,7 +159,7 @@ final class NetteTest extends WebFrameworkTestCase
                                 'nette.presenter.run'
                             )
                             ->setError('Exception', 'An exception occurred')
-                            ->withExistingTagsNames(['error.stack']),
+                            ->withExistingTagsNames(['sfx.error.stack']),
                         ])
                     ])
                 ],

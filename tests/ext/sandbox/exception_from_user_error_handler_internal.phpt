@@ -26,14 +26,14 @@ try {
 
     $span = $spans[0];
     echo 'error: ' . $span['error'] . PHP_EOL;
-    echo 'error.type: ' . $span['meta']['sfx.error.kind'] . PHP_EOL;
-    echo 'error.msg: ' . $span['meta']['sfx.error.message'] . PHP_EOL;
-    echo 'Has error.stack: ' . isset($span['meta']['sfx.error.stack']) . PHP_EOL;
+    echo 'sfx.error.kind: ' . $span['meta']['sfx.error.kind'] . PHP_EOL;
+    echo 'sfx.error.message: ' . $span['meta']['sfx.error.message'] . PHP_EOL;
+    echo 'Has sfx.error.stack: ' . isset($span['meta']['sfx.error.stack']) . PHP_EOL;
 }
 ?>
 --EXPECTF--
 Spans count: 1
 error: 1
-error.type: Exception
-error.msg: Uncaught Exception: chmod(): Can not call chmod() for a non-standard stream in %s:%d
-Has error.stack: 1
+sfx.error.kind: Exception
+sfx.error.message: Uncaught Exception: chmod(): Can not call chmod() for a non-standard stream in %s:%d
+Has sfx.error.stack: 1

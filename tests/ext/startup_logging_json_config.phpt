@@ -2,7 +2,7 @@
 Startup logging config from JSON fetched at runtime
 --ENV--
 DD_ENV=my-env
-SIGNALFX_SERVICE=my-service
+SIGNALFX_SERVICE_NAME=my-service
 SIGNALFX_TRACE_CLI_ENABLED=1
 SIGNALFX_TRACE_DEBUG=1
 DD_TRACE_SAMPLE_RATE=0.42

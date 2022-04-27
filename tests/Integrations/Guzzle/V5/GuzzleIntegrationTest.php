@@ -306,7 +306,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
             },
             __DIR__ . '/guzzle_in_web_request.php',
             [
-                'SIGNALFX_SERVICE' => 'top_level_app',
+                'SIGNALFX_SERVICE_NAME' => 'top_level_app',
                 'DD_TRACE_NO_AUTOLOADER' => true,
             ]
         );

@@ -165,10 +165,10 @@ function ddtrace_config_read_env_or_ini($name)
 {
     $ini_name = strtolower(strtr($name, [
         "DD_TRACE_" => "datadog.trace.",
-        "SIGNALFX_TRACE_" => "datadog.trace.",
-        "SIGNALFX_TRACING_" => "datadog.trace.",
+        "SIGNALFX_TRACE_" => "signalfx.trace.",
+        "SIGNALFX_TRACING_" => "signalfx.tracing.",
         "DD_" => "datadog.",
-        "SIGNALFX_" => "datadog.",
+        "SIGNALFX_" => "signalfx.",
     ]));
     $ini = ini_get($ini_name);
     if ($ini !== false) {

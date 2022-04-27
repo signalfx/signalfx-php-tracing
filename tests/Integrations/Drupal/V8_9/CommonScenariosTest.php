@@ -25,7 +25,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_SERVICE' => 'drupal_app',
+            'SIGNALFX_SERVICE_NAME' => 'drupal_app',
             'SIGNALFX_TRACE_DEBUG' => 'true',
         ]);
     }

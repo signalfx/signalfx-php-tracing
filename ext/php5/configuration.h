@@ -65,7 +65,7 @@ extern bool runtime_config_first_init;
     CONFIG(BOOL, DD_TRACE_URL_AS_RESOURCE_NAMES_ENABLED, "true")                                              \
     CONFIG(SET, DD_INTEGRATIONS_DISABLED, "default")                                                          \
     CONFIG(BOOL, DD_PRIORITY_SAMPLING, "true")                                                                \
-    CALIAS(STRING, SIGNALFX_SERVICE, "", CALIASES("SIGNALFX_SERVICE_NAME"))                                               \
+    CONFIG(STRING, SIGNALFX_SERVICE_NAME, "")                                              \
     CONFIG(MAP, DD_SERVICE_MAPPING, "")                                                                       \
     CALIAS(MAP, SIGNALFX_TAGS, "", CALIASES("SIGNALFX_TRACE_GLOBAL_TAGS"))                                                \
     CONFIG(INT, DD_TRACE_AGENT_PORT, "8126", .ini_change = zai_config_system_ini_change)                      \

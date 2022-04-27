@@ -69,19 +69,19 @@ trait SpanAssertionTrait
         foreach ($messagePartsByWildcard as $messagePart) {
             $this->assertNotSame(
                 false,
-                \strpos($span['meta']['error.msg'], $messagePart),
-                \sprintf('Message "%s" does not contain "%s"', $span['meta']['error.msg'], $message)
+                \strpos($span['meta']['sfx.error.message'], $messagePart),
+                \sprintf('Message "%s" does not contain "%s"', $span['meta']['sfx.error.message'], $message)
             );
         }
 
-        $stackGroups = \explode('stack groups separator', $span['meta']['error.stack']);
+        $stackGroups = \explode('stack groups separator', $span['meta']['sfx.error.stack']);
         if (count($stackGroups) !== count($expectedStackLinesGroups)) {
             $this->fail(
                 \sprintf(
                     'Found %d stack groups, expected %d: %s',
                     count($stackGroups),
                     count($expectedStackLinesGroups),
-                    $span['meta']['error.stack']
+                    $span['meta']['sfx.error.stack']
                 )
             );
         }

@@ -38,7 +38,7 @@ EOD;
         self::putenv('DD_SAMPLING_RATE');
         self::putenv('DD_SERVICE_MAPPING');
         self::putenv('SIGNALFX_SERVICE_NAME');
-        self::putenv('SIGNALFX_SERVICE');
+        self::putenv('SIGNALFX_SERVICE_NAME');
         self::putenv('SIGNALFX_TAGS');
         self::putenv('DD_TRACE_ANALYTICS_ENABLED');
         self::putenv('SIGNALFX_TRACE_DEBUG');
@@ -166,28 +166,28 @@ EOD;
     public function testAppNameFallbackPriorities()
     {
         // we do not support these fallbacks anymore; testing that we ignore them
-        $this->putEnvAndReloadConfig(['ddtrace_app_name', 'SIGNALFX_TRACE_APP_NAME']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name', 'SIGNALFX_TRACE_APP_NAME']);
         $this->assertSame(
             'fallback_name',
             Configuration::get()->appName('fallback_name')
         );
 
-        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name=foo_app']);
         Configuration::clear();
         $this->assertSame('fallback_name', Configuration::get()->appName('fallback_name'));
 
         Configuration::clear();
-        $this->putEnvAndReloadConfig(['ddtrace_app_name=foo_app', 'SIGNALFX_TRACE_APP_NAME=bar_app']);
+        $this->putEnvAndReloadConfig(['signalfx_app_name=foo_app', 'SIGNALFX_TRACE_APP_NAME=bar_app']);
         $this->assertSame('fallback_name', Configuration::get()->appName('fallback_name'));
     }
 
     public function testServiceName()
     {
-        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE', 'SIGNALFX_TRACE_APP_NAME', 'ddtrace_app_name']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME', 'SIGNALFX_TRACE_APP_NAME', 'signalfx_app_name']);
 
         $this->assertSame('__default__', Configuration::get()->appName('__default__'));
 
-        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE=my_app']);
+        $this->putEnvAndReloadConfig(['SIGNALFX_SERVICE_NAME=my_app']);
         Configuration::clear();
         $this->assertSame('my_app', Configuration::get()->appName('__default__'));
     }
@@ -201,9 +201,9 @@ EOD;
     public function testServiceNameHasPrecedenceOverDeprecatedMethods()
     {
         $this->putEnvAndReloadConfig([
-            'SIGNALFX_SERVICE=my_app',
+            'SIGNALFX_SERVICE_NAME=my_app',
             'SIGNALFX_TRACE_APP_NAME=wrong_app',
-            'ddtrace_app_name=wrong_app',
+            'signalfx_app_name=wrong_app',
         ]);
         $this->assertSame('my_app', Configuration::get()->appName('my_app'));
     }

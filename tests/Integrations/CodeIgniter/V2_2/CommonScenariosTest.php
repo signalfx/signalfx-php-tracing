@@ -18,7 +18,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_SERVICE' => 'codeigniter_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'codeigniter_test_app',
         ]);
     }
 
@@ -102,7 +102,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'app.endpoint' => 'Error_::index',
                     ])
                     ->setError("Exception", "Uncaught Exception: datadog in %s:%d")
-                    ->withExistingTagsNames(['error.stack'])
+                    ->withExistingTagsNames(['sfx.error.stack'])
                     ->withChildren([
                         SpanAssertion::build(
                             'Error_.index',

@@ -18,7 +18,7 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
-            'SIGNALFX_SERVICE' => 'yii2_test_app',
+            'SIGNALFX_SERVICE_NAME' => 'yii2_test_app',
         ]);
     }
 
