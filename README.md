@@ -32,7 +32,7 @@ any fielded request using the `$_SERVER` execution environment.
 | PDO | All supported PHP versions |
 | _Predis_ | 1.1 |
 | _Slim_ | 3.x |
-| _Symfony_ | 3.3, 3.4, 4.x |
+| _Symfony_ | 3.3, 3.4, 4.x, 5.x |
 | _Zend_ | 1.12 |
 
 ## Configuration values
