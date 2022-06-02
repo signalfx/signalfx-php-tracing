@@ -50,10 +50,20 @@ Configure the tracer and instrumentation with these environment variables:
 | `SIGNALFX_RECORDED_VALUE_MAX_LENGTH` | Maximum length an attribute value can have. Values longer than this are truncated. | `1200` |
 | `SIGNALFX_CAPTURE_ENV_VARS` | Comma separated list of environment variables to attach to the root span. | ` ` |
 | `SIGNALFX_CAPTURE_REQUEST_HEADERS` | Comma separated list of incoming request headers to turn into spans. For example `User-Agent` will be captured as `http.request.headers.user_agent`. | ` ` |
+| `SIGNALFX_ACCESS_TOKEN` | Access token - only needed when [sending data directly](https://docs.splunk.com/Observability/apm/apm-spans-traces/span-formats.html#span-formats-compatible-with-the-ingest-endpoint). Not necessary when using OpenTelemetry Collector or SignalFx Smart Agent. | ` ` 
 
 Because auto-instrumentation is applied during initialization, all configuration
 environment variables MUST be set by launch time. Anything set via `putenv()`
 may not be considered in configuration loading.
+
+### Setting environment variables for Apache / httpd
+
+Apache usually runs under a different user, environment variables for Apache need to be set in the configuration file (e.g. `/etc/apache2/apache2.conf`) via [`SetEnv`](https://httpd.apache.org/docs/2.4/mod/mod_env.html):
+
+```
+SetEnv SIGNALFX_SERVICE_NAME "my-service"
+SetEnv SIGNALFX_ENDPOINT_URL "http://collector:9411/api/v2/traces"
+```
 
 ## Configure the SignalFx Tracing Library for PHP
 
