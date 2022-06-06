@@ -316,6 +316,10 @@ trait TracerTestTrait
         return $traces;
     }
 
+    /**
+     * Tests that use this should be disabled as Zipkin encoder does not adhere to flushing options,
+     * thus this function is not modified for use with Zipkin.
+     */
     public function parseMultipleRequestsFromDumpedData()
     {
         $response = $this->retrieveDumpedData();
@@ -337,9 +341,9 @@ trait TracerTestTrait
                 $spans = [];
                 foreach ($spansInTrace as $rawSpan) {
                     $spanContext = new SpanContext(
-                        sfx_trace_convert_hex_id($rawSpan['traceId']),
-                        sfx_trace_convert_hex_id($rawSpan['id']),
-                        isset($rawSpan['parentId']) ? sfx_trace_convert_hex_id($rawSpan['parentId']) : null
+                        $rawSpan['trace_id'],
+                        $rawSpan['span_id'],
+                        isset($rawSpan['parent_id']) ? $rawSpan['parent_id'] : null
                     );
 
                     if (empty($rawSpan['resource'])) {

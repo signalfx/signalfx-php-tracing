@@ -5,7 +5,7 @@ namespace DDTrace\Tests\Integrations\PCNTL;
 use DDTrace\Tests\Common\IntegrationTestCase;
 use DDTrace\Tests\Common\SpanAssertion;
 
-const ACCEPTABLE_TEST_EXECTION_TIME_S = 0.2;
+const ACCEPTABLE_TEST_EXECTION_TIME_S = 10.0;
 
 final class PCNTLTest extends IntegrationTestCase
 {
@@ -144,6 +144,8 @@ final class PCNTLTest extends IntegrationTestCase
 
     public function testCliLongRunningMultipleForksAutoFlush()
     {
+        $this->markTestSkipped('Not applicable to ZipkinV2+HttpSignalFx encoder/transport combination');
+
         if ($this->matchesPhpVersion('5')) {
             $this->markTestSkipped('autoflushing is not implelented on 5');
             return;
@@ -178,6 +180,8 @@ final class PCNTLTest extends IntegrationTestCase
 
     public function testCliLongRunningMultipleForksManualFlush()
     {
+        $this->markTestSkipped('Not applicable to ZipkinV2+HttpSignalFx encoder/transport combination');
+        
         $this->executeCli(
             __DIR__ . '/scripts/long-running-manual-flush.php',
             [
