@@ -6,7 +6,7 @@
 #include "engine_hooks.h"       // For 'ddtrace_resource'
 #include "handlers_internal.h"  // For 'ddtrace_replace_internal_function'
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static void (*dd_pcntl_fork_handler)(INTERNAL_FUNCTION_PARAMETERS) = NULL;
 
