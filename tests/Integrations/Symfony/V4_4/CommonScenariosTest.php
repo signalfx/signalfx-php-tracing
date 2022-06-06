@@ -9,7 +9,6 @@ use DDTrace\Tag;
 
 class CommonScenariosTest extends WebFrameworkTestCase
 {
-
     protected static function getAppIndexScript()
     {
         return __DIR__ . '/../../../Frameworks/Symfony/Version_4_4/public/index.php';

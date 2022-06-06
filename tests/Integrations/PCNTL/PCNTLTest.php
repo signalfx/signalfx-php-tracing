@@ -181,7 +181,7 @@ final class PCNTLTest extends IntegrationTestCase
     public function testCliLongRunningMultipleForksManualFlush()
     {
         $this->markTestSkipped('Not applicable to ZipkinV2+HttpSignalFx encoder/transport combination');
-        
+
         $this->executeCli(
             __DIR__ . '/scripts/long-running-manual-flush.php',
             [
