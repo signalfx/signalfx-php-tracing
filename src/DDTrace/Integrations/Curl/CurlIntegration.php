@@ -25,7 +25,6 @@ function addSpanDataTagFromCurlInfo($span, &$info, $tagName, $curlInfoOpt)
 
 final class CurlIntegration extends Integration
 {
-
     const NAME = 'curl';
 
     private $weakMap = null;

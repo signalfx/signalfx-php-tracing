@@ -1,5 +1,6 @@
 Q := @
 PROJECT_ROOT := $(shell pwd)
+REQUEST_INIT_HOOK_PATH := $(PROJECT_ROOT)/bridge/dd_wrap_autoloader.php
 SHELL := /bin/bash
 BUILD_SUFFIX := extension
 BUILD_DIR := $(PROJECT_ROOT)/tmp/build_$(BUILD_SUFFIX)
@@ -239,7 +240,7 @@ cores:
 ########################################################################################################################
 # TESTS
 ########################################################################################################################
-REQUEST_INIT_HOOK := -d ddtrace.request_init_hook=$(PROJECT_ROOT)/bridge/dd_wrap_autoloader.php
+REQUEST_INIT_HOOK := -d ddtrace.request_init_hook=$(REQUEST_INIT_HOOK_PATH)
 ENV_OVERRIDE := SIGNALFX_TRACE_CLI_ENABLED=true
 
 ### DDTrace tests ###
@@ -254,6 +255,7 @@ TEST_INTEGRATIONS_54 := \
 	test_integrations_curl \
 	test_integrations_memcached \
 	test_integrations_mysqli \
+	test_integrations_pcntl \
 	test_integrations_pdo \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
@@ -271,6 +273,7 @@ TEST_INTEGRATIONS_55 := \
 	test_integrations_memcached \
 	test_integrations_mysqli \
 	test_integrations_mongo \
+	test_integrations_pcntl \
 	test_integrations_pdo \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
@@ -297,6 +300,7 @@ TEST_INTEGRATIONS_56 := \
 	test_integrations_memcached \
 	test_integrations_mysqli \
 	test_integrations_mongo \
+	test_integrations_pcntl \
 	test_integrations_pdo \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
@@ -328,6 +332,7 @@ TEST_INTEGRATIONS_70 := \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
@@ -359,6 +364,7 @@ TEST_INTEGRATIONS_71 := \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
@@ -396,6 +402,7 @@ TEST_INTEGRATIONS_72 := \
 	test_integrations_elasticsearch1 \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
@@ -436,6 +443,7 @@ TEST_INTEGRATIONS_73 :=\
 	test_integrations_pdo \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
@@ -475,6 +483,7 @@ TEST_INTEGRATIONS_74 := \
 	test_integrations_pdo \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_phpredis3 \
 	test_integrations_phpredis4 \
 	test_integrations_phpredis5 \
@@ -517,6 +526,7 @@ TEST_INTEGRATIONS_80 := \
 	test_integrations_pdo \
 	test_integrations_guzzle5 \
 	test_integrations_guzzle6 \
+	test_integrations_pcntl \
 	test_integrations_predis1
 
 TEST_WEB_80 := \
@@ -530,8 +540,10 @@ TEST_WEB_80 := \
 	test_web_yii_2 \
 	test_web_custom
 
+FILTER := .
+
 define run_tests
-	$(ENV_OVERRIDE) php $(REQUEST_INIT_HOOK) $(PHPUNIT) $(1)
+	$(ENV_OVERRIDE) php $(REQUEST_INIT_HOOK) $(PHPUNIT) $(1) --filter=$(FILTER)
 endef
 
 # use this as the first target if you want to use uncompiled files instead of the _generated.php compiled file.
@@ -607,6 +619,8 @@ test_integrations_mysqli:
 test_integrations_mongo:
 	$(MAKE) test_scenario_default
 	$(call run_tests,tests/Integrations/Mongo)
+test_integrations_pcntl:
+	$(call run_tests,tests/Integrations/PCNTL)
 test_integrations_pdo:
 	$(MAKE) test_scenario_default
 	$(call run_tests,tests/Integrations/PDO)
