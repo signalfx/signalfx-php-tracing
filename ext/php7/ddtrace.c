@@ -1285,14 +1285,14 @@ static PHP_FUNCTION(dd_trace_push_span_id_hex) {
     UNUSED(execute_data);
 
     zval *existing_id = NULL;
-    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &existing_id) == SUCCESS) {
-        if (ddtrace_push_userland_span_id_hex(existing_id TSRMLS_CC) == TRUE) {
-            return_span_id(return_value, ddtrace_peek_span_id(TSRMLS_C));
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "|z!", &existing_id) == SUCCESS) {
+        if (ddtrace_push_userland_span_id_hex(existing_id) == TRUE) {
+            return_span_id(return_value, ddtrace_peek_span_id());
             return;
         }
     }
 
-    return_span_id(return_value, ddtrace_push_span_id(0 TSRMLS_CC));
+    return_span_id(return_value, ddtrace_push_span_id(0));
 }
 
 /* {{{ proto string sfx_trace_convert_hex_id() */
@@ -1300,7 +1300,7 @@ static PHP_FUNCTION(sfx_trace_convert_hex_id) {
     UNUSED(execute_data);
 
     zval *hex_id = NULL;
-    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &hex_id) == SUCCESS) {
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "|z!", &hex_id) == SUCCESS) {
         uint64_t id = sfxtrace_hex_to_u64(hex_id);
         return_span_id(return_value, id);
         return;
@@ -1378,7 +1378,7 @@ static PHP_FUNCTION(dd_trace_hex_dec) {
     UNUSED(execute_data);
     zval *hex = NULL;
 
-    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &hex) != SUCCESS) {
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "z", &hex) != SUCCESS) {
         RETURN_STRING("0");
     }
 
@@ -1402,7 +1402,7 @@ static PHP_FUNCTION(dd_trace_dec_hex) {
     UNUSED(execute_data);
     zval *dec = NULL;
 
-    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "z", &dec) != SUCCESS) {
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "z", &dec) != SUCCESS) {
         RETURN_STRING("0");
     }
     if (!dec || Z_TYPE_P(dec) != IS_STRING) {

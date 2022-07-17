@@ -110,10 +110,7 @@ BOOL_T ddtrace_push_userland_span_id_hex(zval *zid) {
     return FALSE;
 }
 
-uint64_t ddtrace_pop_span_id(TSRMLS_D) {
-=======
 uint64_t ddtrace_pop_span_id(void) {
->>>>>>> a219e080 (Remove TSRMLS_* macros from PHP 7 and PHP 8 (#1241))
     if (DDTRACE_G(span_ids_top) == NULL) {
         return 0;
     }
