@@ -106,14 +106,8 @@ final class Tracer implements TracerInterface
      */
     public function __construct(Transport $transport = null, array $propagators = null, array $config = [])
     {
-<<<<<<< HEAD
         $this->transport = $transport ?: new HttpSignalFx(new JsonZipkinV2());
         $textMapPropagator = new B3TextMap($this);
-=======
-        $encoder = new MessagePack();
-        $this->transport = $transport ?: new Http($encoder);
-        $textMapPropagator = new TextMap($this);
->>>>>>> 70891f17 (Remove Json encoder and Stream transport (#1235))
         $this->propagators = $propagators ?: [
             Format::TEXT_MAP => $textMapPropagator,
             Format::HTTP_HEADERS => $textMapPropagator,
