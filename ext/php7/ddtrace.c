@@ -982,7 +982,7 @@ static PHP_FUNCTION(ddtrace_config_app_name) {
         default_str.len = ZSTR_LEN(default_zstr);
     }
 
-    ddtrace_string app_name = 
+    ddtrace_string app_name =
         ddtrace_string_getenv_multi(ZEND_STRL("SIGNALFX_SERVICE"), ZEND_STRL("SIGNALFX_SERVICE_NAME"));
     bool should_free_app_name = app_name.ptr;
     if (!app_name.len) {

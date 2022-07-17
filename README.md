@@ -128,7 +128,7 @@ $ php artisan migrate:fresh
 $ php myTracedCliScript.php
 ```
 
-## Advanced Usage  
+## Advanced Usage
 
 The Signalfx-Tracing library for PHP wraps the
 [spl_autoload_register](https://www.php.net/manual/en/function.spl-autoload-register.php)
