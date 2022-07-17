@@ -68,7 +68,7 @@ BOOL_T ddtrace_set_userland_trace_id(zval *zid) {
     return FALSE;
 }
 
-BOOL_T ddtrace_set_userland_trace_id_hex(zval *zid TSRMLS_DC) {
+BOOL_T ddtrace_set_userland_trace_id_hex(zval *zid) {
     uint64_t uid = sfxtrace_hex_to_u64(zid);
     if (uid) {
         DDTRACE_G(trace_id) = uid;

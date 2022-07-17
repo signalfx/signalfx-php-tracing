@@ -1250,8 +1250,8 @@ static PHP_FUNCTION(dd_trace_set_trace_id_hex) {
     UNUSED(execute_data);
 
     zval *trace_id = NULL;
-    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "|z!", &trace_id) == SUCCESS) {
-        if (ddtrace_set_userland_trace_id_hex(trace_id TSRMLS_CC) == TRUE) {
+    if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), "|z!", &trace_id) == SUCCESS) {
+        if (ddtrace_set_userland_trace_id_hex(trace_id) == TRUE) {
             RETURN_BOOL(1);
         }
     }
