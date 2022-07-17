@@ -4,7 +4,7 @@
 
 #include "ddtrace.h"
 
-ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
+ZEND_EXTERN_MODULE_GLOBALS(signalfx_tracing);
 
 static bool dd_call_method_ignore_retval(zval *obj, const char *method, size_t method_len TSRMLS_DC) {
     zval *retval = NULL;
