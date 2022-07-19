@@ -5,7 +5,7 @@
 
 #define DDTRACE_DEFERRED_INTEGRATION_LOADER(class, fname, integration_name)             \
     ddtrace_hook_callable(DDTRACE_STRING_LITERAL(class), DDTRACE_STRING_LITERAL(fname), \
-                          DDTRACE_STRING_LITERAL(integration_name), DDTRACE_DISPATCH_DEFERRED_LOADER TSRMLS_CC)
+                          DDTRACE_STRING_LITERAL(integration_name), DDTRACE_DISPATCH_DEFERRED_LOADER)
 
 #define DD_SET_UP_DEFERRED_LOADING_BY_METHOD(name, Class, fname, integration)                                \
     dd_set_up_deferred_loading_by_method(name, DDTRACE_STRING_LITERAL(Class), DDTRACE_STRING_LITERAL(fname), \
@@ -24,7 +24,7 @@
  **/
 #define DDTRACE_INTEGRATION_TRACE(class, fname, callable, options)                      \
     ddtrace_hook_callable(DDTRACE_STRING_LITERAL(class), DDTRACE_STRING_LITERAL(fname), \
-                          DDTRACE_STRING_LITERAL(callable), options TSRMLS_CC)
+                          DDTRACE_STRING_LITERAL(callable), options)
 
 ddtrace_integration ddtrace_integrations[] = {
     {DDTRACE_INTEGRATION_CAKEPHP, "CAKEPHP", ZEND_STRL("cakephp")},
@@ -38,6 +38,7 @@ ddtrace_integration ddtrace_integrations[] = {
     {DDTRACE_INTEGRATION_MEMCACHED, "MEMCACHED", ZEND_STRL("memcached")},
     {DDTRACE_INTEGRATION_MONGO, "MONGO", ZEND_STRL("mongo")},
     {DDTRACE_INTEGRATION_MYSQLI, "MYSQLI", ZEND_STRL("mysqli")},
+    {DDTRACE_INTEGRATION_NETTE, "NETTE", ZEND_STRL("nette")},
     {DDTRACE_INTEGRATION_PDO, "PDO", ZEND_STRL("pdo")},
     {DDTRACE_INTEGRATION_PHPREDIS, "PHPREDIS", ZEND_STRL("phpredis")},
     {DDTRACE_INTEGRATION_PREDIS, "PREDIS", ZEND_STRL("predis")},
@@ -69,7 +70,7 @@ void ddtrace_integrations_mshutdown(void) { zend_hash_destroy(&_dd_string_to_int
 
 #define DDTRACE_KNOWN_INTEGRATION(class_str, fname_str)                                         \
     ddtrace_hook_callable(DDTRACE_STRING_LITERAL(class_str), DDTRACE_STRING_LITERAL(fname_str), \
-                          DDTRACE_STRING_LITERAL(NULL), DDTRACE_DISPATCH_POSTHOOK TSRMLS_CC)
+                          DDTRACE_STRING_LITERAL(NULL), DDTRACE_DISPATCH_POSTHOOK)
 
 /* Due to negative lookup caching, we need to have a list of all things we
  * might instrument so that if a call is made to something we want to later
@@ -78,12 +79,12 @@ void ddtrace_integrations_mshutdown(void) { zend_hash_destroy(&_dd_string_to_int
  * We should improve how this list is made in the future instead of hard-
  * coding known integrations (and for now only the problematic ones).
  */
-static void dd_register_known_calls(TSRMLS_D) {
+static void dd_register_known_calls(void) {
     DDTRACE_KNOWN_INTEGRATION("wpdb", "query");
     DDTRACE_KNOWN_INTEGRATION("illuminate\\events\\dispatcher", "fire");
 }
 
-static void dd_load_test_integrations(TSRMLS_D) {
+static void dd_load_test_integrations(void) {
     char* test_deferred = getenv("_DD_LOAD_TEST_INTEGRATIONS");
     if (!test_deferred) {
         return;
@@ -102,15 +103,21 @@ static void dd_set_up_deferred_loading_by_method(ddtrace_integration_name name, 
     ddtrace_hook_callable(Class, method, integration, DDTRACE_DISPATCH_DEFERRED_LOADER);
 }
 
-void ddtrace_integrations_rinit(TSRMLS_D) {
+void ddtrace_integrations_rinit(void) {
     dd_register_known_calls();
-    dd_load_test_integrations(TSRMLS_C);
+    dd_load_test_integrations();
 
     DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_ELASTICSEARCH, "elasticsearch\\client", "__construct",
                                          "DDTrace\\Integrations\\ElasticSearch\\V1\\ElasticSearchIntegration");
 
     DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_MEMCACHED, "Memcached", "__construct",
                                          "DDTrace\\Integrations\\Memcached\\MemcachedIntegration");
+
+    DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_NETTE, "Nette\\Configurator", "__construct",
+                                         "DDTrace\\Integrations\\Nette\\NetteIntegration");
+
+    DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_NETTE, "Nette\\Bootstrap\\Configurator", "__construct",
+                                         "DDTrace\\Integrations\\Nette\\NetteIntegration");
 
     DD_SET_UP_DEFERRED_LOADING_BY_METHOD(DDTRACE_INTEGRATION_PDO, "PDO", "__construct",
                                          "DDTrace\\Integrations\\PDO\\PDOIntegration");

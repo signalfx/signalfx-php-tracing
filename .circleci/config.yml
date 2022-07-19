@@ -92,6 +92,11 @@ aliases:
           echo "TLS is enabled"
         fi
 
+  - &STEP_COMPOSER_SELF_UPDATE
+    run:
+      name: Upgrading composer
+      command: sudo composer self-update --no-interaction
+
   - &STEP_COMPOSER_UPDATE
     run:
       name: Installing dependencies with composer
@@ -631,6 +636,49 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
 
+  min_install_tests:
+    parameters:
+      php_version:
+        type: string
+    working_directory: ~/datadog
+    environment:
+      DDAGENT_HOSTNAME: 127.0.0.1
+      DD_AGENT_HOST: 127.0.0.1
+      HTTPBIN_HOSTNAME: httpbin_integration
+      DATADOG_HAVE_DEV_ENV: 1
+    executor:
+      name: with_httpbin_and_request_replayer
+      docker_image: datadog/dd-trace-ci:php-<< parameters.php_version >>-shared-ext
+    steps:
+      - <<: *STEP_ATTACH_WORKSPACE
+      - <<: *STEP_PREPARE_TEST_RESULTS_DIR
+      - <<: *STEP_EXPORT_CI_ENV
+      - <<: *STEP_WAIT_REQUEST_REPLAYER
+      - run:
+          name: Install .deb from artifacts
+          command: |
+            sudo dpkg -i ./build/packages/*.deb
+            php --ri=ddtrace
+      - run:
+          name: Run phpt tests against shippable package
+          command: |
+            switch-php debug
+            export DDTRACE_PKG_SO="/opt/datadog-php/extensions/ddtrace-$(php -i | awk '/^PHP[ \t]+API[ \t]+=>/ { print $NF }')-debug.so"
+            make run_tests TESTS="-d 'extension=$DDTRACE_PKG_SO'"
+      - run:
+          name: Run phpt tests against build from source
+          command: |
+            make test_c
+      - <<: *STEP_STORE_TEST_RESULTS
+      - run:
+          command: |
+            mkdir -p /tmp/artifacts/core_dumps
+            find tmp -name "core.*" | xargs -I % -n 1 cp % /tmp/artifacts/core_dumps
+            cp -a tmp/build_extension/tests/ext /tmp/artifacts/tests
+          when: on_fail
+      - store_artifacts:
+          path: /tmp/artifacts
+
   framework_tests:
     working_directory: ~/datadog
     parameters:
@@ -1015,31 +1063,76 @@ jobs:
             cmake -Bbuild -H. -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=/opt/catch2
             cmake --build build/ --target install
 
-      - run:
-          name: Build and test Zend Abstract Interface (ASan)
-          command: |
-            export PATH="/opt/cmake/<< parameters.cmake_version >>/bin:$PATH"
-            mkdir -p /tmp/build/zai_asan
-            cd /tmp/build/zai_asan
-            if [ "<< parameters.php_version >>" = "7.4" || "<< parameters.php_version >>" = "8.0" ]
-            then
-              toolchain="-DCMAKE_TOOLCHAIN_FILE=~/datadog/cmake/asan.cmake"
-            fi
-            CMAKE_PREFIX_PATH=/opt/catch2 cmake \
-              ${toolchain} \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DBUILD_ZAI_TESTING=ON \
-              -DPHP_CONFIG=$(which php-config) \
-              ~/datadog/zend_abstract_interface
-            make -j all
-            make test
+      # Builds that support ASan
+      - when:
+          condition:
+            or:
+              - equal: [ "7.4", << parameters.php_version >> ]
+              - equal: [ "8.0", << parameters.php_version >> ]
+          steps:
+            - run:
+                name: Build and test Zend Abstract Interface (nts, debug, debug-zts-asan)
+                command: |
+                  export PATH="/opt/cmake/<< parameters.cmake_version >>/bin:$PATH"
+                  for phpBuild in nts debug debug-zts-asan
+                  do
+                    switch-php ${phpBuild}
+                    mkdir -p /tmp/build/zai-${phpBuild}
+                    cd /tmp/build/zai-${phpBuild}
+                    toolchain=""
+                    if [ "${phpBuild}" = "debug-zts-asan" ]
+                    then
+                      toolchain="-DCMAKE_TOOLCHAIN_FILE=~/datadog/cmake/asan.cmake"
+                    fi
+                    CMAKE_PREFIX_PATH=/opt/catch2 cmake \
+                      ${toolchain} \
+                      -DCMAKE_BUILD_TYPE=Debug \
+                      -DBUILD_ZAI_TESTING=ON \
+                      -DPHP_CONFIG=$(which php-config) \
+                      ~/datadog/zend_abstract_interface
+                    make -j all
+                    make test
+                    grep -e "=== Total .* memory leaks detected ===" Testing/Temporary/LastTest.log && exit 1 || true
+                  done
+
+      # Builds that do not support ASan
+      - when:
+          condition:
+            or:
+              - equal: [ "5.4", << parameters.php_version >> ]
+              - equal: [ "5.5", << parameters.php_version >> ]
+              - equal: [ "5.6", << parameters.php_version >> ]
+              - equal: [ "7.0", << parameters.php_version >> ]
+              - equal: [ "7.1", << parameters.php_version >> ]
+              - equal: [ "7.2", << parameters.php_version >> ]
+              - equal: [ "7.3", << parameters.php_version >> ]
+          steps:
+            - run:
+                name: Build and test Zend Abstract Interface (nts, debug, debug-zts)
+                command: |
+                  export PATH="/opt/cmake/<< parameters.cmake_version >>/bin:$PATH"
+                  for phpBuild in nts debug debug-zts
+                  do
+                    switch-php ${phpBuild}
+                    mkdir -p /tmp/build/zai-${phpBuild}
+                    cd /tmp/build/zai-${phpBuild}
+                    CMAKE_PREFIX_PATH=/opt/catch2 cmake \
+                      -DCMAKE_BUILD_TYPE=Debug \
+                      -DBUILD_ZAI_TESTING=ON \
+                      -DPHP_CONFIG=$(which php-config) \
+                      ~/datadog/zend_abstract_interface
+                    make -j all
+                    make test
+                    grep -e "=== Total .* memory leaks detected ===" Testing/Temporary/LastTest.log && exit 1 || true
+                  done
 
       - run:
-          name: Build and test Zend Abstract Interface (UBSan)
+          name: Build and test Zend Abstract Interface (debug + UBSan)
           command: |
+            switch-php debug
             export PATH="/opt/cmake/<< parameters.cmake_version >>/bin:$PATH"
-            mkdir -p /tmp/build/zai_ubsan
-            cd /tmp/build/zai_ubsan
+            mkdir -p /tmp/build/zai-debug-ubsan
+            cd /tmp/build/zai-debug-ubsan
             CMAKE_PREFIX_PATH=/opt/catch2 cmake \
               -DCMAKE_TOOLCHAIN_FILE=~/datadog/cmake/ubsan.cmake \
               -DCMAKE_BUILD_TYPE=Debug \
@@ -1048,12 +1141,12 @@ jobs:
               ~/datadog/zend_abstract_interface
             make -j all
             make test
+            grep -e "=== Total .* memory leaks detected ===" Testing/Temporary/LastTest.log && exit 1 || true
 
       - run:
           command: |
             mkdir -p /tmp/artifacts
-            cp /tmp/build/zai_asan/Testing/Temporary/LastTest.log /tmp/artifacts/LastTestASan.log
-            cp /tmp/build/zai_ubsan/Testing/Temporary/LastTest.log /tmp/artifacts/LastTestUBSan.log
+            cp --parents /tmp/build/zai-*/Testing/Temporary/LastTest.log /tmp/artifacts/
           when: on_fail
       - store_artifacts:
           path: /tmp/artifacts
@@ -1169,6 +1262,7 @@ jobs:
           paths:
             - ".git"
       - <<: *STEP_ATTACH_WORKSPACE
+      - <<: *STEP_COMPOSER_SELF_UPDATE
       - <<: *STEP_COMPOSER_UPDATE
       - <<: *STEP_COMPOSER_GENERATE
       - run:
@@ -1595,6 +1689,14 @@ workflows:
           sapi: fpm-fcgi
           integration_testsuite: "test_web_custom"
           docker_image: "siimkallas/signalfx-tracing-ci:php-7.4_buster"
+
+      - min_install_tests:
+          requires: [ 'package extension' ]
+          name: "PHP min install tests"
+          matrix:
+            parameters:
+              php_version:
+                - '8.0'
 
   build:
     jobs:

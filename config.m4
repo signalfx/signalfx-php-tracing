@@ -54,6 +54,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     dnl ddtrace.c comes first, then everything else alphabetically
     DD_TRACE_PHP_SOURCES="ext/php5/ddtrace.c \
       ext/php5/arrays.c \
+      ext/php5/auto_flush.c \
       ext/php5/circuit_breaker.c \
       ext/php5/comms_php.c \
       ext/php5/compat_string.c \
@@ -74,7 +75,6 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
       ext/php5/integrations/integrations.c \
       ext/php5/logging.c \
       ext/php5/memory_limit.c \
-      ext/php5/php5_4/auto_flush.c \
       ext/php5/php5_4/dispatch.c \
       ext/php5/php5_4/engine_hooks.c \
       ext/php5/random.c \
@@ -86,6 +86,8 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     "
 
     ZAI_SOURCES="\
+      zend_abstract_interface/methods/php5/methods.c \
+      zend_abstract_interface/sandbox/php5/sandbox.c \
       zend_abstract_interface/zai_sapi/php5/zai_sapi.c \
       zend_abstract_interface/zai_sapi/zai_sapi_functions.c \
       zend_abstract_interface/zai_sapi/zai_sapi_ini.c \
@@ -128,6 +130,8 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     "
 
     ZAI_SOURCES="\
+      zend_abstract_interface/methods/php5/methods.c \
+      zend_abstract_interface/sandbox/php5/sandbox.c \
       zend_abstract_interface/zai_sapi/php5/zai_sapi.c \
       zend_abstract_interface/zai_sapi/zai_sapi_functions.c \
       zend_abstract_interface/zai_sapi/zai_sapi_ini.c \
@@ -174,6 +178,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     "
 
     ZAI_SOURCES="\
+      zend_abstract_interface/sandbox/php7/sandbox.c \
       zend_abstract_interface/zai_sapi/php7/zai_sapi.c \
       zend_abstract_interface/zai_sapi/zai_sapi_functions.c \
       zend_abstract_interface/zai_sapi/zai_sapi_ini.c \
@@ -220,6 +225,7 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
     "
 
     ZAI_SOURCES="\
+      zend_abstract_interface/sandbox/php8/sandbox.c \
       zend_abstract_interface/zai_sapi/php8/zai_sapi.c \
       zend_abstract_interface/zai_sapi/zai_sapi_functions.c \
       zend_abstract_interface/zai_sapi/zai_sapi_ini.c \
@@ -251,6 +257,12 @@ if test "$PHP_SIGNALFX_TRACING" != "no"; then
 
   PHP_ADD_INCLUDE([$ext_srcdir/zend_abstract_interface])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/methods])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/methods/php5])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox/php5])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox/php7])
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox/php8])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/zai_sapi])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/zai_sapi/php5])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/zai_sapi/php7])

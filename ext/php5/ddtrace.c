@@ -612,14 +612,6 @@ static BOOL_T _parse_config_array(zval *config_array, zval **tracing_closure, ui
         } else if (strcmp("prehook", string_key) == 0) {
             ddtrace_log_debugf("'%s' not supported on PHP 5", string_key);
             return FALSE;
-        } else if (strcmp("innerhook", string_key) == 0) {
-            if (Z_TYPE_PP(value) == IS_OBJECT && instanceof_function(Z_OBJCE_PP(value), zend_ce_closure TSRMLS_CC)) {
-                *tracing_closure = *value;
-                *options |= DDTRACE_DISPATCH_INNERHOOK;
-            } else {
-                ddtrace_log_debugf("Expected '%s' to be an instance of Closure", string_key);
-                return FALSE;
-            }
         } else if (strcmp("instrument_when_limited", string_key) == 0) {
             if (Z_TYPE_PP(value) == IS_LONG) {
                 if (Z_LVAL_PP(value)) {
@@ -636,7 +628,7 @@ static BOOL_T _parse_config_array(zval *config_array, zval **tracing_closure, ui
         zend_hash_move_forward_ex(ht, &iterator);
     }
     if (!*tracing_closure) {
-        ddtrace_log_debug("Required key 'posthook', 'prehook' or 'innerhook' not found in config_array");
+        ddtrace_log_debug("Required key 'posthook' or 'prehook' not found in config_array");
         return FALSE;
     }
     return TRUE;
@@ -714,10 +706,6 @@ static PHP_FUNCTION(trace_method) {
 
     if (config_array) {
         if (_parse_config_array(config_array, &tracing_closure, &options TSRMLS_CC) == FALSE) {
-            RETURN_BOOL(0);
-        }
-        if (options & DDTRACE_DISPATCH_INNERHOOK) {
-            ddtrace_log_debug("Sandbox API does not support 'innerhook'");
             RETURN_BOOL(0);
         }
     } else {
@@ -861,10 +849,6 @@ static PHP_FUNCTION(trace_function) {
 
     if (config_array) {
         if (_parse_config_array(config_array, &tracing_closure, &options TSRMLS_CC) == FALSE) {
-            RETURN_BOOL(0);
-        }
-        if (options & DDTRACE_DISPATCH_INNERHOOK) {
-            ddtrace_log_debug("Sandbox API does not support 'innerhook'");
             RETURN_BOOL(0);
         }
     } else {
@@ -1380,7 +1364,7 @@ static PHP_FUNCTION(dd_trace_pop_span_id) {
     uint64_t id = ddtrace_pop_span_id(TSRMLS_C);
 
     if (DDTRACE_G(span_ids_top) == NULL && get_dd_trace_auto_flush_enabled()) {
-        if (ddtrace_flush_tracer() == FAILURE) {
+        if (!ddtrace_flush_tracer(TSRMLS_C)) {
             ddtrace_log_debug("Unable to auto flush the tracer");
         }
     }

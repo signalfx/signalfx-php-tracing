@@ -2,10 +2,14 @@
 
 namespace DDTrace;
 
+use DDTrace\Contracts\Scope as ScopeInterface;
+use DDTrace\Contracts\Span as SpanInterface;
+use DDTrace\Contracts\SpanContext as SpanContextInterface;
+use DDTrace\Contracts\Tracer as TracerInterface;
 use DDTrace\Encoders\JsonZipkinV2;
+use DDTrace\Encoders\MessagePack;
 use DDTrace\Encoders\SpanEncoder;
-use DDTrace\Http\Urls;
-use DDTrace\Integrations\Integration;
+use DDTrace\Exceptions\UnsupportedFormat;
 use DDTrace\Log\LoggingTrait;
 use DDTrace\Processing\TraceAnalyticsProcessor;
 use DDTrace\Propagators\B3CurlHeadersMap;
@@ -16,11 +20,6 @@ use DDTrace\Sampling\ConfigurableSampler;
 use DDTrace\Sampling\Sampler;
 use DDTrace\Transport\HttpSignalFx;
 use DDTrace\Transport\Noop as NoopTransport;
-use DDTrace\Exceptions\UnsupportedFormat;
-use DDTrace\Contracts\Scope as ScopeInterface;
-use DDTrace\Contracts\Span as SpanInterface;
-use DDTrace\Contracts\SpanContext as SpanContextInterface;
-use DDTrace\Contracts\Tracer as TracerInterface;
 
 final class Tracer implements TracerInterface
 {
