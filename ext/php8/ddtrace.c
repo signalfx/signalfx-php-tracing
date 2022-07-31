@@ -494,7 +494,7 @@ static PHP_RINIT_FUNCTION(signalfx_tracing) {
 
     dd_read_distributed_tracing_ids();
 
-    if (get_dd_trace_generate_root_span()) {
+    if (/*get_dd_trace_generate_root_span()*/ false) {
         ddtrace_push_root_span();
     }
 
@@ -1423,7 +1423,7 @@ static PHP_FUNCTION(dd_trace_peek_span_id) {
 static PHP_FUNCTION(active_span) {
     UNUSED(execute_data);
     if (!DDTRACE_G(open_spans_top)) {
-        if (get_dd_trace_generate_root_span()) {
+        if (/*get_dd_trace_generate_root_span()*/ false) {
             ddtrace_push_root_span();  // ensure root span always exists, especially after serialization for testing
         } else {
             RETURN_NULL();
@@ -1459,7 +1459,7 @@ static PHP_FUNCTION(close_span) {
     }
 
     if (!DDTRACE_G(open_spans_top) || DDTRACE_G(open_spans_top)->execute_data ||
-        (get_dd_trace_generate_root_span() && DDTRACE_G(open_spans_top)->next == NULL)) {
+        (/*get_dd_trace_generate_root_span()*/ false && DDTRACE_G(open_spans_top)->next == NULL)) {
         ddtrace_log_err("There is no user-span on the top of the stack. Cannot close.");
         RETURN_NULL();
     }
