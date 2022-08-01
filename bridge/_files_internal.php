@@ -26,6 +26,8 @@ return [
     __DIR__ . '/../src/DDTrace/Encoders/SpanEncoder.php',
     __DIR__ . '/../src/DDTrace/Encoders/MessagePack.php',
     __DIR__ . '/../src/DDTrace/Encoders/JsonZipkinV2.php',
+    __DIR__ . '/../src/DDTrace/Propagators/B3TextMap.php',
+    __DIR__ . '/../src/DDTrace/Propagators/B3CurlHeadersMap.php',
     __DIR__ . '/../src/DDTrace/Propagators/TextMap.php',
     __DIR__ . '/../src/DDTrace/Propagators/CurlHeadersMap.php',
     __DIR__ . '/../src/DDTrace/Http/Request.php',
