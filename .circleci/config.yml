@@ -1869,27 +1869,10 @@ workflows:
                 - "7.4"
                 - "8.0"
               make_target:
-                - test_coverage
                 - test_extension_ci
                 - test_unit
                 - test_api_unit
                 - test_c2php
-      - coverage:
-          requires: [ 'Prepare Code' ]
-          matrix:
-            parameters:
-              php_major_minor:
-                - "5.4"
-                - "5.5"
-                - "5.6"
-                - "7.0"
-                - "7.1"
-                - "7.2"
-                - "7.3"
-                - "7.4"
-                - "8.0"
-              make_target:
-                - test_coverage
       - asan:
           requires: [ 'Prepare Code' ]
           matrix:
