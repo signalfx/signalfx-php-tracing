@@ -87,13 +87,17 @@ class ComposerInteroperabilityTest extends BaseTestCase
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'GET /no-manual-tracing')
-                ->withExactTags([
-                    'http.method' => 'GET',
-                    'http.url' => '/no-manual-tracing',
-                    'http.status_code' => '200',
-                    'component' => 'web.request',
-                ]),
+            SpanAssertion::build(
+                'web.request',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'GET /no-manual-tracing'
+            )->withExactTags([
+                'http.method' => 'GET',
+                'http.url' => '/no-manual-tracing',
+                'http.status_code' => '200',
+                'component' => 'web.request',
+            ]),
         ]);
     }
 
@@ -165,13 +169,17 @@ class ComposerInteroperabilityTest extends BaseTestCase
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'GET /no-manual-tracing')
-                ->withExactTags([
-                    'http.method' => 'GET',
-                    'http.url' => '/no-manual-tracing',
-                    'http.status_code' => '200',
-                    'component' => 'web.request',
-                ]),
+            SpanAssertion::build(
+                'web.request',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'GET /no-manual-tracing'
+            )->withExactTags([
+                'http.method' => 'GET',
+                'http.url' => '/no-manual-tracing',
+                'http.status_code' => '200',
+                'component' => 'web.request',
+            ]),
         ]);
     }
 
@@ -236,13 +244,17 @@ class ComposerInteroperabilityTest extends BaseTestCase
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'GET /no-manual-tracing')
-                ->withExactTags([
-                    'http.method' => 'GET',
-                    'http.url' => '/no-manual-tracing',
-                    'http.status_code' => '200',
-                    'component' => 'web.request',
-                ]),
+            SpanAssertion::build(
+                'web.request',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'GET /no-manual-tracing'
+            )->withExactTags([
+                'http.method' => 'GET',
+                'http.url' => '/no-manual-tracing',
+                'http.status_code' => '200',
+                'component' => 'web.request',
+            ]),
         ]);
     }
 
@@ -335,13 +347,17 @@ class ComposerInteroperabilityTest extends BaseTestCase
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'GET /no-composer-autoload-fails')
-                ->withExactTags([
-                    'http.method' => 'GET',
-                    'http.url' => '/no-composer-autoload-fails',
-                    'http.status_code' => '200',
-                    'component' => 'web.request',
-                ]),
+            SpanAssertion::build(
+                'web.request',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'GET /no-composer-autoload-fails'
+            )->withExactTags([
+                'http.method' => 'GET',
+                'http.url' => '/no-composer-autoload-fails',
+                'http.status_code' => '200',
+                'component' => 'web.request',
+            ]),
         ]);
     }
 
@@ -371,13 +387,17 @@ class ComposerInteroperabilityTest extends BaseTestCase
         );
 
         $this->assertFlameGraph($traces, [
-            SpanAssertion::build('web.request', 'unnamed-php-service', SpanAssertion::NOT_TESTED, 'GET /composer-autoload-fails')
-                ->withExactTags([
-                    'http.method' => 'GET',
-                    'http.url' => '/composer-autoload-fails',
-                    'http.status_code' => '200',
-                    'component' => 'web.request',
-                ]),
+            SpanAssertion::build(
+                'web.request',
+                'unnamed-php-service',
+                SpanAssertion::NOT_TESTED,
+                'GET /composer-autoload-fails'
+            )->withExactTags([
+                'http.method' => 'GET',
+                'http.url' => '/composer-autoload-fails',
+                'http.status_code' => '200',
+                'component' => 'web.request',
+            ]),
         ]);
     }
 
