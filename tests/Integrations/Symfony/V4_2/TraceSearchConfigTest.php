@@ -54,7 +54,9 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                         SpanAssertion::exists('symfony.httpkernel.kernel.boot'),
                         SpanAssertion::exists('symfony.kernel.handle')
                             ->withChildren([
-                                SpanAssertion::exists('symfony.kernel.request'),
+                                SpanAssertion::exists('symfony.kernel.request')->withChildren([
+                                    SpanAssertion::exists('symfony.security.authentication.success'),
+                                ]),
                                 SpanAssertion::exists('symfony.kernel.controller'),
                                 SpanAssertion::exists('symfony.kernel.controller_arguments'),
                                 SpanAssertion::build(
@@ -63,9 +65,7 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                                     'web',
                                     'App\Controller\CommonScenariosController::simpleAction'
                                 ),
-                                SpanAssertion::exists('symfony.kernel.response')->withChildren([
-                                    SpanAssertion::exists('symfony.security.authentication.success')
-                                ]),
+                                SpanAssertion::exists('symfony.kernel.response'),
                                 SpanAssertion::exists('symfony.kernel.finish_request'),
                             ]),
                     ]),
