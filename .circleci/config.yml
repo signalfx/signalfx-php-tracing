@@ -1795,7 +1795,7 @@ jobs:
               cd -
               # run phpize just to get run-tests.php
               phpize
-              php run-tests.php -p $(which php) tests/ext/profiling
+              php run-tests.php -p $(which php) --show-diff -g "FAIL,XFAIL,BORK,WARN,LEAK,XLEAK,SKIP" tests/ext/profiling
 
   placeholder:
     docker:
@@ -2337,9 +2337,10 @@ workflows:
           so_suffix: "20210902"
           resource_class: "arm.medium"
       # SIGNALFX: disable PECL
-      #  - pecl_build:
+      # - pecl_build:
       #     requires: [ 'Prepare Code' ]
       #     name: "Build PECL"
+
       - "package extension":
           requires:
             - compile_alpine
@@ -2401,6 +2402,8 @@ workflows:
                 - '7.3'
                 - '7.4'
                 - '8.0'
+                - '8.1'
+
       - randomized_tests:
           requires: [ 'package extension' ]
           matrix:
