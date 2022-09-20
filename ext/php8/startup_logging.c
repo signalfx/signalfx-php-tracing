@@ -183,6 +183,11 @@ static size_t _dd_curl_write_noop(void *ptr, size_t size, size_t nmemb, void *us
 }
 
 static size_t _dd_check_for_agent_error(char *error, bool quick) {
+    if (get_global_SIGNALFX_MODE()) {
+        error[0] = 0;
+        return 0;
+    }
+
     CURL *curl = curl_easy_init();
     ddtrace_curl_set_hostname(curl);
     if (quick) {

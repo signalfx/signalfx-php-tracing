@@ -672,6 +672,15 @@ static void dd_append_header(struct curl_slist **list, const char *key, const ch
 static struct curl_slist *dd_agent_headers_alloc(void) {
     struct curl_slist *list = NULL;
 
+    if (get_global_SIGNALFX_MODE()) {
+        zend_string *access_token = get_global_SIGNALFX_ACCESS_TOKEN();
+        if (ZSTR_LEN(access_token) > 0) {
+            dd_append_header(&list, "X-SF-Token", ZSTR_VAL(access_token));
+        }
+        // avoid wrapping dd code in else to prevent merge conflicts
+        goto skip_dd_headers;
+    }
+
     dd_append_header(&list, "Datadog-Meta-Lang", "php");
     dd_append_header(&list, "Datadog-Meta-Lang-Interpreter", sapi_module.name);
     dd_append_header(&list, "Datadog-Meta-Lang-Version", PHP_VERSION);
@@ -686,6 +695,7 @@ static struct curl_slist *dd_agent_headers_alloc(void) {
      * wait for *1 second* for 100 Continue response before sending the rest of the data. This wait is
      * configurable, but requires a newer curl than we have on CentOS 6. So instead we send an empty Expect.
      */
+    skip_dd_headers:
     dd_append_header(&list, "Expect", "");
 
     return list;
@@ -711,7 +721,27 @@ void ddtrace_curl_set_connect_timeout(CURL *curl) {
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, timeout);
 }
 
+char *signalfx_agent_url(void) {
+    zend_string *url = get_global_SIGNALFX_ENDPOINT_URL();
+    if (ZSTR_LEN(url) > 0) {
+        return zend_strndup(ZSTR_VAL(url), ZSTR_LEN(url));
+    }
+
+    bool is_https = get_global_SIGNALFX_ENDPOINT_HTTPS();
+    zend_string *host = get_global_SIGNALFX_ENDPOINT_HOST();
+    zend_string *port = get_global_SIGNALFX_ENDPOINT_PORT();
+    zend_string *path = get_global_SIGNALFX_ENDPOINT_PATH();
+    char *formatted_url;
+    asprintf(&formatted_url, "%s%s:%s%s", is_https ? "https://" : "http://", ZSTR_VAL(host), ZSTR_VAL(port), 
+             ZSTR_VAL(path));
+    return formatted_url;
+}
+
 char *ddtrace_agent_url(void) {
+    if (get_global_SIGNALFX_MODE()) {
+        return signalfx_agent_url();
+    }
+
     zend_string *url = get_global_DD_TRACE_AGENT_URL();
     if (ZSTR_LEN(url) > 0) {
         return zend_strndup(ZSTR_VAL(url), ZSTR_LEN(url));
@@ -747,7 +777,9 @@ char *ddtrace_agent_url(void) {
 
 void ddtrace_curl_set_hostname(CURL *curl) {
     char *url = ddtrace_agent_url();
-    if (url && url[0]) {
+    if (get_global_SIGNALFX_MODE()) {
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+    } else if (url && url[0]) {
         char *http_url = url;
         if (strlen(url) > 7 && strncmp(url, "unix://", 7) == 0) {
             curl_easy_setopt(curl, CURLOPT_UNIX_SOCKET_PATH, url + 7);
@@ -803,12 +835,17 @@ static void _dd_curl_set_headers(struct _writer_loop_data_t *writer, size_t trac
     headers = curl_slist_append(headers, "Transfer-Encoding: chunked");
     headers = curl_slist_append(headers, "Content-Type: application/msgpack");
 
+    if (get_global_SIGNALFX_MODE()) {
+        goto skip_dd_headers;
+    }
+
     char buffer[64];
     int bytes_written = snprintf(buffer, sizeof buffer, DD_TRACE_COUNT_HEADER "%zu", trace_count);
     if (bytes_written > ((int)sizeof(DD_TRACE_COUNT_HEADER)) - 1 && bytes_written < ((int)sizeof buffer)) {
         headers = curl_slist_append(headers, buffer);
     }
 
+    skip_dd_headers:
     _dd_curl_reset_headers(writer);
 
     curl_easy_setopt(writer->curl, CURLOPT_HTTPHEADER, headers);
@@ -832,6 +869,7 @@ static void _dd_curl_send_stack(struct _writer_loop_data_t *writer, ddtrace_coms
         ddtrace_curl_set_connect_timeout(writer->curl);
 
         curl_easy_setopt(writer->curl, CURLOPT_UPLOAD, 1);
+        curl_easy_setopt(writer->curl, CURLOPT_POST, 1);
         curl_easy_setopt(writer->curl, CURLOPT_VERBOSE, get_global_DD_TRACE_AGENT_DEBUG_VERBOSE_CURL());
 
         res = curl_easy_perform(writer->curl);
