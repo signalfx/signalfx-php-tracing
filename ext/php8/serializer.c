@@ -26,6 +26,7 @@
 #include "mpack/mpack.h"
 #include "priority_sampling/priority_sampling.h"
 #include "runtime.h"
+#include "signalfx/json_writer.h"
 #include "span.h"
 #include "uri_normalization.h"
 
@@ -143,6 +144,132 @@ int ddtrace_serialize_simple_array_into_c_string(zval *trace, char **data_p, siz
     // finish writing
     if (mpack_writer_destroy(&writer) != mpack_ok) {
         free(data);
+        return 0;
+    }
+
+    if (data_p && size_p) {
+        *data_p = data;
+        *size_p = size;
+
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int json_write_zval(json_writer_s *writer, zval *trace, int level);
+
+// SIGNALFX: JSON equivalent for msgpack write_hash_table, additionally it does
+// not change trace/span IDs to number types as is done for msgpack
+static int json_write_hash_table(json_writer_s *writer, HashTable *ht, int level) {
+    zval *tmp;
+    zend_string *string_key;
+    zend_long num_key;
+    bool is_assoc = 0;
+
+#if PHP_VERSION_ID >= 80100
+    is_assoc = !zend_array_is_list(ht);
+#else
+    Bucket *bucket;
+    ZEND_HASH_FOREACH_BUCKET(ht, bucket) { is_assoc = is_assoc || bucket->key != NULL; }
+    ZEND_HASH_FOREACH_END();
+#endif
+
+    if (is_assoc) {
+        json_writer_object_begin(writer);
+    } else {
+        json_writer_array_begin(writer);
+    }
+
+    bool is_first = true;
+
+    ZEND_HASH_FOREACH_KEY_VAL_IND(ht, num_key, string_key, tmp) {
+        if (is_first) {
+            is_first = false;    
+        } else {
+            json_writer_element_separator(writer);
+        }
+
+        // Writing the key, if associative
+        if (is_assoc == 1) {
+            char num_str_buf[MAX_ID_BUFSIZ], *key;
+            if (string_key) {
+                key = ZSTR_VAL(string_key);
+            } else {
+                key = num_str_buf;
+                sprintf(num_str_buf, ZEND_LONG_FMT, num_key);
+            }
+            json_writer_utf8(writer, key);
+            json_writer_key_value_separator(writer);
+        }
+
+        // Writing the value
+        if (json_write_zval(writer, tmp, level) != 1) {
+            return 0;
+        }
+    }
+    ZEND_HASH_FOREACH_END();
+
+    if (is_assoc) {
+        json_writer_object_end(writer);
+    } else {
+        json_writer_array_end(writer);
+    }
+    return 1;
+}
+
+// SIGNALFX: JSON equivalent for msgpack msgpack_write_zval
+static int json_write_zval(json_writer_s *writer, zval *trace, int level) {
+    if (Z_TYPE_P(trace) == IS_REFERENCE) {
+        trace = Z_REFVAL_P(trace);
+    }
+
+    switch (Z_TYPE_P(trace)) {
+        case IS_ARRAY:
+            if (json_write_hash_table(writer, Z_ARRVAL_P(trace), level + 1) != 1) {
+                return 0;
+            }
+            break;
+        case IS_DOUBLE:
+            json_writer_double(writer, Z_DVAL_P(trace));
+            break;
+        case IS_LONG:
+            json_writer_i64(writer, Z_LVAL_P(trace));
+            break;
+        case IS_NULL:
+            json_writer_null(writer);
+            break;
+        case IS_TRUE:
+        case IS_FALSE:
+            json_writer_bool(writer, Z_TYPE_P(trace) == IS_TRUE);
+            break;
+        case IS_STRING:
+            json_writer_utf8(writer, Z_STRVAL_P(trace));
+            break;
+        default:
+            ddtrace_log_debug("Serialize values must be of type array, string, int, float, bool or null");
+            return 0;
+            break;
+    }
+    return 1;
+}
+
+// SIGNALFX: JSON equivalent for ddtrace_serialize_simple_array_into_c_string
+int ddtrace_serialize_simple_array_into_c_string_json(zval *trace, char **data_p, size_t *size_p) {
+    // encode to memory buffer
+    char *data;
+    size_t size;
+    json_writer_s writer;
+    json_writer_initialize(&writer);
+    if (json_write_zval(&writer, trace, 0) != 1) {
+        json_writer_destroy(&writer);
+        return 0;
+    }
+
+    bool written = json_writer_complete(&writer, &data, &size);
+    json_writer_destroy(&writer);
+
+    if (!written) {
         return 0;
     }
 

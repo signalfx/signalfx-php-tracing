@@ -234,6 +234,7 @@ static void zai_config_add_ini_entry(zai_config_memoized_entry *memoized, zai_st
 }
 
 // PHP 5 expects 'static storage duration for ini entry names
+// SIGNALFX: use internal names maximum for array size instead of the maximum for explicitly defined name count
 zai_config_name ini_names[ZAI_CONFIG_ENTRIES_COUNT_MAX * ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX];
 
 void zai_config_ini_minit(zai_config_env_to_ini_name env_to_ini, int module_number) {
