@@ -476,9 +476,12 @@ static size_t _dd_coms_read_callback(char *buffer, size_t size, size_t nitems, v
     size_t written = 0;
     size_t buffer_size = size * nitems;
 
-    if (read->total_groups > 0) {
-        written += _dd_write_array_header(buffer, buffer_size, written, read->total_groups);
-        read->total_groups = 0;
+    // SIGNALFX: using JSON payload, so the msgpack array header is not required
+    if (!get_global_SIGNALFX_MODE()) {
+        if (read->total_groups > 0) {
+            written += _dd_write_array_header(buffer, buffer_size, written, read->total_groups);
+            read->total_groups = 0;
+        }
     }
 
     // write the remainder from previous iteration
@@ -567,6 +570,12 @@ static void _dd_msgpack_group_stack_by_id(ddtrace_coms_stack_t *stack, struct _g
     dest->total_groups++;
     size_t current_src_beginning = 0, next_src_beginning = 0, group_dest_beginning_position = 0;
 
+    // SIGNALFX: using JSON instead of msgpack, therefore the separate arrays in each entry need to be
+    // concatenated - these variables track the state for doing that
+    bool flattened_json = get_global_SIGNALFX_MODE();
+    size_t entries_copied = 0;
+    size_t last_entry_comma_position = 0;
+
     size_t bytes_written = atomic_load(&stack->bytes_written);
 
     while (current_src_beginning < bytes_written) {
@@ -592,6 +601,17 @@ static void _dd_msgpack_group_stack_by_id(ddtrace_coms_stack_t *stack, struct _g
                     elements_in_group++;
                     group_dest_position += copied;
                     bytes_in_group += copied;
+
+                    // SIGNALFX: concatenate JSON arrays by replacing the end ] with comma, and the begin [
+                    // with a space for entries beyond first one
+                    if (flattened_json) {
+                        dest->dest_data[group_dest_position - 1] = ',';
+                        last_entry_comma_position = group_dest_position - 1;
+                        if (entries_copied > 0) {
+                            dest->dest_data[group_dest_position - copied] = ' ';
+                        }
+                        entries_copied++;
+                    }
                 }
             } else if (next_group_entry.group_id == current_group_id && entry.group_id != GROUP_ID_PROCESSED) {
                 dest->total_groups++;  // add unique group count
@@ -611,6 +631,12 @@ static void _dd_msgpack_group_stack_by_id(ddtrace_coms_stack_t *stack, struct _g
 
         current_group_id = next_group_entry.group_id;
         current_src_beginning = next_src_beginning;
+    }
+    // SIGNALFX: replace the last comma with ] to end the JSON array properly
+    if (flattened_json) {
+        if (last_entry_comma_position > 0) {
+            dest->dest_data[last_entry_comma_position] = ']';
+        }
     }
     dest->total_bytes = group_dest_beginning_position;  // save total bytes count after conversion
 }
@@ -672,6 +698,7 @@ static void dd_append_header(struct curl_slist **list, const char *key, const ch
 static struct curl_slist *dd_agent_headers_alloc(void) {
     struct curl_slist *list = NULL;
 
+    // SIGNALFX: add access token header and skip DD specific headers
     if (get_global_SIGNALFX_MODE()) {
         zend_string *access_token = get_global_SIGNALFX_ACCESS_TOKEN();
         if (ZSTR_LEN(access_token) > 0) {
@@ -721,6 +748,7 @@ void ddtrace_curl_set_connect_timeout(CURL *curl) {
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, timeout);
 }
 
+// SIGNALFX: endpoint configuration for SignalFX uses different configuration options and includes path part
 char *signalfx_agent_url(void) {
     zend_string *url = get_global_SIGNALFX_ENDPOINT_URL();
     if (ZSTR_LEN(url) > 0) {
@@ -738,6 +766,7 @@ char *signalfx_agent_url(void) {
 }
 
 char *ddtrace_agent_url(void) {
+    // SIGNALFX: use SignalFX specific configuration options for endpoint URL
     if (get_global_SIGNALFX_MODE()) {
         return signalfx_agent_url();
     }
@@ -777,6 +806,7 @@ char *ddtrace_agent_url(void) {
 
 void ddtrace_curl_set_hostname(CURL *curl) {
     char *url = ddtrace_agent_url();
+    // SIGNALFX: SignalFX url already contains the path part, skip adding that
     if (get_global_SIGNALFX_MODE()) {
         curl_easy_setopt(curl, CURLOPT_URL, url);
     } else if (url && url[0]) {
@@ -835,9 +865,13 @@ static void _dd_curl_set_headers(struct _writer_loop_data_t *writer, size_t trac
     headers = curl_slist_append(headers, "Transfer-Encoding: chunked");
     headers = curl_slist_append(headers, "Content-Type: application/msgpack");
 
+    // SIGNALFX: sending JSON data, so set the content type to JSON instead of msgpack and skip DD specific headers
     if (get_global_SIGNALFX_MODE()) {
+        headers = curl_slist_append(headers, "Content-Type: application/json");
         goto skip_dd_headers;
     }
+
+    headers = curl_slist_append(headers, "Content-Type: application/msgpack");
 
     char buffer[64];
     int bytes_written = snprintf(buffer, sizeof buffer, DD_TRACE_COUNT_HEADER "%zu", trace_count);
@@ -869,7 +903,11 @@ static void _dd_curl_send_stack(struct _writer_loop_data_t *writer, ddtrace_coms
         ddtrace_curl_set_connect_timeout(writer->curl);
 
         curl_easy_setopt(writer->curl, CURLOPT_UPLOAD, 1);
-        curl_easy_setopt(writer->curl, CURLOPT_POST, 1);
+        // SIGNALFX: use POST instead of PUT for the upload
+        if (get_global_SIGNALFX_MODE()) {
+            curl_easy_setopt(writer->curl, CURLOPT_PUT, 0);
+            curl_easy_setopt(writer->curl, CURLOPT_POST, 1);
+        }
         curl_easy_setopt(writer->curl, CURLOPT_VERBOSE, get_global_DD_TRACE_AGENT_DEBUG_VERBOSE_CURL());
 
         res = curl_easy_perform(writer->curl);

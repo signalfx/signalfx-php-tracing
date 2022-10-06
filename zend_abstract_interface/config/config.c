@@ -69,6 +69,8 @@ static void zai_config_copy_name(zai_config_name *dest, zai_string_view src) {
     dest->len = src.len;
 }
 
+// SIGNALFX: functions for adding SIGNALFX_ prefixed aliases and custom aliases for an upstream DD_
+// configuration option.
 static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized, zai_string_view *name,
                                             zai_string_view dd_name, zai_string_view sfx_name) {
     if (memoized->names_count >= ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX) {
@@ -124,6 +126,8 @@ static zai_config_memoized_entry *zai_config_memoize_entry(zai_config_entry *ent
            "Number of aliases + name are greater than ZAI_CONFIG_NAMES_COUNT_MAX");
 
     zai_config_memoized_entry *memoized = &zai_config_memoized_entries[entry->id];
+    // SIGNALFX: add SIGNALFX_ prefixed aliases for a configuration option, which have a higher priority
+    // than the DD_ aliases
     signalfx_memoize_entry_alternate_names(memoized, entry);
 
     uint8_t names_start_index = memoized->names_count;

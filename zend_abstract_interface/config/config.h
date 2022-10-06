@@ -19,6 +19,8 @@ typedef uint16_t zai_config_id;
 
 #define ZAI_CONFIG_ENTRIES_COUNT_MAX 160
 #define ZAI_CONFIG_NAMES_COUNT_MAX 4
+// SIGNALFX: increase internal size of names array to 2x+1 of original to accomodate SIGNALFX_ prefixed
+// variations and a possible fully custom name
 #define ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX (ZAI_CONFIG_NAMES_COUNT_MAX + 1)
 #define ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX (ZAI_CONFIG_NAMES_COUNT_MAX + ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX)
 #define ZAI_CONFIG_NAME_BUFSIZ 60
@@ -54,6 +56,7 @@ struct zai_config_name_s {
 };
 
 struct zai_config_memoized_entry_s {
+    // SIGNALFX: use internal names maximum for array size instead of the maximum for explicitly defined name count
     zai_config_name names[ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX];
     zend_ini_entry *ini_entries[ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX];
     uint8_t names_count;
