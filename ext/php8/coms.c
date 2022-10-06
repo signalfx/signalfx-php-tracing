@@ -897,8 +897,10 @@ static void _dd_curl_send_stack(struct _writer_loop_data_t *writer, ddtrace_coms
 
         curl_easy_setopt(writer->curl, CURLOPT_UPLOAD, 1);
         // SIGNALFX: use POST instead of PUT for the upload
-        curl_easy_setopt(writer->curl, CURLOPT_PUT, 0);
-        curl_easy_setopt(writer->curl, CURLOPT_POST, 1);
+        if (get_global_SIGNALFX_MODE()) {
+            curl_easy_setopt(writer->curl, CURLOPT_PUT, 0);
+            curl_easy_setopt(writer->curl, CURLOPT_POST, 1);
+        }
         curl_easy_setopt(writer->curl, CURLOPT_VERBOSE, get_global_DD_TRACE_AGENT_DEBUG_VERBOSE_CURL());
 
         res = curl_easy_perform(writer->curl);
