@@ -83,8 +83,8 @@ static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized,
     zai_config_copy_name(dest, sfx_name);
 }
 
-static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoized, 
-                                              zai_string_view *name, zai_string_view dd_prefix, 
+static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoized,
+                                              zai_string_view *name, zai_string_view dd_prefix,
                                               zai_string_view sfx_prefix) {
     if (memoized->names_count >= ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX) {
         return;
@@ -103,7 +103,7 @@ static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoize
 
 static void signalfx_memoize_alternates_names(zai_config_memoized_entry *memoized, zai_string_view *name, bool is_main) {
     if (is_main) {
-        signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"), 
+        signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"),
                                         ZAI_STRL_VIEW("SIGNALFX_TRACING_ENABLED"));
     }
 

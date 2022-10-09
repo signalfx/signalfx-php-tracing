@@ -1062,7 +1062,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         }
     }
 
-    // Pseudo: sfx_span['tags']['resource.name'] = dd_span['resource'] (if tag not yet present and 
+    // Pseudo: sfx_span['tags']['resource.name'] = dd_span['resource'] (if tag not yet present and
     // doesn't equal span name)
     if (zend_hash_str_find(Z_ARR_P(tags), ZEND_STRL(SFX_TAG_RESOURCE_NAME)) == NULL) {
         zval *dd_resource = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("resource"));

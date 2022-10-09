@@ -754,7 +754,7 @@ char *signalfx_agent_url(void) {
     zend_string *port = get_global_SIGNALFX_ENDPOINT_PORT();
     zend_string *path = get_global_SIGNALFX_ENDPOINT_PATH();
     char *formatted_url;
-    asprintf(&formatted_url, "%s%s:%s%s", is_https ? "https://" : "http://", ZSTR_VAL(host), ZSTR_VAL(port), 
+    asprintf(&formatted_url, "%s%s:%s%s", is_https ? "https://" : "http://", ZSTR_VAL(host), ZSTR_VAL(port),
              ZSTR_VAL(path));
     return formatted_url;
 }
