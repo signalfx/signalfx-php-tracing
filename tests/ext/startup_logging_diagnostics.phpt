@@ -28,7 +28,6 @@ dd_dump_startup_logs($logs, [
     'open_basedir_configured',
 ]);
 ?>
-// SIGNALFX: expected warning text changed to recommend SIGNALFX_ options instead
 --EXPECTF--
 agent_error: "%s"
 open_basedir_init_hook_allowed: false
