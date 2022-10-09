@@ -2622,10 +2622,7 @@ workflows:
             parameters:
               php_version:
                 - '8.0'
-
-      - system_tests:
-          requires: [ 'package extension' ]
-          name: "System tests"
+      # SIGNALFX: System tests removed, requires DD backend
 
   build:
     jobs:
