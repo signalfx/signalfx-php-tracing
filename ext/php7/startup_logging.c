@@ -290,6 +290,10 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
         zai_config_memoized_entry *cfg = &zai_config_memoized_entries[i];
         if (cfg->name_index > 0) {
             zai_config_name *old_name = &cfg->names[cfg->name_index];
+            // SIGNALFX: Do not give the warning for the primary DD_ prefixed name
+            if (strncmp(old_name->ptr, "DD_", 3) == 0 && strncmp(cfg->names[cfg->name_index - 1].ptr, "SIGNALFX_", 9) == 0) {
+                continue;
+            }
             zend_string *message = zend_strpprintf(0, "'%s=%s' is deprecated, use %s instead.", old_name->ptr,
                                                    ZSTR_VAL(cfg->ini_entries[0]->value), cfg->names[0].ptr);
             _dd_add_assoc_zstring(ht, old_name->ptr, old_name->len, message);
