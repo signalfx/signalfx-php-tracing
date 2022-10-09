@@ -89,6 +89,9 @@ void zai_config_rinit(void);
 // dtor run-time zvals  (--rc)
 void zai_config_rshutdown(void);
 
+// SIGNALFX: Replace DD default value with SFX default value (after zai_config_rinit)
+void zai_config_use_signalfx_default(zai_config_id id, zai_string_view default_value);
+
 // Directly replace the config value for the current request. Copies the passed argument.
 void zai_config_replace_runtime_config(zai_config_id id, zval *value);
 
