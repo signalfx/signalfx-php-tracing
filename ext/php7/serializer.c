@@ -257,7 +257,7 @@ int ddtrace_serialize_simple_array_into_c_string_json(zval *trace, char **data_p
     size_t size;
     json_writer_s writer;
     json_writer_initialize(&writer);
-    if (json_write_zval(&writer, trace, 0) != 1) {
+    if (json_write_zval(&writer, trace) != 1) {
         json_writer_destroy(&writer);
         return 0;
     }
