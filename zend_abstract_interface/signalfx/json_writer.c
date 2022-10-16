@@ -130,7 +130,7 @@ void json_writer_key_value_separator(json_writer_s *writer) {
 static bool json_writer_check_printf_result(json_writer_s *writer, int print_result) {
     if (print_result < 0) {
         if (writer->error == json_writer_error_ok) {
-            writer->error = json_writer_error_printf;   
+            writer->error = json_writer_error_printf;
         }
         return false;
     }
@@ -242,7 +242,7 @@ static utf8_advance_result_e utf8_advance(const uint8_t *buffer, size_t *chunk_l
                 return utf8_advance_error;
             }
 
-            uint32_t codepoint = utf8_point(byte0, ~0xF0, 12) | 
+            uint32_t codepoint = utf8_point(byte0, ~0xF0, 12) |
                 utf8_point(byte1, ~0xC0, 6) | utf8_point(byte2, ~0xC0, 0);
 
             if (codepoint < 0x80) {
@@ -266,13 +266,13 @@ static utf8_advance_result_e utf8_advance(const uint8_t *buffer, size_t *chunk_l
                 return utf8_advance_error;
             }
 
-            uint32_t codepoint = utf8_point(byte0, ~0xF8, 18) | utf8_point(byte1, ~0xC0, 12) | 
+            uint32_t codepoint = utf8_point(byte0, ~0xF8, 18) | utf8_point(byte1, ~0xC0, 12) |
                 utf8_point(byte2, ~0xC0, 6) | utf8_point(byte3, ~0xC0, 0);
 
             if (codepoint < 0x10000 || codepoint >= 0x10FFFF) {
                 return utf8_advance_error;
             }
-            
+
             cursor += 4;
         } else {
             return utf8_advance_error;

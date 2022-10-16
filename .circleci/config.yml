@@ -1,6 +1,5 @@
 version: "2.1"
-orbs:
-  codecov: codecov/codecov@3.2.2
+# SIGNALFX: codecov orb removed as it has not been set up for our CI
 aliases:
 
   - &CACHE_COMPOSER_KEY
@@ -556,57 +555,7 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
 
-  coverage: &TEST_BASE
-    parameters:
-      php_major_minor:
-        # Expected in the format: <major>.<minor>, e.g. 8.2
-        type: string
-      make_target:
-        type: string
-      switch_php_version:
-        type: string
-        default: none
-      resource_class:
-        type: string
-        default: medium
-    working_directory: ~/datadog
-    <<: *BARE_DOCKER_MACHINE
-    steps:
-      - <<: *STEP_ATTACH_WORKSPACE
-      - setup_docker:
-          docker_image: datadog/dd-trace-ci:php-<< parameters.php_major_minor >>_buster
-          extra: with_httpbin_and_request_replayer
-      - switch_php:
-          php_version: << parameters.switch_php_version >>
-      - <<: *STEP_EXPORT_CI_ENV
-      - <<: *STEP_WAIT_REQUEST_REPLAYER
-      - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
-      - run:
-          name: Run tests
-          command: |
-            set -euo pipefail
-            make << parameters.make_target >> 2>&1 | tee /dev/stderr | { ! grep -qe "=== Total [0-9]+ memory leaks detected ==="; }
-      - when:
-          # codecov uploader only on amd64
-          condition:
-            matches:
-              pattern: "^[^.]+$"
-              value: << parameters.resource_class >>
-          steps:
-            - run:
-                name: Install CodeCov Uploader Dependencies
-                command: sudo apt install -y gpg
-            - codecov/upload:
-                file: tmp/coverage.info
-                upload_name: "PHP<< parameters.php_major_minor >>.dd-trace-php"
-      - run:
-          command: |
-            mkdir -p /tmp/artifacts/core_dumps
-            find tmp -name "core.*" | xargs -I % -n 1 cp % /tmp/artifacts/core_dumps
-            cp -a tmp/build_extension/tests/ext /tmp/artifacts/tests
-          when: on_fail
-      - store_artifacts:
-          path: /tmp/artifacts
+  # SIGNALFX: coverage job removed because our CI does not have exporting this set up
 
   asan: *TEST_BASE
 
@@ -2673,10 +2622,7 @@ workflows:
             parameters:
               php_version:
                 - '8.0'
-
-      - system_tests:
-          requires: [ 'package extension' ]
-          name: "System tests"
+      # SIGNALFX: System tests removed, requires DD backend
 
   build:
     jobs:
@@ -2696,27 +2642,14 @@ workflows:
                 - "8.0"
                 - "8.1"
               make_target:
-                - test_coverage
+                # SIGNALFX: coverage target removed
                 - test_extension_ci
                 - test_unit
                 - test_api_unit
                 - test_c2php
                 - test_c_disabled
                 - test_internal_api_randomized
-      - coverage:
-          requires: [ 'Prepare Code' ]
-          matrix:
-            parameters:
-              php_major_minor:
-                - "7.0"
-                - "7.1"
-                - "7.2"
-                - "7.3"
-                - "7.4"
-                - "8.0"
-                - "8.1"
-              make_target:
-                - test_coverage
+      # SIGNALFX: coverage job removed because our CI does not have exporting this set up
       - asan:
           requires: [ 'Prepare Code' ]
           matrix:

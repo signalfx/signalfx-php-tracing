@@ -157,11 +157,11 @@ int ddtrace_serialize_simple_array_into_c_string(zval *trace, char **data_p, siz
     }
 }
 
-static int json_write_zval(json_writer_s *writer, zval *trace, int level);
+static int json_write_zval(json_writer_s *writer, zval *trace);
 
 // SIGNALFX: JSON equivalent for msgpack write_hash_table, additionally it does
 // not change trace/span IDs to number types as is done for msgpack
-static int json_write_hash_table(json_writer_s *writer, HashTable *ht, int level) {
+static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
     zval *tmp;
     zend_string *string_key;
     zend_long num_key;
@@ -185,7 +185,7 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht, int level
 
     ZEND_HASH_FOREACH_KEY_VAL_IND(ht, num_key, string_key, tmp) {
         if (is_first) {
-            is_first = false;    
+            is_first = false;
         } else {
             json_writer_element_separator(writer);
         }
@@ -204,7 +204,7 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht, int level
         }
 
         // Writing the value
-        if (json_write_zval(writer, tmp, level) != 1) {
+        if (json_write_zval(writer, tmp) != 1) {
             return 0;
         }
     }
@@ -219,14 +219,14 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht, int level
 }
 
 // SIGNALFX: JSON equivalent for msgpack msgpack_write_zval
-static int json_write_zval(json_writer_s *writer, zval *trace, int level) {
+static int json_write_zval(json_writer_s *writer, zval *trace) {
     if (Z_TYPE_P(trace) == IS_REFERENCE) {
         trace = Z_REFVAL_P(trace);
     }
 
     switch (Z_TYPE_P(trace)) {
         case IS_ARRAY:
-            if (json_write_hash_table(writer, Z_ARRVAL_P(trace), level + 1) != 1) {
+            if (json_write_hash_table(writer, Z_ARRVAL_P(trace)) != 1) {
                 return 0;
             }
             break;
@@ -261,7 +261,7 @@ int ddtrace_serialize_simple_array_into_c_string_json(zval *trace, char **data_p
     size_t size;
     json_writer_s writer;
     json_writer_initialize(&writer);
-    if (json_write_zval(&writer, trace, 0) != 1) {
+    if (json_write_zval(&writer, trace) != 1) {
         json_writer_destroy(&writer);
         return 0;
     }
@@ -958,6 +958,158 @@ void ddtrace_shutdown_span_sampling_limiter(void) {
     zend_hash_destroy(&dd_span_sampling_limiters);
 }
 
+// SIGNALFX: Functions to convert DD serialized span array to SFX serialized span array
+#define SFX_ATTRIBUTE_KIND "kind"
+#define SFX_TAG_COMPONENT "component"
+#define SFX_TAG_RESOURCE_NAME "resource.name"
+
+static bool signalfx_is_known_client_span_type(const char* dd_span_type) {
+    return
+        strcmp(dd_span_type, "http") == 0 ||
+        strcmp(dd_span_type, "sql") == 0 ||
+        strcmp(dd_span_type, "redis") == 0 ||
+        strcmp(dd_span_type, "memcached") == 0 ||
+        strcmp(dd_span_type, "elasticsearch") == 0 ||
+        strcmp(dd_span_type, "cassandra") == 0 ||
+        strcmp(dd_span_type, "mongodb") == 0;
+}
+
+static bool signalfx_is_known_server_span_type(const char* dd_span_type) {
+    return
+        strcmp(dd_span_type, "web") == 0 ||
+        strcmp(dd_span_type, "cli") == 0;
+}
+
+static void signalfx_add_assoc_hex64(zval *span, const char* name, uint64_t value) {
+    char hex_str[MAX_ID_BUFSIZ];
+    sprintf(hex_str, "%" PRIx64, value);
+    add_assoc_string(span, name, hex_str);
+}
+
+static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span) {
+    zval sfx_span_zv;
+    zval *sfx_span = &sfx_span_zv;
+    array_init(sfx_span);
+
+    // More efficient to just read from the original span structure than from serializer array
+    signalfx_add_assoc_hex64(sfx_span, "traceId", span->trace_id);
+    signalfx_add_assoc_hex64(sfx_span, "id", span->span_id);
+
+    if (span->parent_id > 0) {
+        signalfx_add_assoc_hex64(sfx_span, "parentId", span->parent_id);
+    }
+
+    add_assoc_long(sfx_span, "timestamp", span->start / 1000);
+    add_assoc_long(sfx_span, "duration", span->duration / 1000);
+
+    // For the rest, copy values from previously built span array to avoid being too sensitive to changes to the
+    // actual logic of how the values are constructed from span structure.
+    zval *dd_name = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("name"));
+    const char* name_cstr = NULL;
+
+    if (dd_name != NULL && Z_TYPE_P(dd_name) == IS_STRING) {
+        add_assoc_zval(sfx_span, "name", dd_name);
+        name_cstr = Z_STRVAL_P(dd_name);
+    }
+
+    zval tags_zv;
+    zval *tags = &tags_zv;
+    array_init(tags);
+
+    bool error_kind_present = false;
+    zval *dd_tags = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("meta"));
+
+    if (dd_tags != NULL && Z_TYPE_P(dd_tags) == IS_ARRAY) {
+        zend_string *str_key;
+        zval *val;
+
+        ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARR_P(dd_tags), str_key, val) {
+            if (str_key != NULL) {
+                const char* cstr_key = ZSTR_VAL(str_key);
+
+                // Rename error tags
+                if (strcmp(cstr_key, "error.type") == 0) {
+                    cstr_key = "sfx.error.kind";
+                    error_kind_present = true;
+                } else if (strcmp(cstr_key, "error.msg") == 0) {
+                    cstr_key = "sfx.error.message";
+                } else if (strcmp(cstr_key, "error.stack") == 0) {
+                    cstr_key = "sfx.error.stack";
+                }
+
+                // Drop DD internal tags
+                if (strncmp(cstr_key, "_dd.", 4) == 0) {
+                    continue;
+                }
+
+                add_assoc_zval(tags, cstr_key, val);
+            }
+        }
+        ZEND_HASH_FOREACH_END();
+    }
+
+    if (error_kind_present) {
+        add_assoc_bool(tags, "error", true);
+    }
+
+    // Pseudo: sfx_span['tags']['component'] = dd_span['service'] (if tag not yet present)
+    if (zend_hash_str_find(Z_ARR_P(tags), ZEND_STRL(SFX_TAG_COMPONENT)) == NULL) {
+        zval *dd_service = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("service"));
+
+        if (dd_service != NULL && Z_TYPE_P(dd_service) == IS_STRING) {
+            add_assoc_zval(tags, SFX_TAG_COMPONENT, dd_service);
+        }
+    }
+
+    // Pseudo: sfx_span['tags']['resource.name'] = dd_span['resource'] (if tag not yet present and
+    // doesn't equal span name)
+    if (zend_hash_str_find(Z_ARR_P(tags), ZEND_STRL(SFX_TAG_RESOURCE_NAME)) == NULL) {
+        zval *dd_resource = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("resource"));
+
+        if (dd_resource != NULL && Z_TYPE_P(dd_resource) == IS_STRING) {
+            if (name_cstr == NULL || strcmp(name_cstr, Z_STRVAL_P(dd_resource)) != 0) {
+                add_assoc_zval(tags, SFX_TAG_RESOURCE_NAME, dd_resource);
+            }
+        }
+    }
+
+    add_assoc_zval(sfx_span, "tags", tags);
+
+    // Determine if span is CLIENT or SERVER and set 'kind' and/or 'remoteEndpoint' based on that
+    zval *dd_type = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("type"));
+
+    if (dd_type != NULL && Z_TYPE_P(dd_type) == IS_STRING) {
+        if (signalfx_is_known_client_span_type(Z_STRVAL_P(dd_type))) {
+            add_assoc_string(sfx_span, SFX_ATTRIBUTE_KIND, "CLIENT");
+
+            zval *prop_service = ddtrace_spandata_property_service(span);
+
+            // Add span['remoteEndpoint']['serviceName']
+            if (prop_service != NULL) {
+                zval remote_endpoint_zv;
+                zval *remote_endpoint = &remote_endpoint_zv;
+                array_init(remote_endpoint);
+
+                add_assoc_zval(remote_endpoint, "serviceName", prop_service);
+                add_assoc_zval(sfx_span, "remoteEndpoint", remote_endpoint);
+            }
+        } else if (signalfx_is_known_server_span_type(Z_STRVAL_P(dd_type))) {
+            add_assoc_string(sfx_span, SFX_ATTRIBUTE_KIND, "SERVER");
+        }
+    }
+
+    // Add span['localEndpoint']['serviceName'] with user-defined service
+    zval local_endpoint_zv;
+    zval *local_endpoint = &local_endpoint_zv;
+    array_init(local_endpoint);
+
+    add_assoc_string(local_endpoint, "serviceName", ZSTR_VAL(get_DD_SERVICE()));
+    add_assoc_zval(sfx_span, "localEndpoint", local_endpoint);
+
+    // Add SFX span array to the non-assoc array of spans
+    add_next_index_zval(spans_array, sfx_span);
+}
+
 void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array) {
     ddtrace_span_t *span = &span_fci->span;
     bool top_level_span = span->parent_id == DDTRACE_G(distributed_parent_trace_id);
@@ -1177,6 +1329,15 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array) {
             metrics = zend_hash_str_add_new(Z_ARR_P(el), ZEND_STRL("metrics"), &metrics_array);
         }
         add_assoc_double(metrics, "php.compilation.total_time_ms", ddtrace_compile_time_get() / 1000.);
+    }
+
+    // SIGNALFX: SFX zipkin format is different enough that it makes sense to create a new array for that and copy
+    // over what we can. Changing the above code to do it our way in the first place would be more efficient, but
+    // would likely cause conflicts in some future syncs where this approach would not.
+    if (get_global_SIGNALFX_MODE()) {
+        signalfx_serialize_sfx_span_to_array(array, span, el);
+        zval_ptr_dtor(el);
+        return;
     }
 
     add_next_index_zval(array, el);
