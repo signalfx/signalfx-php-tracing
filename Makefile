@@ -444,7 +444,7 @@ $(SFX_PACKAGES_BUILD_DIR):
 sfx-bundle.tar.gz: $(PACKAGES_BUILD_DIR) $(SFX_PACKAGES_BUILD_DIR)
 	bash ./tooling/bin/generate-sfx-final-artifact.sh \
 		$(VERSION) \
-		$(PACKAGES_BUILD_DIR)
+		$(PACKAGES_BUILD_DIR) \
 		$(SFX_PACKAGES_BUILD_DIR)
 	bash ./tooling/bin/generate-sfx-installers.sh \
 		$(VERSION) \
