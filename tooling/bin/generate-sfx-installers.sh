@@ -9,4 +9,4 @@ dd_packages_build_dir=$2
 ########################
 # Installers
 ########################
-sed "s|@release_version@|${release_version}|g" ./signalfx-setup.php > "${packages_build_dir}/signalfx-setup.php"
+sed "s|@release_version@|${release_version}|g" ./signalfx-setup.php > "${dd_packages_build_dir}/signalfx-setup.php"
