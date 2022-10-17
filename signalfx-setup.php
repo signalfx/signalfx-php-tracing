@@ -211,8 +211,8 @@ function install($options)
                 // phpcs:enable Generic.Files.LineLength.TooLong
 
                 /* In order to support upgrading from legacy installation method to new installation method, we replace
-                 * "extension = /opt/signalfx-php/xyz.so" with "extension =  signalfx-tracing.so" honoring trailing `;`, hence not
-                 * automatically re-activating the extension if the user had commented it out.
+                 * "extension = /opt/signalfx-php/xyz.so" with "extension =  signalfx-tracing.so" honoring trailing `;`,
+                 * hence not automatically re-activating the extension if the user had commented it out.
                  */
                 execute_or_exit(
                     'Impossible to update the INI settings file.',
