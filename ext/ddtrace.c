@@ -10,6 +10,7 @@
 #include <components/sapi/sapi.h>
 #include <headers/headers.h>
 #include <hook/hook.h>
+#include <json/json.h>
 #include <inttypes.h>
 #if PHP_VERSION_ID < 80000
 #include <Zend/zend_vm.h>
@@ -977,7 +978,7 @@ static size_t datadog_info_print(const char *str) { return php_output_write(str,
 
 static void _dd_info_tracer_config(void) {
     smart_str buf = {0};
-    ddtrace_startup_logging_json(&buf);
+    ddtrace_startup_logging_json(&buf, PHP_JSON_PRETTY_PRINT);
     php_info_print_table_row(2, "SIGNALFX TRACER CONFIGURATION", ZSTR_VAL(buf.s));
     smart_str_free(&buf);
 }
@@ -2013,7 +2014,7 @@ static PHP_FUNCTION(startup_logs) {
     UNUSED(execute_data);
 
     smart_str buf = {0};
-    ddtrace_startup_logging_json(&buf);
+    ddtrace_startup_logging_json(&buf, 0);
     ZVAL_NEW_STR(return_value, buf.s);
 }
 
