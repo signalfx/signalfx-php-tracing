@@ -148,7 +148,6 @@ static int dd_inject_distributed_tracing_headers(zval *ch) {
             }
         }
     }
-    zend_string *propagated_tags = ddtrace_format_propagated_tags();
     // SIGNALFX: do not send DD tags header if SFX mode is enabled
     if (!get_global_SIGNALFX_MODE()) {
         zend_string *propagated_tags = ddtrace_format_propagated_tags();
