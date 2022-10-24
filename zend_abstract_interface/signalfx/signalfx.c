@@ -5,12 +5,14 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 bool signalfx_detect_ddtrace_mode(void) {
     const char* env_variable = getenv("SIGNALFX_MODE");
 
     if (env_variable != NULL) {
-        return strcmp(env_variable, "0") == 0 || strcmp(env_variable, "false") == 0;
+        return strcmp(env_variable, "0") == 0 || strcasecmp(env_variable, "false") == 0 ||
+               strcasecmp(env_variable, "off") == 0 || strcasecmp(env_variable, "no") == 0;
     }
 
     Dl_info lookup;
