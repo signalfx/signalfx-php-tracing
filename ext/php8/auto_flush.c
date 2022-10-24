@@ -53,7 +53,9 @@ ZEND_RESULT_CODE ddtrace_flush_tracer() {
 
     // SIGNALFX: serialize with JSON and without wrapping an additional array around it
     if (get_global_SIGNALFX_MODE()) {
-        return ddtrace_flush_tracer_json(&trace) ? SUCCESS : FAILURE;
+        success = ddtrace_flush_tracer_json(&trace);
+        zend_array_destroy(Z_ARR(trace));
+        return success ? SUCCESS : FAILURE;
     }
 
     // background sender only wants a singular trace

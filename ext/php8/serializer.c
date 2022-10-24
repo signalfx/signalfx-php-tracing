@@ -1057,7 +1057,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         zval *dd_service = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("service"));
 
         if (dd_service != NULL && Z_TYPE_P(dd_service) == IS_STRING) {
-            add_assoc_zval(tags, SFX_TAG_COMPONENT, dd_service);
+            _add_assoc_zval_copy(tags, SFX_TAG_COMPONENT, dd_service);
         }
     }
 
@@ -1068,7 +1068,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
 
         if (dd_resource != NULL && Z_TYPE_P(dd_resource) == IS_STRING) {
             if (name_cstr == NULL || strcmp(name_cstr, Z_STRVAL_P(dd_resource)) != 0) {
-                add_assoc_zval(tags, SFX_TAG_RESOURCE_NAME, dd_resource);
+                _add_assoc_zval_copy(tags, SFX_TAG_RESOURCE_NAME, dd_resource);
             }
         }
     }
