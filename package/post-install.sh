@@ -156,7 +156,7 @@ function fail_print_and_exit() {
 }
 
 function verify_installation() {
-    invoke_php -m | grep -e "^ddtrace$" && \
+    invoke_php -m | grep -e "^signalfx_tracing$" && \
         println "Extension enabled successfully" || \
         fail_print_and_exit
 }
