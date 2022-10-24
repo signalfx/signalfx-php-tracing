@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../signalfx/signalfx.h"
+
 HashTable zai_config_name_map = {0};
 
 _Static_assert(ZAI_CONFIG_ENTRIES_COUNT_MAX < 256, "zai config entry count is overflowing uint8_t");
@@ -140,6 +142,13 @@ static zai_config_memoized_entry *zai_config_memoize_entry(zai_config_entry *ent
 
     memoized->type = entry->type;
     memoized->default_encoded_value = entry->default_encoded_value;
+
+    // SIGNALFX: make SIGNALFX_MODE disabled by default if current shared library name contains 'ddtrace'
+    if (strcmp(memoized->names[0].ptr, "SIGNALFX_MODE") == 0) {
+        if (signalfx_detect_ddtrace_mode()) {
+            memoized->default_encoded_value = ZAI_STRL_VIEW("false");
+        }
+    }
 
     ZVAL_UNDEF(&memoized->decoded_value);
     if (!zai_config_decode_value(entry->default_encoded_value, memoized->type, &memoized->decoded_value,
