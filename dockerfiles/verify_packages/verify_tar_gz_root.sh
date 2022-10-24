@@ -26,6 +26,6 @@ echo "Permissions are correct"
 echo "Installing as per https://docs.datadoghq.com/tracing/faq/php-tracer-manual-installation/#automatic-ini-file-setup"
 /opt/datadog-php/bin/post-install.sh
 
-php --ri=ddtrace
+php --ri=signalfx_tracing
 
 echo ".tar.gz archive correctly installed"

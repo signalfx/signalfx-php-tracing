@@ -819,7 +819,7 @@ jobs:
           name: Install .deb from artifacts
           command: |
             sudo dpkg -i ./build/packages/*$(if [ $(uname -m) = "aarch64" ]; then echo aarch64; else echo amd64; fi)*.deb
-            php --ri=ddtrace
+            php --ri=signalfx_tracing
       - run:
           name: Run phpt tests against shippable package
           command: |
@@ -1099,7 +1099,7 @@ jobs:
             cp ./pecl/datadog_trace-*.tgz ./datadog_trace.tgz
             sudo pecl install datadog_trace.tgz
             echo "extension=ddtrace.so" | sudo tee $(php -i | awk -F"=> " '/Scan this dir for additional .ini files/ {print $2}')/ddtrace.ini
-            php --ri=ddtrace
+            php --ri=signalfx_tracing
       - <<: *STEP_WAIT_REQUEST_REPLAYER
       - <<: *STEP_RESOLVE_HTTPBIN_HOSTNAME_TO_IP
       - run:

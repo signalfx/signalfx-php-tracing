@@ -44,13 +44,13 @@ function showStatus() {
 }
 
 function testInstalled() {
-    printf "  %s; %s ddtrace installed " "$1" "$2"
+    printf "  %s; %s signalfx_tracing installed " "$1" "$2"
     php "$pwd/test-installed.php" --php-version "$1" --sapi "$2"
     showStatus $?
 }
 
 function testNotInstalled() {
-    printf "  %s; %s ddtrace NOT installed " "$1" "$2"
+    printf "  %s; %s signalfx_tracing NOT installed " "$1" "$2"
     php "$pwd/test-not-installed.php" --php-version "$1" --sapi "$2"
     showStatus $?
 }
@@ -62,7 +62,7 @@ function checkIsInstalledCli() {
         bin="/usr/bin/php$defaultPhpVersion"
     fi
     printf "  %s; cli " "$bin"
-    $bin --ri=ddtrace > /dev/null 2>&1
+    $bin --ri=signalfx_tracing > /dev/null 2>&1
 }
 
 function testInstalledCli() {

@@ -16,7 +16,7 @@ for phpVer in $(ls ${PHP_INSTALL_DIR}); do
     if [ "$INSTALL_TYPE" = "native_package" ]; then
         echo "Installing dd-trace-php using the OS-specific package installer"
         rpm -Uvh build/packages/*.rpm
-        php --ri=ddtrace
+        php --ri=signalfx_tracing
 
         # Uninstall the tracer
         rpm -e datadog-php-tracer

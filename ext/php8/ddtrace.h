@@ -9,7 +9,7 @@
 
 // SIGNALFX: automagically fix some references to PHP module name ddtrace -> signalfx, allows making less changes to
 // code and not editing other source files at all that use ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
-#define ddtrace_globals_id signalfx_globals_id
+#define ddtrace_globals_id signalfx_tracing_globals_id
 #define zend_ddtrace_globals zend_signalfx_tracing_globals
 #define ddtrace_globals signalfx_tracing_globals
 #define ddtrace_module_entry signalfx_tracing_module_entry
