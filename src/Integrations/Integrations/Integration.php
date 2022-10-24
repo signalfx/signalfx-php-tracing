@@ -117,7 +117,7 @@ abstract class Integration
      */
     public static function shouldLoad($name)
     {
-        if (!\extension_loaded('ddtrace')) {
+        if (!\extension_loaded('signalfx_tracing')) {
             \trigger_error('ddtrace extension required to load integration.', \E_USER_WARNING);
             return false;
         }

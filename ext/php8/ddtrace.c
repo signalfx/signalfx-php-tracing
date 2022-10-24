@@ -64,10 +64,11 @@ static int dd_observer_extension_backup = -1;
 
 atomic_int ddtrace_warn_legacy_api;
 
-ZEND_DECLARE_MODULE_GLOBALS(ddtrace)
+// SIGNALFX: renamed extension
+ZEND_DECLARE_MODULE_GLOBALS(signalfx_tracing)
 
 #ifdef COMPILE_DL_DDTRACE
-ZEND_GET_MODULE(ddtrace)
+ZEND_GET_MODULE(signalfx_tracing)
 #ifdef ZTS
 ZEND_TSRMLS_CACHE_DEFINE();
 #endif
@@ -450,7 +451,8 @@ static PHP_MINIT_FUNCTION(ddtrace) {
                            CONST_CS | CONST_PERSISTENT);
     REGISTER_INI_ENTRIES();
 
-    zval *ddtrace_module_zv = zend_hash_str_find(&module_registry, ZEND_STRL("ddtrace"));
+    // SIGNALFX: renamed extension
+    zval *ddtrace_module_zv = zend_hash_str_find(&module_registry, ZEND_STRL("signalfx_tracing"));
     if (ddtrace_module_zv) {
         ddtrace_module = Z_PTR_P(ddtrace_module_zv);
     }
@@ -478,8 +480,9 @@ static PHP_MINIT_FUNCTION(ddtrace) {
         zend_hash_str_find_ptr(&module_registry, PHP_DDTRACE_EXTNAME, sizeof(PHP_DDTRACE_EXTNAME) - 1);
     if (mod_ptr == NULL) {
         // This shouldn't happen, possibly a bug if it does.
+        // SIGNALFX: renamed extension
         zend_error(E_CORE_WARNING,
-                   "Failed to find ddtrace extension in "
+                   "Failed to find signalfx_tracing extension in "
                    "registered modules. Please open a bug report.");
 
         return FAILURE;
@@ -756,7 +759,7 @@ static int datadog_info_print(const char *str) { return php_output_write(str, st
 static void _dd_info_tracer_config(void) {
     smart_str buf = {0};
     ddtrace_startup_logging_json(&buf);
-    php_info_print_table_row(2, "DATADOG TRACER CONFIGURATION", ZSTR_VAL(buf.s));
+    php_info_print_table_row(2, "SIGNALFX TRACER CONFIGURATION", ZSTR_VAL(buf.s));
     smart_str_free(&buf);
 }
 

@@ -7,6 +7,18 @@
 #include "ext/version.h"
 #include "random.h"
 
+// SIGNALFX: automagically fix some references to PHP module name ddtrace -> signalfx, allows making less changes to
+// code and not editing other source files at all that use ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
+#define ddtrace_globals_id signalfx_globals_id
+#define zend_ddtrace_globals zend_signalfx_tracing_globals
+#define ddtrace_globals signalfx_tracing_globals
+#define ddtrace_module_entry signalfx_tracing_module_entry
+#define zm_startup_ddtrace zm_startup_signalfx_tracing
+#define zm_shutdown_ddtrace zm_shutdown_signalfx_tracing
+#define zm_activate_ddtrace zm_activate_signalfx_tracing
+#define zm_deactivate_ddtrace zm_deactivate_signalfx_tracing
+#define zm_info_ddtrace zm_info_signalfx_tracing
+
 extern zend_module_entry ddtrace_module_entry;
 extern zend_class_entry *ddtrace_ce_span_data;
 extern zend_class_entry *ddtrace_ce_fatal_error;
@@ -73,8 +85,10 @@ typedef struct {
     zend_string *message;
 } ddtrace_error_data;
 
+// SIGNALFX: renamed extension
+
 // clang-format off
-ZEND_BEGIN_MODULE_GLOBALS(ddtrace)
+ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
     char *auto_prepend_file;
     uint8_t disable; // 0 = enabled, 1 = disabled via INI, 2 = disabled, but MINIT was fully executed
     zend_bool request_init_hook_loaded;
@@ -105,16 +119,16 @@ ZEND_BEGIN_MODULE_GLOBALS(ddtrace)
     zend_string *dd_origin;
 
     char *cgroup_file;
-ZEND_END_MODULE_GLOBALS(ddtrace)
+ZEND_END_MODULE_GLOBALS(signalfx_tracing)
 // clang-format on
 
 #ifdef ZTS
-#define DDTRACE_G(v) TSRMG(ddtrace_globals_id, zend_ddtrace_globals *, v)
+#define DDTRACE_G(v) TSRMG(signalfx_tracing_globals_id, zend_signalfx_tracing_globals *, v)
 #else
-#define DDTRACE_G(v) (ddtrace_globals.v)
+#define DDTRACE_G(v) (signalfx_tracing_globals.v)
 #endif
 
-#define PHP_DDTRACE_EXTNAME "ddtrace"
+#define PHP_DDTRACE_EXTNAME "signalfx_tracing"
 #ifndef PHP_DDTRACE_VERSION
 #define PHP_DDTRACE_VERSION "0.0.0-unknown"
 #endif
