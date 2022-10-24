@@ -12,7 +12,7 @@ bool signalfx_detect_ddtrace_mode(void) {
     if (env_variable != NULL) {
         return strcmp(env_variable, "0") == 0 || strcmp(env_variable, "false") == 0;
     }
-    
+
     Dl_info lookup;
     if (dladdr(&signalfx_detect_ddtrace_mode, &lookup) != 0) {
         if (strstr(lookup.dli_fname, "ddtrace") != NULL) {
