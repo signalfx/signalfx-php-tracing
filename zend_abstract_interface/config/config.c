@@ -151,7 +151,7 @@ static zai_config_memoized_entry *zai_config_memoize_entry(zai_config_entry *ent
     }
 
     ZVAL_UNDEF(&memoized->decoded_value);
-    if (!zai_config_decode_value(entry->default_encoded_value, memoized->type, &memoized->decoded_value,
+    if (!zai_config_decode_value(memoized->default_encoded_value, memoized->type, &memoized->decoded_value,
                                  /* persistent */ true)) {
         assert(0 && "Error decoding default value");
     }
