@@ -54,7 +54,6 @@ final class NetteTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:' . self::PORT . '/simple?key=value&<redacted>',
                         'http.status_code' => '200',
-                        'component' => 'nette',
                     ])->withChildren([
                         SpanAssertion::build(
                             'nette.configurator.createRobotLoader',
@@ -89,7 +88,6 @@ final class NetteTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:' . self::PORT . '/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
-                        'component' => 'nette',
                     ])->withChildren([
                         SpanAssertion::build(
                             'nette.configurator.createRobotLoader',
@@ -136,7 +134,6 @@ final class NetteTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:' . self::PORT . '/error?key=value&<redacted>',
                         'http.status_code' => '500',
-                        'component' => 'nette',
                     ])
                     ->setError('Internal Server Error')
                     ->withChildren([
