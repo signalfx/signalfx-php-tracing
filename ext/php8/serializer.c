@@ -1055,7 +1055,6 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                     if (Z_TYPE_P(val) == IS_STRING) {
                         const char* full_string = Z_STRVAL_P(val);
                         size_t truncated_length = strnlen(full_string, truncate_to);
-                        
                         add_assoc_stringl_ex(tags, cstr_key, ZSTR_LEN(str_key), full_string, truncated_length);
                     }
                 } else {
