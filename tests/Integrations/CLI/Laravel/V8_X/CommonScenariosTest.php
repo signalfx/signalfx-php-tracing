@@ -30,6 +30,7 @@ class CommonScenariosTest extends CLITestCase
                 'cli',
                 'artisan'
             )->withExactTags([
+                'component' => 'laravel',
             ])->withChildren([
                 SpanAssertion::exists(
                     'laravel.provider.load',
@@ -50,6 +51,7 @@ class CommonScenariosTest extends CLITestCase
                 'cli',
                 'artisan route:list'
             )->withExactTags([
+                'component' => 'laravel',
             ])->withChildren([
                 SpanAssertion::exists(
                     'laravel.provider.load',
@@ -70,6 +72,7 @@ class CommonScenariosTest extends CLITestCase
                 'cli',
                 'artisan foo:error'
             )->withExactTags([
+                'component' => 'laravel',
             ])->withExistingTagsNames([
                 'error.msg',
                 'error.stack'

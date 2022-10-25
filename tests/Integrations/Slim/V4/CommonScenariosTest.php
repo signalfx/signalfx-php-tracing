@@ -101,6 +101,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'slim',
                     ])->withChildren([
                         $this->wrapMiddleware([
                             SpanAssertion::build(
@@ -110,6 +111,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                 'Closure::__invoke'
                             )->withExactTags([
                                 'slim.route.name' => 'simple-route',
+                                'component' => 'slim',
                             ])
                         ]),
                     ]),
@@ -125,6 +127,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'slim',
                     ])->withChildren([
                         $this->wrapMiddleware([
                             SpanAssertion::build(
@@ -140,6 +143,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                                     'simple_view.phtml'
                                 )->withExactTags([
                                     'slim.view' => 'simple_view.phtml',
+                                    'component' => 'slim',
                                 ]),
                             ]),
                         ]),
@@ -156,6 +160,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error?key=value&<redacted>',
                         'http.status_code' => '500',
+                        'component' => 'slim',
                     ])
                     ->setError(null, null)
                     ->withChildren([

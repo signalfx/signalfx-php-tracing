@@ -13,6 +13,8 @@ class Tag
     const MANUAL_DROP = 'manual.drop';
     const PID = 'system.pid';
     const RESOURCE_NAME = 'resource.name';
+    // SIGNALFX: component tag is for SFX zipkin, cannot reliably deduce in serializer, thus set explicitly
+    const COMPONENT = 'component';
     const DB_STATEMENT = 'sql.query';
     const ERROR = 'error';
     const ERROR_MSG = 'error.msg'; // string representing the error message

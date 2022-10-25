@@ -42,6 +42,7 @@ final class FatalErrorTest extends WebFrameworkTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://localhost:' . self::PORT . '/fatal',
                     'http.status_code' => '200',
+                    'component' => 'web.request',
                 ])
                 ->setError("E_ERROR", "Intentional E_ERROR")
                 ->withExistingTagsNames(['error.stack']),

@@ -178,6 +178,7 @@ final class MemcachedTest extends IntegrationTestCase
                     'memcached.query' => 'deleteByKey ' . Obfuscation::toObfuscatedString('key'),
                     'memcached.command' => 'deleteByKey',
                     'memcached.server_key' => 'my_server',
+                    'component' => 'memcached',
                 ])),
             SpanAssertion::exists('Memcached.getByKey'),
         ]);
@@ -723,6 +724,7 @@ final class MemcachedTest extends IntegrationTestCase
         return [
             'out.host' => self::$host,
             'out.port' => self::$port,
+            'component' => 'memcached',
         ];
     }
 }
