@@ -94,7 +94,9 @@ spl_autoload_register(function ($class) use ($tracerFiles, $tracerFilesWithCompo
     // If $class is not a DDTrace class, move quickly to the next autoloader
     $prefix = 'DDTrace\\';
     $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
+    // SIGNALFX: add SignalFx as a valid prefix for loading tracer files
+    $signalFxPrefix = 'SignalFx\\';
+    if (strncmp($prefix, $class, $len) !== 0 && strncmp($signalFxPrefix, $class, strlen($signalFxPrefix)) !== 0) {
         // move to the next registered autoloader
         return;
     }

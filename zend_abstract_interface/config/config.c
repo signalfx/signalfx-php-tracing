@@ -105,6 +105,8 @@ static void signalfx_memoize_alternates_names(zai_config_memoized_entry *memoize
     if (is_main) {
         signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"),
                                         ZAI_STRL_VIEW("SIGNALFX_TRACING_ENABLED"));
+        signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_CLI_ENABLED"),
+                                        ZAI_STRL_VIEW("SIGNALFX_TRACING_CLI_ENABLED"));
     }
 
     signalfx_memoize_alternate_prefix(memoized, name, ZAI_STRL_VIEW("DD_"), ZAI_STRL_VIEW("SIGNALFX_"));
