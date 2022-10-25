@@ -2867,5 +2867,7 @@ workflows:
           name: "Static Analysis 80"
           docker_image: cimg/php:8.0
           scenario: opentracing10
-      - "Post-Install Hook":
-          requires: [ 'Prepare Code' ]
+      # SIGNALFX: Post-install hook tests disabled as it is not compatible with renamed extension, and there is no
+      # reason to fix it as SFX package only works through the installer script, not package
+      #- "Post-Install Hook":
+      #    requires: [ 'Prepare Code' ]
