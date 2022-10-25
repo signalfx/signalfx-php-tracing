@@ -7,6 +7,10 @@
 #include <string.h>
 #include <strings.h>
 
+// Need this to take dladdr of it. On certain musl versions, trying to dladdr signalfx_detect_ddtrace_mode itself
+// segfaults, but this option works fine.
+static int dummy_static_variable = 0;
+
 bool signalfx_detect_ddtrace_mode(void) {
     const char* env_variable = getenv("SIGNALFX_MODE");
 
@@ -16,7 +20,7 @@ bool signalfx_detect_ddtrace_mode(void) {
     }
 
     Dl_info lookup;
-    if (dladdr(&signalfx_detect_ddtrace_mode, &lookup) != 0) {
+    if (dladdr(&dummy_static_variable, &lookup) != 0) {
         if (strstr(lookup.dli_fname, "ddtrace") != NULL) {
             return true;
         }
