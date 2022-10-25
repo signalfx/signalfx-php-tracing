@@ -38,7 +38,7 @@ class RouteNameTest extends WebFrameworkTestCase
                 'http.method' => 'GET',
                 'http.url' => 'http://localhost:' . self::PORT . '/' . ($isApache ? '' : 'app.php'),
                 'http.status_code' => '200',
-                'component' => 'symfony',
+                'component' => 'web.request',
             ])->withChildren([
                 SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
                     SpanAssertion::exists('symfony.httpkernel.kernel.boot'),
