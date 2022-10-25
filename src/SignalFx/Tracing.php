@@ -4,6 +4,7 @@ namespace SignalFx;
 
 use DDTrace\Integrations\IntegrationsLoader;
 use SignalFx\GlobalTracer;
+
 /**
  * Tracing helpers
  */
