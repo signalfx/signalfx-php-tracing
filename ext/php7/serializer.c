@@ -1027,8 +1027,9 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARR_P(dd_tags), str_key, val) {
             if (str_key != NULL) {
                 const char* cstr_key = ZSTR_VAL(str_key);
+                size_t truncate_to = SIZE_MAX;
 
-                // Rename error tags
+                // Rename error and database tags
                 if (strcmp(cstr_key, "error.type") == 0) {
                     cstr_key = "sfx.error.kind";
                     error_kind_present = true;
@@ -1036,6 +1037,13 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                     cstr_key = "sfx.error.message";
                 } else if (strcmp(cstr_key, "error.stack") == 0) {
                     cstr_key = "sfx.error.stack";
+                } else if (strcmp(cstr_key, "db.engine") == 0) {
+                    cstr_key = "db.type";
+                } else if (strcmp(cstr_key, "db.name") == 0) {
+                    cstr_key = "db.instance";
+                } else if (strcmp(cstr_key, "sql.query") == 0) {
+                    cstr_key = "db.statement";
+                    truncate_to = 65536;
                 }
 
                 // Drop DD internal tags
@@ -1043,7 +1051,17 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                     continue;
                 }
 
-                add_assoc_zval(tags, cstr_key, val);
+                if (truncate_to != SIZE_MAX) {
+                    // Drop if we need to truncate but is not a string
+                    if (Z_TYPE_P(val) == IS_STRING) {
+                        const char* full_string = Z_STRVAL_P(val);
+                        size_t truncated_length = strnlen(full_string, truncate_to);
+                        
+                        add_assoc_stringl_ex(tags, cstr_key, ZSTR_LEN(str_key), full_string, truncated_length);
+                    }
+                } else {
+                    add_assoc_zval(tags, cstr_key, val);
+                }
             }
         }
         ZEND_HASH_FOREACH_END();
