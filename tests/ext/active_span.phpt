@@ -34,9 +34,11 @@ object(DDTrace\SpanData)#%d (6) {
   ["type"]=>
   string(3) "cli"
   ["meta"]=>
-  array(1) {
+  array(2) {
     ["system.pid"]=>
     int(%d)
+    ["component"]=>
+    string(11) "web.request"
   }
   ["metrics"]=>
   array(0) {

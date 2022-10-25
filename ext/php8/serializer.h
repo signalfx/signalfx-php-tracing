@@ -12,6 +12,8 @@ void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array);
 void ddtrace_save_active_error_to_metadata(void);
 void ddtrace_set_global_span_properties(ddtrace_span_t *span);
 void ddtrace_set_root_span_properties(ddtrace_span_t *span);
+// SIGNALFX: set autoroot properties
+void signalfx_set_autoroot_properties(ddtrace_span_t *span);
 
 void ddtrace_initialize_span_sampling_limiter(void);
 void ddtrace_shutdown_span_sampling_limiter(void);
