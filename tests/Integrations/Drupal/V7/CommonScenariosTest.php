@@ -69,8 +69,8 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     SpanAssertion::exists('PDOStatement.execute'),
                     SpanAssertion::exists('PDOStatement.execute'),
                     SpanAssertion::exists('_drupal_bootstrap_full')->withChildren(array_merge(
-                            array_fill(0, 5, SpanAssertion::exists('PDO.prepare')),
-                            array_fill(0, 5, SpanAssertion::exists('PDOStatement.execute'))
+                        array_fill(0, 5, SpanAssertion::exists('PDO.prepare')),
+                        array_fill(0, 5, SpanAssertion::exists('PDOStatement.execute'))
                     )),
                     SpanAssertion::exists('_drupal_bootstrap_page_cache')->withChildren([
                         SpanAssertion::exists('PDO.prepare'),
