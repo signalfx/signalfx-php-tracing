@@ -54,6 +54,7 @@ class LumenIntegration extends Integration
                 $request = $args[0];
                 $rootSpan->name = 'lumen.request';
                 $rootSpan->service = $appName;
+                $rootSpan->meta[Tag::COMPONENT] = 'lumen';
                 $integration->addTraceAnalyticsIfEnabled($rootSpan);
 
                 if (!array_key_exists(Tag::HTTP_URL, $rootSpan->meta)) {
@@ -74,6 +75,7 @@ class LumenIntegration extends Integration
                 $hook => function (SpanData $span, $args) use ($rootSpan, $appName) {
                     $span->service = $appName;
                     $span->type = 'web';
+                    $span->meta[Tag::COMPONENT] = 'lumen';
                     if (count($args) < 1 || !\is_array($args[0])) {
                         return;
                     }
@@ -103,6 +105,7 @@ class LumenIntegration extends Integration
         $exceptionRender = function (SpanData $span, $args) use ($rootSpan, $appName, $integration) {
             $span->service = $appName;
             $span->type = 'web';
+            $span->meta[Tag::COMPONENT] = 'lumen';
             if (count($args) < 1 || !\is_a($args[0], 'Throwable')) {
                 return;
             }

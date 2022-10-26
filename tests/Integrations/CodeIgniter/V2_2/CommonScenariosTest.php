@@ -52,6 +52,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         Tag::HTTP_URL => 'http://localhost:9999/simple?key=value&<redacted>',
                         Tag::HTTP_STATUS_CODE => '200',
                         'app.endpoint' => 'Simple::index',
+                        'component' => 'codeigniter',
                     ])->withChildren([
                         SpanAssertion::build(
                             'Simple.index',
@@ -72,6 +73,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         Tag::HTTP_URL => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         Tag::HTTP_STATUS_CODE => '200',
                         'app.endpoint' => 'Simple_View::index',
+                        'component' => 'codeigniter',
                     ])->withChildren([
                         SpanAssertion::build(
                             'Simple_View.index',
@@ -100,6 +102,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         // CodeIgniter's error handler does not adjust the status code
                         Tag::HTTP_STATUS_CODE => '200',
                         'app.endpoint' => 'Error_::index',
+                        'component' => 'codeigniter',
                     ])
                     ->setError("Exception", "Uncaught Exception: datadog in %s:%d")
                     ->withExistingTagsNames(['error.stack'])

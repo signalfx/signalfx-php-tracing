@@ -77,6 +77,7 @@ class ZendFrameworkIntegration extends Integration
                     $rootSpan->meta['zf1.action'] = $action;
                     $rootSpan->meta['zf1.route_name'] = $route;
                     $rootSpan->resource = $controller . '@' . $action . ' ' . $route;
+                    $rootSpan->meta[Tag::COMPONENT] = 'zendframework';
                     $rootSpan->meta[Tag::HTTP_METHOD] = $request->getMethod();
 
                     if (!array_key_exists(Tag::HTTP_URL, $rootSpan->meta)) {

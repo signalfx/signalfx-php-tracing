@@ -52,6 +52,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -84,6 +85,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
@@ -103,7 +105,9 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         'test_symfony_40',
                                         'web',
                                         'Twig\Environment twig_template.html.twig'
-                                    )->withExactTags([]),
+                                    )->withExactTags([
+                                        'component' => 'symfony',
+                                    ]),
                                 ]),
                                 SpanAssertion::exists('symfony.kernel.response'),
                                 SpanAssertion::exists('symfony.kernel.finish_request'),
@@ -123,6 +127,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error?key=value&<redacted>',
                         'http.status_code' => '500',
+                        'component' => 'symfony',
                     ])
                     ->setError('Exception', 'An exception occurred')
                     ->withExistingTagsNames(['error.stack'])
@@ -164,6 +169,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/does_not_exist?key=value&<redacted>',
                         'http.status_code' => '404',
+                        'component' => 'symfony',
                     ])->withChildren([
                         SpanAssertion::exists('symfony.kernel.terminate'),
                         SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([

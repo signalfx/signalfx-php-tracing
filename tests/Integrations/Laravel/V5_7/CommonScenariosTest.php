@@ -51,9 +51,11 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'laravel',
                     ])->withChildren([
                         SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple')
                             ->withExactTags([
+                                'component' => 'laravel',
                             ]),
                         SpanAssertion::exists(
                             'laravel.provider.load',
@@ -73,9 +75,11 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'laravel',
                     ])->withChildren([
                         SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple_view')
                             ->withExactTags([
+                                'component' => 'laravel',
                             ]),
                         SpanAssertion::exists(
                             'laravel.provider.load',
@@ -87,6 +91,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             'web',
                             'simple_view'
                         )->withExactTags([
+                            'component' => 'laravel',
                         ])->withChildren([
                             SpanAssertion::build(
                                 'laravel.view',
@@ -94,6 +99,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 'web',
                                 '*/resources/views/simple_view.blade.php'
                             )->withExactTags([
+                                'component' => 'laravel',
                             ]),
                         ]),
                     ]),
@@ -110,6 +116,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error?key=value&<redacted>',
                         'http.status_code' => '500',
+                        'component' => 'laravel',
                     ])->setError('Exception', 'Controller error', true)->withChildren([
                         SpanAssertion::exists('laravel.action'),
                         SpanAssertion::exists(

@@ -372,6 +372,10 @@ final class SpanChecker
             if (!isset($expectedTags['_dd.p.dm'])) {
                 unset($filtered['_dd.p.dm']);
             }
+            // SIGNALFX: Ignore component unless explicitly tested, to avoid failures when new tests are merged in
+            if (!isset($expectedTags['component'])) {
+                unset($filtered['component']);
+            }
             // http.client_ip is present depending on target SAPI and not helpful here to test
             if (!isset($expectedTags['http.client_ip'])) {
                 unset($filtered['http.client_ip']);

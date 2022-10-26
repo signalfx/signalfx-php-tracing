@@ -66,6 +66,7 @@ class NetteIntegration extends Integration
             function (SpanData $span) use ($service) {
                 $span->name = 'nette.configurator.createRobotLoader';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
             }
         );
@@ -76,6 +77,7 @@ class NetteIntegration extends Integration
             function (SpanData $span) use ($rootSpan, $service) {
                 $span->name = 'nette.application.run';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
                 $rootSpan->meta[Tag::HTTP_STATUS_CODE] = http_response_code();
             }
@@ -88,6 +90,7 @@ class NetteIntegration extends Integration
 
                 $span->name = 'nette.presenter.run';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
 
                 if (count($args) < 1 || !\is_a($args[0], '\Nette\Application\Request')) {
@@ -111,6 +114,7 @@ class NetteIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = 'nette.latte.createTemplate';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
 
                 if (count($args) >= 1) {
@@ -125,6 +129,7 @@ class NetteIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = 'nette.latte.render';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
 
                 if (count($args) >= 1) {
@@ -139,6 +144,7 @@ class NetteIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = 'nette.latte.render';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'nette';
                 $span->service = $service;
 
                 if (count($args) >= 1) {

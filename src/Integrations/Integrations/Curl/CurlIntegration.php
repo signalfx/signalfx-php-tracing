@@ -49,6 +49,7 @@ final class CurlIntegration extends Integration
             'posthook' => function (SpanData $span, $args, $retval) use ($integration) {
                 $span->name = $span->resource = 'curl_exec';
                 $span->type = Type::HTTP_CLIENT;
+                $span->meta[Tag::COMPONENT] = 'curl';
                 $span->service = 'curl';
                 $integration->addTraceAnalyticsIfEnabled($span);
 

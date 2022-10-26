@@ -29,7 +29,9 @@ class CommonScenariosTest extends CLITestCase
                 'cake_console_test_app',
                 'cli',
                 'cake_console'
-            )
+            )->withExactTags([
+                'component' => 'cakephp',
+            ])
         ]);
     }
 
@@ -43,7 +45,9 @@ class CommonScenariosTest extends CLITestCase
                 'cake_console_test_app',
                 'cli',
                 'cake_console command_list'
-            )
+            )->withExactTags([
+                'component' => 'cakephp',
+            ])
         ]);
     }
 

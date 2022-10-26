@@ -50,6 +50,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             'http.status_code' => '200',
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'component' => 'laravel',
                         ])
                         ->withChildren([
                             SpanAssertion::exists('laravel.application.handle')
@@ -58,6 +59,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         ->withExactTags([
                                             'some.key1' => 'value',
                                             'some.key2' => 'value2',
+                                            'component' => 'laravel',
                                         ]),
                                     SpanAssertion::exists('laravel.event.handle'),
                                     SpanAssertion::exists('laravel.event.handle'),
@@ -98,6 +100,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                         ->withExactTags([
                                             'some.key1' => 'value',
                                             'some.key2' => 'value2',
+                                            'component' => 'laravel',
                                         ])
                                         ->withChildren([
                                             SpanAssertion::exists('laravel.event.handle'),
@@ -130,6 +133,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             'http.status_code' => '500',
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
+                            'component' => 'laravel',
                         ])->setError()->withChildren([
                             SpanAssertion::exists('laravel.application.handle')
                                 ->withChildren([

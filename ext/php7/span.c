@@ -81,6 +81,10 @@ void ddtrace_open_span(ddtrace_span_fci *span_fci) {
     if (!span_fci->next) {  // root span
         span->chunk_root = span_fci;
         ddtrace_set_root_span_properties(&span_fci->span);
+        // SIGNALFX: sfx custom root properties are only set for autoroot
+        if (span_fci->type == DDTRACE_AUTOROOT_SPAN) {
+            signalfx_set_autoroot_properties(&span_fci->span);
+        }
     } else {
         ddtrace_span_fci *next_span = span_fci->next;
         span->chunk_root = next_span->span.chunk_root;

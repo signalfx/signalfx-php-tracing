@@ -113,7 +113,8 @@ final class NetteTest extends WebFrameworkTestCase
                                 Type::WEB_SERVLET,
                                 'nette.latte.render'
                             )->withExactTags([
-                                'nette.latte.templateName' => '%s'
+                                'nette.latte.templateName' => '%s',
+                                'component' => 'nette',
                             ])->withChildren([
                                 SpanAssertion::exists('nette.latte.createTemplate'), // layout template
                                 SpanAssertion::exists('nette.latte.createTemplate'), // simpleView template
