@@ -34,7 +34,7 @@ class RandomExecutionPath
 
         // Do not use function_exists('DDTrace\...') because if DD_TRACE_ENABLED is not false and the function does not
         // exist then we MUST generate an error
-        if (getenv('DD_TRACE_ENABLED') !== 'false' && extension_loaded('ddtrace')) {
+        if (getenv('DD_TRACE_ENABLED') !== 'false' && extension_loaded('signalfx_tracing')) {
             // Tracing manual functions
             $callback = function (\DDTrace\SpanData $span) {
                 $span->service = \ddtrace_config_app_name();

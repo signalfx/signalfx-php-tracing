@@ -135,7 +135,7 @@ class IntegrationsLoader
      */
     public function loadAll()
     {
-        if (!extension_loaded('ddtrace')) {
+        if (!extension_loaded('signalfx_tracing')) {
             trigger_error(
                 'Missing ddtrace extension. To disable tracing set env variable DD_TRACE_ENABLED=false',
                 E_USER_WARNING

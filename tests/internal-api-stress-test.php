@@ -69,7 +69,7 @@ function call_function(ReflectionFunction $function)
 
 function runOneIteration()
 {
-    $ext = new ReflectionExtension("ddtrace");
+    $ext = new ReflectionExtension("signalfx_tracing");
     $functions = array_filter($ext->getFunctions(), function ($f) {
         return $f->name != "dd_trace_internal_fn"
             && !strpos($f->name, "Testing")
