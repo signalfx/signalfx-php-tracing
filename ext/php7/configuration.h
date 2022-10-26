@@ -73,6 +73,7 @@ extern bool runtime_config_first_init;
     CONFIG(INT, SIGNALFX_ERROR_STACK_MAX_LENGTH, "8192")                                                       \
     CONFIG(BOOL, SIGNALFX_TRACE_JSON, "false")                                                                 \
     CONFIG(BOOL, SIGNALFX_TRACE_FILE_GET_CONTENTS, "false")                                                    \
+    CONFIG(BOOL, SIGNALFX_DRUPAL_RENAME_ROOT_SPAN, "true")                                                     \
     CONFIG(STRING, DD_TRACE_AGENT_URL, "", .ini_change = zai_config_system_ini_change)                         \
     CONFIG(STRING, DD_AGENT_HOST, "", .ini_change = zai_config_system_ini_change)                              \
     CONFIG(STRING, DD_DOGSTATSD_URL, "")                                                                       \

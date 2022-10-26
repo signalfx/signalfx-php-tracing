@@ -661,6 +661,9 @@ TEST_WEB_73 := \
 	test_web_wordpress_55 \
 	test_web_yii_2 \
 	test_web_zend_1 \
+	test_web_drupal_7 \
+	test_web_drupal_89 \
+	test_web_drupal_9_2 \
 	test_web_custom
 
 TEST_INTEGRATIONS_74 := \
@@ -706,6 +709,9 @@ TEST_WEB_74 := \
 	test_web_wordpress_59 \
 	test_web_yii_2 \
 	test_web_zend_1 \
+	test_web_drupal_7 \
+	test_web_drupal_89 \
+	test_web_drupal_9_2 \
 	test_web_custom
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
@@ -973,6 +979,18 @@ test_web_wordpress_55: global_test_run_dependencies
 	$(call run_tests,tests/Integrations/WordPress/V5_5)
 test_web_wordpress_59: global_test_run_dependencies
 	$(call run_tests,tests/Integrations/WordPress/V5_9)
+# SIGNALFX: added drupal test targets
+test_web_drupal_7:
+	tar xf tests/Frameworks/Drupal/drupal-7.tar.gz -C tests/Frameworks/Drupal
+	$(call run_tests,tests/Integrations/Drupal/V7)
+test_web_drupal_89:
+	tar xf tests/Frameworks/Drupal/drupal-8.9.tar.gz -C tests/Frameworks/Drupal
+	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/Version_8_9 update
+	$(call run_tests,tests/Integrations/Drupal/V8_9)
+test_web_drupal_9_2:
+	tar xf tests/Frameworks/Drupal/drupal-9.2.10.tar.gz -C tests/Frameworks/Drupal
+	$(COMPOSER) --working-dir=tests/Frameworks/Drupal/drupal-9.2.10 update
+	$(call run_tests,tests/Integrations/Drupal/V9_2)
 test_web_yii_2: global_test_run_dependencies
 	$(COMPOSER) --working-dir=tests/Frameworks/Yii/Version_2_0 update
 	$(call run_tests,tests/Integrations/Yii/V2_0)
