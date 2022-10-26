@@ -62,6 +62,7 @@ class SymfonyIntegration extends Integration
                         $this->appName = \ddtrace_config_app_name('symfony');
                         $rootSpan->name = 'symfony.request';
                         $rootSpan->service = $this->appName;
+                        $rootSpan->meta[Tag::COMPONENT] = 'symfony';
                     }
 
                     $span->name = 'symfony.httpkernel.kernel.boot';
