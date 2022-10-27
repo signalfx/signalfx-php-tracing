@@ -517,7 +517,7 @@ static void dd_add_header_to_meta(zend_array *meta, const char *type, zend_strin
     }
 
     if (add_sfx_tag) {
-        zend_string *headertag = zend_strpprintf(0, "http.request.header.%s", type, ZSTR_VAL(lowerheader));
+        zend_string *headertag = zend_strpprintf(0, "http.request.header.%s", ZSTR_VAL(lowerheader));
         zval headerzv;
         ZVAL_STR_COPY(&headerzv, headerval);
         zend_hash_update(meta, headertag, &headerzv);
