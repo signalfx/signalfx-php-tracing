@@ -53,7 +53,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://localhost:9999/user/login',
                     'http.status_code' => '200',
-                    // FIXME: 'component' => 'symfony',
+                    'component' => 'symfony',
                 ])->withChildren([
                     SpanAssertion::exists('drupal.event.kernel.terminate'),
                     SpanAssertion::exists('drupal.kernel.handle')->withChildren([

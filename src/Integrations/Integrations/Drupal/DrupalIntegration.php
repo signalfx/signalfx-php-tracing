@@ -82,7 +82,7 @@ class DrupalIntegration extends Integration
                 $rootSpan->meta['drupal.user.roles'] = implode(',', array_values($user->roles));
             }
             $span->name = 'menu_execute_active_handler';
-            // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta[Tag::COMPONENT] = 'drupal';
         });
 
         $methods = array(
@@ -94,7 +94,7 @@ class DrupalIntegration extends Integration
         foreach ($methods as $method) {
             \DDTrace\trace_function($method, function (SpanData $span) use ($method) {
                 $span->name = $method;
-                // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+                $span->meta[Tag::COMPONENT] = 'drupal';
             });
         }
 
@@ -106,7 +106,7 @@ class DrupalIntegration extends Integration
         \DDTrace\trace_function('drupal_http_request', [
             'posthook' => function (SpanData $span, $args, $retval) {
                 $span->name = 'drupal_http_request';
-                // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+                $span->meta[Tag::COMPONENT] = 'drupal';
 
                 $url = $args[0];
                 $options = (count($args) > 1) ? $args[1] : [];
@@ -134,14 +134,14 @@ class DrupalIntegration extends Integration
         \DDTrace\trace_function('module_invoke', function (SpanData $span, $args) {
             $span->name = 'module_invoke';
             $span->resource = $args[0] . '_' . $args[1];
-            // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta[Tag::COMPONENT] = 'drupal';
             $span->meta['drupal.module'] = $args[0];
         });
 
         \DDTrace\trace_function('module_invoke_all', function (SpanData $span, $args) {
             $span->name = 'module_invoke_all';
             $span->resource = $args[0];
-            // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta[Tag::COMPONENT] = 'drupal';
             $modules = module_implements($args[0]);
 
             if ($modules) {
@@ -164,7 +164,7 @@ class DrupalIntegration extends Integration
         // Can't directly trace functions called by set_error_handler & set_exception_handler
         \DDTrace\trace_function('_drupal_error_handler_real', function (SpanData $span, $args) {
             $span->name = '_drupal_error_handler';
-            // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+            $span->meta[Tag::COMPONENT] = 'drupal';
             $span->meta[Tag::ERROR_MSG] = $args[1];
             $span->meta[Tag::ERROR_TYPE] = 'error handler';
             $span->meta[Tag::ERROR_STACK] = $args[2] . ':' . $args[3];
@@ -174,7 +174,7 @@ class DrupalIntegration extends Integration
             '_drupal_decode_exception',
             function (SpanData $span, $args) use ($integration, $rootSpan) {
                 $span->name = '_drupal_exception_handler';
-                // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+                $span->meta[Tag::COMPONENT] = 'drupal';
                 $integration->setError($span, $args[0]);
                 $rootSpan->setError($args[0]);
             }
@@ -216,7 +216,7 @@ class DrupalIntegration extends Integration
             'handleException',
             function (SpanData $span, $args, $retval) use ($rootSpan) {
                 $span->name = 'drupal.kernel.handleException';
-                // FIXME: $span->meta[Tag::COMPONENT] = 'drupal';
+                $span->meta[Tag::COMPONENT] = 'drupal';
                 $rootSpan->setError($args[0]);
             }
         );
