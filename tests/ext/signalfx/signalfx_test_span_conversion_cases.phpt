@@ -1,5 +1,5 @@
 --TEST--
-Test DD span to SignalFX conversion
+Test corner cases for individual fields in DD span to SignalFX conversion
 --ENV--
 SIGNALFX_MODE=1
 SIGNALFX_SERVICE=sfx_service

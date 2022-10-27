@@ -495,14 +495,29 @@ static zend_result dd_add_meta_array(void *context, ddtrace_string key, ddtrace_
 
 static void dd_add_header_to_meta(zend_array *meta, const char *type, zend_string *lowerheader,
                                   zend_string *headerval) {
-    if (zend_hash_exists(get_DD_TRACE_HEADER_TAGS(), lowerheader)) {
+    // SIGNALFX: request headers also added based on SFX configuration option
+    bool add_dd_tag = zend_hash_exists(get_DD_TRACE_HEADER_TAGS(), lowerheader);
+    bool add_sfx_tag = strcmp(type, "request") == 0 && 
+                       zend_hash_exists(get_SIGNALFX_CAPTURE_REQUEST_HEADERS(), lowerheader);
+
+    if (add_dd_tag || add_sfx_tag) {
         for (char *ptr = ZSTR_VAL(lowerheader); *ptr; ++ptr) {
             if ((*ptr < 'a' || *ptr > 'z') && *ptr != '-' && (*ptr < '0' || *ptr > '9')) {
                 *ptr = '_';
             }
         }
+    }
 
+    if (add_dd_tag) {
         zend_string *headertag = zend_strpprintf(0, "http.%s.headers.%s", type, ZSTR_VAL(lowerheader));
+        zval headerzv;
+        ZVAL_STR_COPY(&headerzv, headerval);
+        zend_hash_update(meta, headertag, &headerzv);
+        zend_string_release(headertag);
+    }
+
+    if (add_sfx_tag) {
+        zend_string *headertag = zend_strpprintf(0, "http.request.header.%s", type, ZSTR_VAL(lowerheader));
         zval headerzv;
         ZVAL_STR_COPY(&headerzv, headerval);
         zend_hash_update(meta, headertag, &headerzv);
@@ -642,10 +657,40 @@ static void signalfx_set_meta_component(zend_array *meta, const char *component,
     zend_hash_str_add_new(meta, ZEND_STRL("component"), &component_zv);
 }
 
+static void signalfx_set_meta_env_vars(zend_array *meta) {
+    zend_array *var_names = get_SIGNALFX_CAPTURE_ENV_VARS();
+    zend_string *var_name_zstr;
+
+    ZEND_HASH_FOREACH_STR_KEY(var_names, var_name_zstr) {
+        if (var_name_zstr == NULL) {
+            continue;
+        }
+
+        const char* var_name = ZSTR_VAL(var_name_zstr);
+        const char* value = getenv(var_name);
+
+        if (value != NULL) {
+            char tag_name[256];
+            snprintf(tag_name, sizeof(tag_name), "php.env.%s", var_name);
+
+            for (char* c = tag_name; *c; ++c) {
+                *c = tolower(*c);
+            }
+
+            zval zvalue;
+            zend_string* value_str = zend_string_init(value, strlen(value), 0);
+            ZVAL_STR_COPY(&zvalue, value_str);
+            zend_hash_str_add_new(meta, tag_name, strlen(tag_name), &zvalue);
+            zend_string_release(value_str);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
 // SIGNALFX: set autoroot properties
 void signalfx_set_autoroot_properties(ddtrace_span_t *span) {
     zend_array *meta = ddtrace_spandata_property_meta(span);
     signalfx_set_meta_component(meta, ZEND_STRL("web.request"));
+    signalfx_set_meta_env_vars(meta);
 }
 
 void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
