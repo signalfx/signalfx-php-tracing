@@ -665,7 +665,7 @@ TEST_WEB_73 := \
 # SIGNALFX: temporarily disable drupal tests until gd extension for CI images is figured out
 #	test_web_drupal_7 \
 #	test_web_drupal_89 \
-#	test_web_drupal_9_2 
+#	test_web_drupal_9_2
 
 TEST_INTEGRATIONS_74 := \
 	test_integrations_deferred_loading \
@@ -714,7 +714,7 @@ TEST_WEB_74 := \
 # SIGNALFX: temporarily disable drupal tests until gd extension for CI images is figured out
 #	test_web_drupal_7 \
 #	test_web_drupal_89 \
-#	test_web_drupal_9_2 
+#	test_web_drupal_9_2
 
 # NOTE: test_integrations_phpredis5 is not included in the PHP 8.0 integrations tests because of this bug that only
 # shows up in debug builds of PHP (https://github.com/phpredis/phpredis/issues/1869).
