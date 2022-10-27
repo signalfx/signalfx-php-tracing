@@ -1113,7 +1113,7 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *spa
                 if (truncate_to != 0 && truncate_to < Z_STRLEN_P(val)) {
                     const char* full_string = Z_STRVAL_P(val);
                     size_t truncated_length = strnlen(full_string, truncate_to);
-                    add_assoc_stringl_ex(tags, cstr_key, strlen(cstr_key), full_string, truncated_length);
+                    add_assoc_stringl_ex(tags, cstr_key, strlen(cstr_key), (char*) full_string, truncated_length);
                 } else {
                     _add_assoc_zval_copy(tags, cstr_key, val);
                 }
