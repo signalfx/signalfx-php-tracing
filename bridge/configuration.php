@@ -166,6 +166,9 @@ function ddtrace_config_read_env_or_ini($name)
     $ini_name = strtolower(strtr($name, [
         "DD_TRACE_" => "datadog.trace.",
         "DD_" => "datadog.",
+        // SIGNALFX: need to convert ini name for SIGNALFX_ prefixed options as well
+        "SIGNALFX_TRACE_" => "signalfx.trace.",
+        "SIGNALFX_" => "signalfx.",
     ]));
     $ini = ini_get($ini_name);
     if ($ini !== false) {
@@ -341,4 +344,14 @@ function ddtrace_config_http_headers()
         },
         \_ddtrace_config_indexed_array(\ddtrace_config_read_env_or_ini('DD_TRACE_HEADER_TAGS'), [])
     );
+}
+
+function sfx_trace_config_trace_json()
+{
+    return \_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('SIGNALFX_TRACE_JSON'), false);
+}
+
+function sfx_trace_config_trace_file_get_contents()
+{
+    return \_ddtrace_config_bool(\ddtrace_config_read_env_or_ini('SIGNALFX_TRACE_FILE_GET_CONTENTS'), false);
 }
