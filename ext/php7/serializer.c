@@ -997,11 +997,11 @@ static bool signalfx_is_known_server_span_type(const char* dd_span_type) {
 
 static void signalfx_add_assoc_hex64(zval *span, const char* name, uint64_t value) {
     char hex_str[MAX_ID_BUFSIZ];
-    sprintf(hex_str, "%" PRIx64, value);
+    sprintf(hex_str, "%016" PRIx64, value);
     add_assoc_string(span, name, hex_str);
 }
 
-static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span) {
+void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span) {
     zval sfx_span_zv;
     zval *sfx_span = &sfx_span_zv;
     array_init(sfx_span);
@@ -1023,7 +1023,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
     const char* name_cstr = NULL;
 
     if (dd_name != NULL && Z_TYPE_P(dd_name) == IS_STRING) {
-        add_assoc_zval(sfx_span, "name", dd_name);
+        _add_assoc_zval_copy(sfx_span, "name", dd_name);
         name_cstr = Z_STRVAL_P(dd_name);
     }
 
@@ -1073,7 +1073,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                         add_assoc_stringl_ex(tags, cstr_key, ZSTR_LEN(str_key), (char*) full_string, truncated_length);
                     }
                 } else {
-                    add_assoc_zval(tags, cstr_key, val);
+                    _add_assoc_zval_copy(tags, cstr_key, val);
                 }
             }
         }
@@ -1114,15 +1114,15 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         if (signalfx_is_known_client_span_type(Z_STRVAL_P(dd_type))) {
             add_assoc_string(sfx_span, SFX_ATTRIBUTE_KIND, "CLIENT");
 
-            zval *prop_service = ddtrace_spandata_property_service(span);
+            zval *dd_service = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("service"));
 
             // Add span['remoteEndpoint']['serviceName']
-            if (prop_service != NULL) {
+            if (dd_service != NULL) {
                 zval remote_endpoint_zv;
                 zval *remote_endpoint = &remote_endpoint_zv;
                 array_init(remote_endpoint);
 
-                add_assoc_zval(remote_endpoint, "serviceName", prop_service);
+                _add_assoc_zval_copy(remote_endpoint, "serviceName", dd_service);
                 add_assoc_zval(sfx_span, "remoteEndpoint", remote_endpoint);
             }
         } else if (signalfx_is_known_server_span_type(Z_STRVAL_P(dd_type))) {
