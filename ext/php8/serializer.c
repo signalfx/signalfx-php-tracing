@@ -1083,9 +1083,9 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *spa
         zval *val;
 
         ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARR_P(dd_tags), str_key, val) {
-            if (str_key != NULL) {
+            if (str_key != NULL && Z_TYPE_P(val) == IS_STRING) {
                 const char* cstr_key = ZSTR_VAL(str_key);
-                size_t truncate_to = SIZE_MAX;
+                size_t truncate_to = get_SIGNALFX_RECORDED_VALUE_MAX_LENGTH();
 
                 // Rename error and database tags
                 if (strcmp(cstr_key, "error.type") == 0) {
@@ -1095,13 +1095,13 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *spa
                     cstr_key = "sfx.error.message";
                 } else if (strcmp(cstr_key, "error.stack") == 0) {
                     cstr_key = "sfx.error.stack";
+                    truncate_to = get_SIGNALFX_ERROR_STACK_MAX_LENGTH();
                 } else if (strcmp(cstr_key, "db.engine") == 0) {
                     cstr_key = "db.type";
                 } else if (strcmp(cstr_key, "db.name") == 0) {
                     cstr_key = "db.instance";
                 } else if (strcmp(cstr_key, "sql.query") == 0) {
                     cstr_key = "db.statement";
-                    truncate_to = 65536;
                 }
 
                 // Drop DD internal tags
@@ -1109,13 +1109,10 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *spa
                     continue;
                 }
 
-                if (truncate_to != SIZE_MAX) {
-                    // Drop if we need to truncate but is not a string
-                    if (Z_TYPE_P(val) == IS_STRING) {
-                        const char* full_string = Z_STRVAL_P(val);
-                        size_t truncated_length = strnlen(full_string, truncate_to);
-                        add_assoc_stringl_ex(tags, cstr_key, ZSTR_LEN(str_key), full_string, truncated_length);
-                    }
+                if (truncate_to != 0 && truncate_to < Z_STRLEN_P(val)) {
+                    const char* full_string = Z_STRVAL_P(val);
+                    size_t truncated_length = strnlen(full_string, truncate_to);
+                    add_assoc_stringl_ex(tags, cstr_key, strlen(cstr_key), full_string, truncated_length);
                 } else {
                     _add_assoc_zval_copy(tags, cstr_key, val);
                 }
