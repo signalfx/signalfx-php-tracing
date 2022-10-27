@@ -498,7 +498,7 @@ static void dd_add_header_to_meta(zend_array *meta, const char *type, zend_strin
                                   zend_string *headerval) {
     // SIGNALFX: request headers also added based on SFX configuration option
     bool add_dd_tag = zend_hash_exists(get_DD_TRACE_HEADER_TAGS(), lowerheader);
-    bool add_sfx_tag = strcmp(type, "request") == 0 && 
+    bool add_sfx_tag = strcmp(type, "request") == 0 &&
                        zend_hash_exists(get_SIGNALFX_CAPTURE_REQUEST_HEADERS(), lowerheader);
 
     if (add_dd_tag || add_sfx_tag) {
