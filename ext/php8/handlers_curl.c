@@ -98,11 +98,13 @@ static void dd_inject_distributed_tracing_headers(zend_object *ch) {
             }
         }
     }
-    zend_string *propagated_tags = ddtrace_format_propagated_tags();
     // SIGNALFX: do not send DD tags header if SFX mode is enabled
-    if (propagated_tags && !get_global_SIGNALFX_MODE()) {
-        add_next_index_str(&headers, zend_strpprintf(0, "x-datadog-tags: %s", ZSTR_VAL(propagated_tags)));
-        zend_string_release(propagated_tags);
+    if (!get_global_SIGNALFX_MODE()) {
+        zend_string *propagated_tags = ddtrace_format_propagated_tags();
+        if (propagated_tags) {
+            add_next_index_str(&headers, zend_strpprintf(0, "x-datadog-tags: %s", ZSTR_VAL(propagated_tags)));
+            zend_string_release(propagated_tags);
+        }
     }
     uint64_t trace_id = ddtrace_peek_trace_id(), span_id = ddtrace_peek_span_id();
     if (trace_id) {

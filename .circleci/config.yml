@@ -2440,7 +2440,8 @@ workflows:
                 - php_installer
                 - native_package
               docker_image:
-                - alpine:3.8
+                # SIGNALFX: 3.8 disabled for now as the method to set SIGNALFX_MODE=0 automatically doesn't work on these
+                #- alpine:3.8
                 - alpine:3.9
                 - alpine:3.10
                 - alpine:3.11
@@ -2457,8 +2458,9 @@ workflows:
                 - php_installer
                 - native_package
               docker_image:
-                - alpine:3.7
-                - alpine:3.8
+                # SIGNALFX: 3.7 and 3.8 disabled, see above comment on alpine 3.8
+                #- alpine:3.7
+                #- alpine:3.8
                 - alpine:3.9
                 - alpine:3.9
                 - alpine:3.10
@@ -2474,7 +2476,8 @@ workflows:
                 - php_installer
                 - native_package
               docker_image:
-                - php:7.0-fpm-alpine
+                # SIGNALFX: 7.0 disabled, see above comment on alpine 3.7/3.8
+                #- php:7.0-fpm-alpine
                 - php:7.1-fpm-alpine
                 - php:7.2-fpm-alpine
                 - php:7.3-fpm-alpine
