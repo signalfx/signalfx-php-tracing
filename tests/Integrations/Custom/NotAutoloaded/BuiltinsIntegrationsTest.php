@@ -33,7 +33,7 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
             'http.method' => 'GET',
             'http.url' => 'http://localhost:' . self::PORT . '/',
             'http.status_code' => 200,
-            'component' => 'web.request',
+            'component' => 'web.request'
         ];
 
         $this->assertFlameGraph(
@@ -46,10 +46,10 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
                         'web',
                         'file_get_contents'
                     )->withExactTags([
-                        'file.name' => '/proc/self/exe',
+                        'file.name' => '/proc/self/exe'
                     ])
-                ),
-            ],
+                )
+            ]
         );
     }
 
@@ -64,7 +64,7 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
             'http.method' => 'GET',
             'http.url' => 'http://localhost:' . self::PORT . '/',
             'http.status_code' => 200,
-            'component' => 'web.request',
+            'component' => 'web.request'
         ];
 
         $this->assertFlameGraph(
@@ -83,8 +83,8 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
                         'web',
                         'json_decode'
                     )
-                ]),
-            ],
+                ])
+            ]
         );
     }
 }
