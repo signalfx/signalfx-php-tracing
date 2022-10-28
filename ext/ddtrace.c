@@ -42,7 +42,6 @@
 #include "excluded_modules.h"
 #include "handlers_internal.h"
 #include "integrations/integrations.h"
-#include "ip_extraction.h"
 #include "logging.h"
 #include "memory_limit.h"
 #include "limiter/limiter.h"
@@ -379,10 +378,6 @@ ZEND_ARG_INFO(0, global)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_ddtrace_void, 0, 0, 0)
-ZEND_END_ARG_INFO()
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_extract_ip_from_headers, 0, 0, 1)
-ZEND_ARG_INFO(0, headers)
 ZEND_END_ARG_INFO()
 
 /* Legacy API */
@@ -759,7 +754,6 @@ static PHP_MINIT_FUNCTION(ddtrace) {
                        get_global_DD_TRACE_AGENT_STACK_BACKLOG());
 
     ddtrace_integrations_minit();
-    dd_ip_extraction_startup();
 
     return SUCCESS;
 }
@@ -2020,19 +2014,6 @@ static PHP_FUNCTION(startup_logs) {
     ZVAL_NEW_STR(return_value, buf.s);
 }
 
-static PHP_FUNCTION(extract_ip_from_headers) {
-    zval *arr;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "a", &arr) == FAILURE) {
-        return;
-    }
-
-    zval meta;
-    array_init(&meta);
-    ddtrace_extract_ip_from_headers(arr, Z_ARR(meta));
-
-    RETURN_ARR(Z_ARR(meta));
-}
-
 // SIGNALFX: functions used to test correct conversion of DD spans to SFX
 static uint64_t sfx_read_u64_from_key(zval *array, const char *key, size_t key_size) {
     zval *value = zend_hash_str_find(Z_ARR_P(array), key, key_size);
@@ -2127,7 +2108,6 @@ static const zend_function_entry ddtrace_functions[] = {
                       arginfo_ddtrace_config_integration_analytics_sample_rate),
     DDTRACE_SUB_NS_FE("System\\", container_id, arginfo_ddtrace_void),
     DDTRACE_SUB_NS_FE("Testing\\", trigger_error, arginfo_ddtrace_testing_trigger_error),
-    DDTRACE_SUB_NS_FE("Testing\\", extract_ip_from_headers, arginfo_extract_ip_from_headers),
     DDTRACE_SUB_NS_FE("Testing\\", sfxtrace_ddspan_to_sfx_array, arginfo_sfxtrace_ddspan_to_sfx_array),
     DDTRACE_FE_END};
 
