@@ -13,6 +13,16 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
         return __DIR__ . '/../../../Frameworks/Custom/Version_Not_Autoloaded/Builtins/index.php';
     }
 
+    protected function ddSetUp()
+    {
+        parent::ddSetUp();
+        if (PHP_VERSION_ID >= 70100 && PHP_VERSION_ID < 70200) {
+            // https://bugs.php.net/bug.php?id=72724
+            // https://bugs.php.net/bug.php?id=72734
+            $this->markTestSkipped('This test triggers leak within PHP 7.1 which cause test to fail');
+        }
+    }
+
     protected static function getEnvs()
     {
         return array_merge(parent::getEnvs(), [
