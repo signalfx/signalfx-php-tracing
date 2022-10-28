@@ -230,12 +230,11 @@ void zai_config_use_signalfx_default(zai_config_id id, zai_string_view default_v
         return;
     }
 
+    zai_config_dtor_pzval(&memoized->decoded_value);
     ZVAL_UNDEF(&memoized->decoded_value);
     if (!zai_config_decode_value(default_value, memoized->type, &memoized->decoded_value, true)) {
         assert(0 && "Error decoding signalfx default value");
     }
-
-    zai_config_replace_runtime_config(id, &memoized->decoded_value);
 }
 
 bool zai_config_system_ini_change(zval *old_value, zval *new_value) {

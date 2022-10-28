@@ -24,7 +24,6 @@ static bool ddtrace_flush_tracer_json(zval* trace) {
                             zend_hash_num_elements(Z_ARR(*trace)), url);
         free(url);
     }
-    ddtrace_send_trace_via_thread(payload, size);
     dd_prepare_for_new_trace();
     free(payload);
 
