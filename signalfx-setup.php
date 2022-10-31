@@ -22,7 +22,7 @@ const OPT_LIST_CONFIG = 'list-config';
 const OPT_UPDATE_CONFIG = 'update-config';
 
 // Release version is set while generating the final release files
-const RELEASE_VERSION = '1.0.0-nightly';
+const RELEASE_VERSION = '@release_version@';
 
 function main()
 {
