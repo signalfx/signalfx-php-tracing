@@ -57,7 +57,7 @@ and tracing library from GitHub and installs the extension.
 The `--php-bin=all` option installs the extension to all PHP configurations
 that can be found on the system. Alternatively, if the `--php-bin` option is
 omitted, you can interactively select to which of the detected PHP
-installations the extension should be installed to. You can also provide a 
+installations the extension should be installed to. You can also provide a
 path to a specific binary as the value of `--php-bin` to install only for
 that specific one.
 
@@ -91,7 +91,7 @@ Configure the tracer and instrumentation with these environment variables:
 | `SIGNALFX_RECORDED_VALUE_MAX_LENGTH` | Maximum length an attribute value can have. Values longer than this are truncated. | `1200` |
 | `SIGNALFX_CAPTURE_ENV_VARS` | Comma separated list of environment variables to attach to the root span. | ` ` |
 | `SIGNALFX_CAPTURE_REQUEST_HEADERS` | Comma separated list of incoming request headers to turn into spans. For example `User-Agent` will be captured as `http.request.headers.user_agent`. | ` ` |
-| `SIGNALFX_ACCESS_TOKEN` | Access token - only needed when [sending data directly](https://docs.splunk.com/Observability/apm/apm-spans-traces/span-formats.html#span-formats-compatible-with-the-ingest-endpoint). Not necessary when using OpenTelemetry Collector or SignalFx Smart Agent. | ` ` 
+| `SIGNALFX_ACCESS_TOKEN` | Access token - only needed when [sending data directly](https://docs.splunk.com/Observability/apm/apm-spans-traces/span-formats.html#span-formats-compatible-with-the-ingest-endpoint). Not necessary when using OpenTelemetry Collector or SignalFx Smart Agent. | ` ` |
 
 Because auto-instrumentation is applied during initialization, all configuration
 environment variables MUST be set by launch time. Anything set via `putenv()`
@@ -178,7 +178,7 @@ $ php artisan migrate:fresh
 $ php myTracedCliScript.php
 ```
 
-## Advanced Usage  
+## Advanced Usage
 
 The Signalfx-Tracing library for PHP wraps the
 [spl_autoload_register](https://www.php.net/manual/en/function.spl-autoload-register.php)
