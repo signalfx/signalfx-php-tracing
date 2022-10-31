@@ -293,6 +293,9 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
             // SIGNALFX: Do not give the warning for the primary DD_ prefixed name
             if (strncmp(old_name->ptr, "DD_", 3) == 0 && strncmp(cfg->names[cfg->name_index - 1].ptr, "SIGNALFX_", 9) == 0) {
                 continue;
+            } else if (strcmp(old_name->ptr, "SIGNALFX_SERVICE_NAME") == 0) {
+                // This variation is preferred for SFX, do not warn
+                continue;
             }
             zend_string *message = zend_strpprintf(0, "'%s=%s' is deprecated, use %s instead.", old_name->ptr,
                                                    ZSTR_VAL(cfg->ini_entries[0]->value), cfg->names[0].ptr);
