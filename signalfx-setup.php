@@ -1201,7 +1201,7 @@ function get_ini_settings($requestInitHookPath)
         ],
         [
             'name' => 'signalfx.recorded_value_max_length',
-            'default' => '1024',
+            'default' => '1200',
             'commented' => true,
             'description' => 'Sets the maximum length of tag values in serialized format',
         ],

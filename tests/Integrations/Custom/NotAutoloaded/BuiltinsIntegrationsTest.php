@@ -53,7 +53,7 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'file_get_contents',
                         'my-service',
-                        'web',
+                        'custom',
                         'file_get_contents'
                     )->withExactTags([
                         'file.name' => '/proc/self/exe'
@@ -84,13 +84,13 @@ final class BuiltinsIntegrationsTest extends WebFrameworkTestCase
                     SpanAssertion::build(
                         'json_encode',
                         'my-service',
-                        'web',
+                        'custom',
                         'json_encode'
                     ),
                     SpanAssertion::build(
                         'json_decode',
                         'my-service',
-                        'web',
+                        'custom',
                         'json_decode'
                     )
                 ])
