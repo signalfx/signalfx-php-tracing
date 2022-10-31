@@ -25,7 +25,7 @@ any fielded request using the `$_SERVER` execution environment.
 | _Eloquent_ | All supported Laravel versions |
 | _Guzzle_ | 5.0+ |
 | Laravel | 4.2, 5.0+ |
-| _Lumen_ | 5.2+ |
+| _Lumen_ | 5.2-5.8 |
 | _Memcached_ | All supported PHP versions |
 | _MongoDB_ | 1.4 |
 | _MySQLi_ | All supported PHP versions |
@@ -35,7 +35,48 @@ any fielded request using the `$_SERVER` execution environment.
 | _Symfony_ | 3.3, 3.4, 4.x, 5.x |
 | _Zend_ | 1.12 |
 
-## Configuration values
+## Installation
+
+1. Download the setup script of the latest release.
+
+```bash
+curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/signalfx-php-tracing/signalfx-setup.php
+```
+
+Optionally, replace `latest` with the specific version you want to use.
+
+2. Install by running the setup script.
+
+```bash
+php signalfx-setup.php --php-bin=all
+```
+
+This downloads the additional files necessary for installing the extension
+and tracing library from GitHub and installs the extension.
+
+The `--php-bin=all` option installs the extension to all PHP configurations
+that can be found on the system. Alternatively, if the `--php-bin` option is
+omitted, you can interactively select to which of the detected PHP
+installations the extension should be installed to. You can also provide a 
+path to a specific binary as the value of `--php-bin` to install only for
+that specific one.
+
+It is also possible to download all the files from the GitHub release in
+advance and perform an offline installation by providing the variable
+`--file-dir` with the path to the directory which contains these files. For
+example if all the files are in the current directory:
+
+```bash
+php signalfx-setup.php --php-bin=all --file-dir=.
+```
+
+## Configuration
+
+Configuration can be provided either by passing environment variables to the
+PHP process, or setting configuration options in the `.ini` file of the
+extension.
+
+### Configuration options
 
 Configure the tracer and instrumentation with these environment variables:
 
@@ -65,30 +106,30 @@ SetEnv SIGNALFX_SERVICE_NAME "my-service"
 SetEnv SIGNALFX_ENDPOINT_URL "http://collector:9411/api/v2/traces"
 ```
 
-## Configure the SignalFx Tracing Library for PHP
+### Setting configuration via INI file
 
-Download the tracing library and install the PHP extension with your system's
-package manager. After you install the PHP extension, your application sends
-trace data to the endpoint URL you specify.
+If no environment variable is provided for a specific configuration option,
+configuration is taken from the INI file of the extension. Configuration
+option names there are derived from the environment variable name, with
+INI name prefix `signalfx.trace.` for variables starting with
+`SIGNALFX_TRACE_` and prefix `signalfx.` for other veriables starting with
+`SIGNALFX_`. For example `signalfx.service_name` and
+`signalfx.trace.cli_enabled`.
 
-1. Download the [latest release](https://github.com/signalfx/signalfx-php-tracing/releases/latest)
-    of the SignalFx Tracing Library for PHP.
-2. Install with PHP extension with your system's package manager:
-    ```bash
-    # Using dpkg:
-    $ dpkg -i signalfx-tracing.deb
+The `signalfx-setup.php` script downloaded in the installation step can be used
+to set INI file options without having to manually locate the files. For
+example:
 
-    # Using rpm:
-    $ rpm -ivh signalfx-tracing.rpm
+```bash
+php signalfx-setup.php --update-config --signalfx.endpoint_url=http://172.17.0.1:9411/v1/trace
+```
 
-    # Using apk:
-    $ apk add signalfx-tracing.apk --allow-untrusted
+This is useful for options which can be the same for all PHP services running
+in the system. A common case where this might not be suitable is for providing
+`SIGNALFX_SERVICE_NAME` when there are multiple Apache VirtualHost
+configurations where the service name should be different.
 
-    # Directly from the release bundle:
-    $ tar -xf signalfx-tracing.tar.gz -C / && /opt/signalfx-php-tracing/bin/post-install.sh
-    ```
-
-### Use OpenTracing for custom instrumentation
+## Use OpenTracing for custom instrumentation
 
 The `signalfx_tracing` extension provides and configures an
 [OpenTracing-compatible tracer](https://github.com/opentracing/opentracing-php)
@@ -96,7 +137,6 @@ you can use for custom instrumentation:
 
 ```php
 use SignalFx\GlobalTracer; // Suggested namespace over OpenTracing for GlobalTracer
-use OpenTracing\Tags;
 
 function myApplicationLogic($indicator) {
   $tracer = GlobalTracer::get(); //  Will provide the tracer instance used by provided instrumentations
@@ -108,7 +148,7 @@ function myApplicationLogic($indicator) {
     $span->setTag('widget', $widget);
     return $widget;
   } catch (Exception $e) {
-    $span->setTag(Tags\ERROR, true);
+    $span->setTag('error', true);
     throw $e;
   } finally {
     $span->finish();
