@@ -16,7 +16,10 @@ const OPT_HELP = 'help';
 const OPT_INSTALL_DIR = 'install-dir';
 const OPT_PHP_BIN = 'php-bin';
 const OPT_FILE = 'file';
+const OPT_FILE_DIR = 'file-dir';
 const OPT_UNINSTALL = 'uninstall';
+const OPT_LIST_CONFIG = 'list-config';
+const OPT_UPDATE_CONFIG = 'update-config';
 
 // Release version is set while generating the final release files
 const RELEASE_VERSION = '@release_version@';
@@ -26,6 +29,10 @@ function main()
     $options = parse_validate_user_options();
     if ($options[OPT_UNINSTALL]) {
         uninstall($options);
+    } elseif ($options[OPT_LIST_CONFIG]) {
+        list_config($options);
+    } elseif ($options[OPT_UPDATE_CONFIG]) {
+        update_config($options);
     } else {
         install($options);
     }
@@ -48,6 +55,10 @@ Options:
                                 paths. The option can be provided multiple times.
     --install-dir <path>        Install to a specific directory. Default: '/opt/signalfx'
     --uninstall                 Uninstall the library from the specified binaries
+    --list-config               List all available config options
+    --update-config             Set the provided config options for all installed tracing libraries, example:
+                                Requires additional parameters for options to set,
+                                for example: --signalfx.trace.cli_enabled=true
 
 EOD;
 }
@@ -64,7 +75,7 @@ function install($options)
     }
 
     // Picking the right binaries to install the library
-    $selectedBinaries = require_binaries_or_exit($options);
+    $selectedBinaries = require_binaries_or_exit($options, false);
     $interactive = empty($options[OPT_PHP_BIN]);
 
     // Preparing clean tmp folder to extract files
@@ -84,8 +95,17 @@ function install($options)
 
     // Retrieve and extract the archive to a tmp location
     if (isset($options[OPT_FILE])) {
-        print_warning('--' . OPT_FILE . ' option is intended for internal usage and can be removed without notice');
         $tmpDirTarGz = $options[OPT_FILE];
+    } elseif (isset($options[OPT_FILE_DIR])) {
+        $version = RELEASE_VERSION;
+        $tarGzDir = $options[OPT_FILE_DIR];
+        $tarGzName = "signalfx-library-php-${version}-${platform}.tar.gz";
+        $tmpDirTarGz = "${tarGzDir}/${tarGzName}";
+
+        if (!file_exists($tmpDirTarGz)) {
+            print_error_and_exit("Could not find ${tarGzName} in provided directory ${tarGzDir}");
+        }
+        unset($version);
     } else {
         $version = RELEASE_VERSION;
         // phpcs:disable Generic.Files.LineLength.TooLong
@@ -247,6 +267,129 @@ function install($options)
     }
 }
 
+function get_unlisted_ini_settings()
+{
+    return [
+        'extension' => 1,
+        'signalfx.trace.request_init_hook' => 1,
+        'signalfx.trace.http_client_split_by_domain' => 1,
+        'signalfx.trace.sample_rate' => 1,
+        'signalfx.trace.sampling_rules' => 1,
+        'signalfx.trace.<integration_name>_enabled' => 1,
+        'signalfx.trace.<integration_name>_analytics_enabled' => 1,
+        'signalfx.trace.<integration_name>_analytics_sample_rate' => 1,
+        'signalfx.trace.analytics_enabled' => 1,
+        'signalfx.trace.retain_thread_capabilities' => 1
+    ];
+}
+
+function list_config($options)
+{
+    $settings = get_ini_settings('');
+    $unlistedNames = get_unlisted_ini_settings();
+
+    foreach (get_ini_settings('') as $setting) {
+        if (key_exists($setting['name'], $unlistedNames)) {
+            continue;
+        }
+
+        echo "  {$setting['name']}\n";
+        echo "      Default: {$setting['default']}\n";
+
+        if (is_array($setting['description'])) {
+            echo "      " . implode("\n      ", $setting['description']) . "\n";
+        } else {
+            echo "      {$setting['description']}\n";
+        }
+    }
+}
+
+function update_config($options)
+{
+    $binaries = require_binaries_or_exit($options, true);
+    $iniFilePaths = [];
+
+    foreach ($binaries as $command => $fullPath) {
+        $phpProperties = ini_values($fullPath);
+        if (is_truthy($phpProperties[THREAD_SAFETY]) && is_truthy($phpProperties[IS_DEBUG])) {
+            continue;
+        }
+
+        if (!isset($phpProperties[INI_SCANDIR])) {
+            if (!isset($phpProperties[INI_MAIN])) {
+                continue;
+            }
+        }
+
+        if ($phpProperties[INI_SCANDIR]) {
+            $iniFileName = '98-signalfx-tracing.ini';
+            $iniFilePaths[$phpProperties[INI_SCANDIR] . '/' . $iniFileName] = 1;
+
+            if (\strpos($phpProperties[INI_SCANDIR], '/cli/conf.d') !== false) {
+                $apacheConfd = str_replace('/cli/conf.d', '/apache2/conf.d', $phpProperties[INI_SCANDIR]);
+                if (\is_dir($apacheConfd)) {
+                    $iniFilePaths[] = "$apacheConfd/$iniFileName";
+                }
+            }
+        } else {
+            $iniFileName = $phpProperties[INI_MAIN];
+            $iniFilePaths[$iniFileName] = 1;
+        }
+    }
+
+    $foundCount = 0;
+    $modifiedCount = 0;
+
+    foreach ($iniFilePaths as $iniFilePath => $discard) {
+        if (file_exists($iniFilePath)) {
+            $foundCount++;
+            $iniFileContent = file_get_contents($iniFilePath);
+            $updatedContents = update_ini_settings($iniFileContent, $options);
+
+            if ($updatedContents !== false) {
+                file_put_contents($iniFilePath, $updatedContents);
+                echo "Updated $iniFilePath\n";
+                $modifiedCount++;
+            } else {
+                echo "Nothing to update in $iniFilePath\n";
+            }
+        }
+    }
+
+    if ($modifiedCount > 0) {
+        echo "Updating settings was successful\n";
+    } elseif ($foundCount > 0) {
+        print_error_and_exit("Found INI files but no settings were provided that were present in them\n");
+    } else {
+        print_error_and_exit("Found no INI files, and make sure tracing is installed\n");
+    }
+}
+
+function update_ini_settings($iniFileContent, $options)
+{
+    $lines = explode("\n", $iniFileContent);
+    $modified = false;
+
+    foreach ($lines as $index => $line) {
+        $settingRegex = '/;?(signalfx\.[a-zA-Z._]+)\s*=/';
+
+        if (preg_match($settingRegex, $line, $matches)) {
+            $name = $matches[1];
+
+            if (key_exists($name, $options)) {
+                $lines[$index] = $name . " = " . $options[$name];
+                $modified = true;
+            }
+        }
+    }
+
+    if ($modified) {
+        return implode("\n", $lines);
+    } else {
+        return false;
+    }
+}
+
 /**
  * Copies an extension's file to a destination using copy+rename to avoid segfault if the file is loaded by php.
  *
@@ -267,7 +410,7 @@ function safe_copy_extension($source, $destination)
 
 function uninstall($options)
 {
-    $selectedBinaries = require_binaries_or_exit($options);
+    $selectedBinaries = require_binaries_or_exit($options, false);
 
     foreach ($selectedBinaries as $command => $fullPath) {
         $binaryForLog = ($command === $fullPath) ? $fullPath : "$command ($fullPath)";
@@ -343,11 +486,15 @@ function uninstall($options)
  * @param array $options
  * @return array
  */
-function require_binaries_or_exit($options)
+function require_binaries_or_exit($options, $defaultAll)
 {
     $selectedBinaries = [];
     if (empty($options[OPT_PHP_BIN])) {
-        $selectedBinaries = pick_binaries_interactive(search_php_binaries());
+        if ($defaultAll) {
+            $selectedBinaries = search_php_binaries();
+        } else {
+            $selectedBinaries = pick_binaries_interactive(search_php_binaries());
+        }
     } else {
         foreach ($options[OPT_PHP_BIN] as $command) {
             if ($command == "all") {
@@ -451,9 +598,23 @@ function parse_validate_user_options()
         OPT_HELP,
         OPT_PHP_BIN . ':',
         OPT_FILE . ':',
+        OPT_FILE_DIR . ':',
         OPT_INSTALL_DIR . ':',
         OPT_UNINSTALL,
+        OPT_LIST_CONFIG,
+        OPT_UPDATE_CONFIG,
     ];
+
+    $unlistedNames = get_unlisted_ini_settings();
+    $listedNames = [];
+
+    foreach (get_ini_settings('') as $setting) {
+        if (!key_exists($setting['name'], $unlistedNames)) {
+            $longOptions[] = $setting['name'] . ":";
+            $listedNames[] = $setting['name'];
+        }
+    }
+
     $options = getopt($shortOptions, $longOptions);
 
     global $argc;
@@ -470,6 +631,8 @@ function parse_validate_user_options()
     $normalizedOptions = [];
 
     $normalizedOptions[OPT_UNINSTALL] = isset($options[OPT_UNINSTALL]) ? true : false;
+    $normalizedOptions[OPT_LIST_CONFIG] = isset($options[OPT_LIST_CONFIG]) ? true : false;
+    $normalizedOptions[OPT_UPDATE_CONFIG] = isset($options[OPT_UPDATE_CONFIG]) ? true : false;
 
     if (!$normalizedOptions[OPT_UNINSTALL]) {
         if (isset($options[OPT_FILE])) {
@@ -477,6 +640,25 @@ function parse_validate_user_options()
                 print_error_and_exit('Only one --file can be provided', true);
             }
             $normalizedOptions[OPT_FILE] = $options[OPT_FILE];
+        }
+
+        if (isset($options[OPT_FILE_DIR])) {
+            if (is_array($options[OPT_FILE_DIR])) {
+                print_error_and_exit('Only one --file can be provided', true);
+            }
+            $normalizedOptions[OPT_FILE_DIR] = $options[OPT_FILE_DIR];
+        }
+    }
+
+    foreach ($listedNames as $listedName) {
+        if (isset($options[$listedName])) {
+            $value = $options[$listedName];
+
+            if (is_array($value)) {
+                $normalizedOptions[$listedName] = implode(',', $value);
+            } else {
+                $normalizedOptions[$listedName] = $value;
+            }
         }
     }
 
@@ -967,7 +1149,7 @@ function get_ini_settings($requestInitHookPath)
         ],
         [
             'name' => 'signalfx.endpoint_url',
-            'default' => '',
+            'default' => 'http://localhost:9080/v1/trace',
             'commented' => true,
             'description' => [
                 'Sets the full SignalFX endpoint URL. If empty, specific port/hostname/path/https options are used instead.',
@@ -997,6 +1179,55 @@ function get_ini_settings($requestInitHookPath)
             'default' => '/v1/trace',
             'commented' => true,
             'description' => 'Sets the SignalFX endpoint path. Ignored if signalfx.endpoint_url is set',
+        ],
+        [
+            'name' => 'signalfx.capture_env_vars',
+            'default' => '',
+            'commented' => true,
+            'description' => [
+                'Comma-separated case-sensitive list of environment variables to capture as span tags.',
+                'The names of the tags will start with php.env. prefix, followed by lowercase variable name',
+            ],
+        ],
+        [
+            'name' => 'signalfx.capture_request_headers',
+            'default' => '',
+            'commented' => true,
+            'description'  => [
+                'Comma-separated case-insensitive list of request headers to capture as span tags.',
+                'The names of the tags will start with http.request.header. prefix,',
+                'followed by lowercase request header name',
+            ],
+        ],
+        [
+            'name' => 'signalfx.recorded_value_max_length',
+            'default' => '1024',
+            'commented' => true,
+            'description' => 'Sets the maximum length of tag values in serialized format',
+        ],
+        [
+            'name' => 'signalfx.error_stack_max_length',
+            'default' => '8192',
+            'commented' => true,
+            'description' => 'Sets the maximum length for the error.stack tag value in serialized format',
+        ],
+        [
+            'name' => 'signalfx.trace.json',
+            'default' => 'false',
+            'commented' => true,
+            'description' => 'Sets whether automatic tracing of json_encode and json_decode functions is enabled',
+        ],
+        [
+            'name' => 'signalfx.trace.file_get_contents',
+            'default' => 'false',
+            'commented' => true,
+            'description' => 'Sets whether automatic tracing of file_get_contents function is enabled',
+        ],
+        [
+            'name' => 'signalfx.drupal_rename_root_span',
+            'default' => 'true',
+            'commented' => true,
+            'description' => 'Sets whether the root span of the request is set to Drupal route path',
         ],
         [
             'name' => 'signalfx.trace.http_client_split_by_domain',
@@ -1058,12 +1289,6 @@ function get_ini_settings($requestInitHookPath)
             'description' => 'The sampling rate for the trace. Valid values are between 0.0 and 1.0',
         ],
         [
-            'name' => 'signalfx.trace.sample_rate',
-            'default' => '1.0',
-            'commented' => true,
-            'description' => 'The sampling rate for the trace. Valid values are between 0.0 and 1.0',
-        ],
-        [
             'name' => 'signalfx.trace.sampling_rules',
             'default' => '',
             'commented' => true,
@@ -1117,13 +1342,13 @@ function get_ini_settings($requestInitHookPath)
             'name' => 'signalfx.trace.bgs_connect_timeout',
             'default' => '2000',
             'commented' => true,
-            'description' => 'Set connection timeout in milliseconds while connecting to the agent',
+            'description' => 'Set connection timeout in milliseconds while connecting to the endpoint',
         ],
         [
             'name' => 'signalfx.trace.bgs_timeout',
             'default' => '5000',
             'commented' => true,
-            'description' => 'Set request timeout in milliseconds while sending payloads to the agent',
+            'description' => 'Set request timeout in milliseconds while sending payloads to the endpoint',
         ],
         [
             'name' => 'signalfx.trace.spans_limit',
@@ -1156,7 +1381,7 @@ function get_ini_settings($requestInitHookPath)
  */
 function get_supported_php_versions()
 {
-    return ['5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'];
+    return ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'];
 }
 
 main();
