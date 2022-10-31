@@ -29,9 +29,9 @@ function main()
     $options = parse_validate_user_options();
     if ($options[OPT_UNINSTALL]) {
         uninstall($options);
-    } else if ($options[OPT_LIST_CONFIG]) {
+    } elseif ($options[OPT_LIST_CONFIG]) {
         list_config($options);
-    } else if ($options[OPT_UPDATE_CONFIG]) {
+    } elseif ($options[OPT_UPDATE_CONFIG]) {
         update_config($options);
     } else {
         install($options);
@@ -57,7 +57,8 @@ Options:
     --uninstall                 Uninstall the library from the specified binaries
     --list-config               List all available config options
     --update-config             Set the provided config options for all installed tracing libraries, example:
-                                Requires additional parameters for options to set, for example: --signalfx.trace.cli_enabled=true
+                                Requires additional parameters for options to set,
+                                for example: --signalfx.trace.cli_enabled=true
 
 EOD;
 }
@@ -95,7 +96,7 @@ function install($options)
     // Retrieve and extract the archive to a tmp location
     if (isset($options[OPT_FILE])) {
         $tmpDirTarGz = $options[OPT_FILE];
-    } else if(isset($options[OPT_FILE_DIR])) {
+    } elseif (isset($options[OPT_FILE_DIR])) {
         $version = RELEASE_VERSION;
         $tarGzDir = $options[OPT_FILE_DIR];
         $tarGzName = "signalfx-library-php-${version}-${platform}.tar.gz";
@@ -357,7 +358,7 @@ function update_config($options)
 
     if ($modifiedCount > 0) {
         echo "Updating settings was successful\n";
-    } else if ($foundCount > 0) {
+    } elseif ($foundCount > 0) {
         print_error_and_exit("Found INI files but no settings were provided that were present in them\n");
     } else {
         print_error_and_exit("Found no INI files, and make sure tracing is installed\n");
