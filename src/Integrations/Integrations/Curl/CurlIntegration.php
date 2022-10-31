@@ -7,6 +7,7 @@ use DDTrace\Integrations\Integration;
 use DDTrace\SpanData;
 use DDTrace\Tag;
 use DDTrace\Type;
+use DDTrace\Util\ArrayKVStore;
 
 /**
  * @param \DDTrace\SpanData $span
@@ -25,6 +26,8 @@ function addSpanDataTagFromCurlInfo($span, &$info, $tagName, $curlInfoOpt)
 final class CurlIntegration extends Integration
 {
     const NAME = 'curl';
+
+    private $weakMap = null;
 
     public function getName()
     {
@@ -81,6 +84,8 @@ final class CurlIntegration extends Integration
                     $span->meta[Tag::HTTP_URL] = $sanitizedUrl;
                 }
 
+                $span->meta[Tag::HTTP_METHOD] = $integration->fetchCurlValue($ch, Tag::HTTP_METHOD, 'GET');
+
                 addSpanDataTagFromCurlInfo($span, $info, Tag::HTTP_STATUS_CODE, 'http_code');
 
                 addSpanDataTagFromCurlInfo($span, $info, 'network.client.ip', 'local_ip');
@@ -106,6 +111,68 @@ final class CurlIntegration extends Integration
             },
         ]);
 
+        \DDTrace\hook_function('curl_setopt', null, function ($args) use ($integration) {
+            if (!isset($args[0])) {
+                return;
+            }
+
+            $ch = $args[0];
+            $option = $args[1];
+            $value = $args[2];
+
+            switch ($option) {
+                case CURLOPT_POST:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'POST');
+                    break;
+                case CURLOPT_CUSTOMREQUEST:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, $value);
+                    break;
+                case CURLOPT_PUT:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'PUT');
+                    break;
+                case CURLOPT_HTTPGET:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'GET');
+                    break;
+                case CURLOPT_NOBODY:
+                    $integration->storeCurlValue($ch, Tag::HTTP_METHOD, 'HEAD');
+                    break;
+            }
+        });
+
         return Integration::LOADED;
+    }
+
+    private function getWeakStorage($ch)
+    {
+        if (null == $this->weakMap) {
+            $this->weakMap = new \WeakMap();
+        }
+
+        if (!isset($this->weakMap[$ch])) {
+            $this->weakMap[$ch] = [];
+        }
+
+        return $this->weakMap;
+    }
+
+    public function storeCurlValue($ch, $key, $value)
+    {
+        if (\PHP_MAJOR_VERSION < 8) {
+            ArrayKVStore::putForResource($ch, $key, $value);
+            return;
+        }
+
+        $wm = $this->getWeakStorage($ch);
+        $wm[$ch][$key] = $value;
+    }
+
+    public function fetchCurlValue($ch, $key, $default)
+    {
+        if (\PHP_MAJOR_VERSION < 8) {
+            return ArrayKVStore::getForResource($ch, $key, $default);
+        }
+
+        $wm = $this->getWeakStorage($ch);
+        return isset($wm[$ch][$key]) ? $wm[$ch][$key] : $default;
     }
 }
