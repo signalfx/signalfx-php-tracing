@@ -27,6 +27,7 @@ class BuiltinsIntegration extends Integration
             \DDTrace\trace_function('file_get_contents', function (SpanData $span, $args, $result) {
                 $span->name = 'file_get_contents';
                 $span->meta['file.name'] = $args[0];
+                $span->type = 'custom';
                 if ($result === false) {
                     $span->meta[Tag::ERROR] = 'true';
                     $err = \error_get_last();
@@ -40,10 +41,12 @@ class BuiltinsIntegration extends Integration
         if (\sfx_trace_config_trace_json()) {
             \DDTrace\trace_function('json_encode', function (SpanData $span) {
                 $span->name = 'json_encode';
+                $span->type = 'custom';
             });
 
             \DDTrace\trace_function('json_decode', function (SpanData $span) {
                 $span->name = 'json_decode';
+                $span->type = 'custom';
             });
         }
 
