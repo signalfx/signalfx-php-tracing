@@ -491,14 +491,22 @@ function require_binaries_or_exit($options, $defaultAll)
     $selectedBinaries = [];
     if (empty($options[OPT_PHP_BIN])) {
         if ($defaultAll) {
-            $selectedBinaries = search_php_binaries();
+            foreach (search_php_binaries() as $command => $binaryinfo) {
+                if (!$binaryinfo["shebang"]) {
+                    $selectedBinaries[$command] = $binaryinfo["path"];
+                }
+            }
         } else {
-            $selectedBinaries = pick_binaries_interactive(search_php_binaries());
+            $selectedBinaries = pick_binaries_interactive($options, search_php_binaries());
         }
     } else {
         foreach ($options[OPT_PHP_BIN] as $command) {
             if ($command == "all") {
-                $selectedBinaries += search_php_binaries();
+                foreach (search_php_binaries() as $command => $binaryinfo) {
+                    if (!$binaryinfo["shebang"]) {
+                        $selectedBinaries[$command] = $binaryinfo["path"];
+                    }
+                }
             } elseif ($resolvedPath = resolve_command_full_path($command)) {
                 $selectedBinaries[$command] = $resolvedPath;
             } else {
@@ -512,6 +520,56 @@ function require_binaries_or_exit($options, $defaultAll)
     }
 
     return $selectedBinaries;
+}
+
+function search_for_working_ldconfig()
+{
+    static $path;
+
+    if ($path) {
+        return $path;
+    }
+
+    $paths = [
+        "/sbin", /* this is most likely path */
+        "/usr/sbin",
+        "/usr/local/sbin",
+        "/bin",
+        "/usr/bin",
+        "/usr/local/bin",
+    ];
+
+    $search = function (&$path) {
+        exec("find $path -name ldconfig", $found, $result);
+
+        if ($result == 0) {
+            return $path = \end($found);
+        }
+    };
+
+    /* searching individual paths is much faster than searching
+        them all */
+    foreach ($paths as $path) {
+        if ($search($path)) {
+            return $path;
+        }
+    }
+
+    /* probably won't get this far, but just in case */
+    foreach (\explode(":", \getenv("PATH")) as $path) {
+        if (\array_search($path, $paths) === false) {
+            if ($search($path)) {
+                return $path;
+            }
+        }
+    }
+
+    /*
+        we cannot find a working ldconfig binary on this system,
+        fall back on previous behaviour:
+        there is a slim outside chance that exec() expands ldconfig
+    */
+    return $path = "ldconfig";
 }
 
 /**
@@ -528,9 +586,10 @@ function check_library_prerequisite_or_exit($requiredLibrary)
             "find /usr/local/lib /usr/lib -type f -name '*${requiredLibrary}*.so*'"
         );
     } else {
+        $ldconfig = search_for_working_ldconfig();
         $lastLine = execute_or_exit(
             "Cannot find library '$requiredLibrary'",
-            "ldconfig -p | grep $requiredLibrary"
+            "$ldconfig -p | grep $requiredLibrary"
         );
     }
 
@@ -699,18 +758,22 @@ function print_warning($message)
  * @param array $php_binaries
  * @return array
  */
-function pick_binaries_interactive(array $php_binaries)
+function pick_binaries_interactive($options, array $php_binaries)
 {
-    echo "Multiple PHP binaries detected. Please select the binaries the signalfx library will be installed to:\n\n";
+    echo sprintf(
+        "Multiple PHP binaries detected. Please select the binaries the signalfx library will be %s:\n\n",
+        $options[OPT_UNINSTALL] ? "uninstalled from" : "installed to"
+    );
     $commands = array_keys($php_binaries);
     for ($index = 0; $index < count($commands); $index++) {
         $command = $commands[$index];
-        $fullPath = $php_binaries[$command];
+        $fullPath = $php_binaries[$command]["path"];
         echo "  "
             . str_pad($index + 1, 2, ' ', STR_PAD_LEFT)
             . ". "
             . ($command !== $fullPath ? "$command --> " : "")
             . $fullPath
+            . ($php_binaries[$command]["shebang"] ? " (not a binary)" : "")
             . "\n";
     }
     echo "\n";
@@ -725,10 +788,10 @@ function pick_binaries_interactive(array $php_binaries)
         $index = $choice - 1; // we render to the user as 1-indexed
         if (!isset($commands[$index])) {
             echo "\nERROR: Wrong choice: $choice\n\n";
-            return pick_binaries_interactive($php_binaries);
+            return pick_binaries_interactive($options, $php_binaries);
         }
         $command = $commands[$index];
-        $pickedBinaries[$command] = $php_binaries[$command];
+        $pickedBinaries[$command] = $php_binaries[$command]["path"];
     }
 
     return $pickedBinaries;
@@ -892,6 +955,10 @@ function ini_values($binary)
 
 function is_truthy($value)
 {
+    if ($value === null) {
+        return false;
+    }
+
     $normalized = trim(strtolower($value));
     return in_array($normalized, ['1', 'true', 'yes', 'enabled']);
 }
@@ -905,15 +972,14 @@ function search_php_binaries($prefix = '')
 {
     echo "Searching for available php binaries, this operation might take a while.\n";
 
-    $results = [];
+    $resolvedPaths = [];
 
     $allPossibleCommands = build_known_command_names_matrix();
 
     // First, we search in $PATH, for php, php7, php74, php7.4, php7.4-fpm, etc....
     foreach ($allPossibleCommands as $command) {
-        $path = exec("command -v " . escapeshellarg($command));
         if ($resolvedPath = resolve_command_full_path($command)) {
-            $results[$command] = $resolvedPath;
+            $resolvedPaths[$command] = $resolvedPath;
         }
     }
 
@@ -936,7 +1002,6 @@ function search_php_binaries($prefix = '')
 
     $pleskPaths = array_map(function ($phpVersion) use ($prefix) {
         return "/opt/plesk/php/$phpVersion/bin";
-        return "/opt/plesk/php/$phpVersion/sbin";
     }, get_supported_php_versions());
 
     $escapedSearchLocations = implode(
@@ -961,10 +1026,20 @@ function search_php_binaries($prefix = '')
 
     foreach ($pathsFound as $path) {
         $resolved = realpath($path);
-        if (in_array($resolved, array_values($results))) {
+        if (in_array($resolved, array_values($resolvedPaths))) {
             continue;
         }
-        $results[$path] = $resolved;
+        $resolvedPaths[$path] = $resolved;
+    }
+
+    $results = [];
+
+    foreach ($resolvedPaths as $command => $realpath) {
+        $hasShebang = file_get_contents($realpath, false, null, 0, 2) === "#!";
+        $results[$command] = [
+            "shebang" => $hasShebang,
+            "path" => $realpath,
+        ];
     }
 
     return $results;
