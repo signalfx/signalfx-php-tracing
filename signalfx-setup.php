@@ -1205,7 +1205,7 @@ function get_ini_settings($requestInitHookPath)
             'description' => 'Enables startup logs, including diagnostic checks',
         ],
         [
-            'name' => 'signalfx.service',
+            'name' => 'signalfx.service_name',
             'default' => 'unnamed-php-service',
             'commented' => true,
             'description' => 'Sets a custom service name for the application',
