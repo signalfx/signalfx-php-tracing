@@ -1735,7 +1735,8 @@ jobs:
       - run: cd build/packages && find . -type f -exec sha256sum {} +
       - store_artifacts: { path: 'build/packages', destination: / }
       - store_artifacts: { path: 'packages.tar.gz', destination: '/all/packages.tar.gz' }
-      - store_artifacts: { path: 'pecl', destination: '/pecl' }
+      # SIGNALFX: disable PECL
+      # - store_artifacts: { path: 'pecl', destination: '/pecl' }
       - persist_to_workspace:
           root: '.'
           paths: ['./build/packages', 'dockerfiles/verify_packages']
@@ -1961,78 +1962,79 @@ workflows:
 
       # These don't actually need the other job to complete, but this way
       # there are fewer resources used when the build step fails.
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.1 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.1 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.1"
-          abi_no: "20160303"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.1 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.1 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.1"
-          triplet: "aarch64-alpine-linux-musl"
-          abi_no: "20160303"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.2 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.2 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.2"
-          abi_no: "20170718"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.2 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.2 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.2"
-          abi_no: "20170718"
-          triplet: "aarch64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.3 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.3 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.3"
-          abi_no: "20180731"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.3 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.3 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.3"
-          abi_no: "20180731"
-          triplet: "aarch64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.4 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.4 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.4"
-          abi_no: "20190902"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.4 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v7.4 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.4"
-          abi_no: "20190902"
-          triplet: "aarch64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.0 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v8.0 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.0"
-          abi_no: "20200930"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.0 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v8.0 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.0"
-          abi_no: "20200930"
-          triplet: "aarch64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.1 - x86_64-alpine-linux-musl" ]
-          name: "Profiler test PHP v8.1 - x86_64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.1"
-          abi_no: "20210902"
-          triplet: "x86_64-alpine-linux-musl"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.1 - aarch64-alpine-linux-musl" ]
-          name: "Profiler test PHP v8.1 - aarch64-alpine-linux-musl"
-          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.1"
-          abi_no: "20210902"
-          triplet: "aarch64-alpine-linux-musl"
+      # SIGNALFX: disable profiler tests
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.1 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.1 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.1"
+      #     abi_no: "20160303"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.1 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.1 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.1"
+      #     triplet: "aarch64-alpine-linux-musl"
+      #     abi_no: "20160303"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.2 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.2 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.2"
+      #     abi_no: "20170718"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.2 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.2 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.2"
+      #     abi_no: "20170718"
+      #     triplet: "aarch64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.3 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.3 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.3"
+      #     abi_no: "20180731"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.3 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.3 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.3"
+      #     abi_no: "20180731"
+      #     triplet: "aarch64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.4 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.4 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.4"
+      #     abi_no: "20190902"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.4 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v7.4 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-7.4"
+      #     abi_no: "20190902"
+      #     triplet: "aarch64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.0 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v8.0 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.0"
+      #     abi_no: "20200930"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.0 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v8.0 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.0"
+      #     abi_no: "20200930"
+      #     triplet: "aarch64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.1 - x86_64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v8.1 - x86_64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.1"
+      #     abi_no: "20210902"
+      #     triplet: "x86_64-alpine-linux-musl"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.1 - aarch64-alpine-linux-musl" ]
+      #     name: "Profiler test PHP v8.1 - aarch64-alpine-linux-musl"
+      #     docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.1"
+      #     abi_no: "20210902"
+      #     triplet: "aarch64-alpine-linux-musl"
 
       - "cache cargo deps":
           name: "cache cargo deps - x86_64-unknown-linux-gnu"
@@ -2105,78 +2107,79 @@ workflows:
 
       # These don't actually need the other job to complete, but this way
       # there are fewer resources used when the build step fails.
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.1 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.1 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.1_centos-7"
-          abi_no: "20160303"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.1 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.1 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.1_centos-7"
-          abi_no: "20160303"
-          triplet: "aarch64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.2 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.2 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.2_centos-7"
-          abi_no: "20170718"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.2 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.2 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.2_centos-7"
-          abi_no: "20170718"
-          triplet: "aarch64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.3 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.3 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.3_centos-7"
-          abi_no: "20180731"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.3 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.3 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.3_centos-7"
-          abi_no: "20180731"
-          triplet: "aarch64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.4 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.4 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.4_centos-7"
-          abi_no: "20190902"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v7.4 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v7.4 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-7.4_centos-7"
-          abi_no: "20190902"
-          triplet: "aarch64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.0 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v8.0 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-8.0_centos-7"
-          abi_no: "20200930"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.0 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v8.0 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-8.0_centos-7"
-          abi_no: "20200930"
-          triplet: "aarch64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.1 - x86_64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v8.1 - x86_64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-8.1_centos-7"
-          abi_no: "20210902"
-          triplet: "x86_64-unknown-linux-gnu"
-      - "profiling tests":
-          requires: [ "Profiler PHP v8.1 - aarch64-unknown-linux-gnu" ]
-          name: "Profiler test PHP v8.1 - aarch64-unknown-linux-gnu"
-          docker_image: "datadog/dd-trace-ci:php-8.1_centos-7"
-          abi_no: "20210902"
-          triplet: "aarch64-unknown-linux-gnu"
+      # SIGNALFX: disable profiler tests
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.1 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.1 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.1_centos-7"
+      #     abi_no: "20160303"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.1 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.1 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.1_centos-7"
+      #     abi_no: "20160303"
+      #     triplet: "aarch64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.2 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.2 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.2_centos-7"
+      #     abi_no: "20170718"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.2 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.2 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.2_centos-7"
+      #     abi_no: "20170718"
+      #     triplet: "aarch64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.3 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.3 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.3_centos-7"
+      #     abi_no: "20180731"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.3 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.3 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.3_centos-7"
+      #     abi_no: "20180731"
+      #     triplet: "aarch64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.4 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.4 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.4_centos-7"
+      #     abi_no: "20190902"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v7.4 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v7.4 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-7.4_centos-7"
+      #     abi_no: "20190902"
+      #     triplet: "aarch64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.0 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v8.0 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-8.0_centos-7"
+      #     abi_no: "20200930"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.0 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v8.0 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-8.0_centos-7"
+      #     abi_no: "20200930"
+      #     triplet: "aarch64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.1 - x86_64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v8.1 - x86_64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-8.1_centos-7"
+      #     abi_no: "20210902"
+      #     triplet: "x86_64-unknown-linux-gnu"
+      # - "profiling tests":
+      #     requires: [ "Profiler PHP v8.1 - aarch64-unknown-linux-gnu" ]
+      #     name: "Profiler test PHP v8.1 - aarch64-unknown-linux-gnu"
+      #     docker_image: "datadog/dd-trace-ci:php-8.1_centos-7"
+      #     abi_no: "20210902"
+      #     triplet: "aarch64-unknown-linux-gnu"
 
       - compile_alpine:
           requires: [ 'Prepare Code' ]
@@ -2286,9 +2289,10 @@ workflows:
           php_version: "8.1"
           so_suffix: "20210902"
           resource_class: "arm.medium"
-      - pecl_build:
-          requires: [ 'Prepare Code' ]
-          name: "Build PECL"
+      # SIGNALFX: disable PECL
+      #  - pecl_build:
+      #     requires: [ 'Prepare Code' ]
+      #     name: "Build PECL"
       - "package extension":
           requires:
             - compile_alpine
@@ -2306,7 +2310,8 @@ workflows:
             - "Compile aarch64 PHP 74 nts + zts + debug"
             - "Compile x86_64 PHP 81 nts + zts + debug"
             - "Compile aarch64 PHP 81 nts + zts + debug"
-            - "Build PECL"
+            # SIGNALFX: disable PECL
+            # - "Build PECL"
 
             - "Profiler PHP v7.1 - x86_64-alpine-linux-musl"
             - "Profiler PHP v7.2 - x86_64-alpine-linux-musl"
@@ -2534,34 +2539,35 @@ workflows:
       - verify_no_json_ext:
           requires: [ "package extension" ]
 
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 70 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-7.0_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 71 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-7.1_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 72 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-7.2_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 73 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-7.3_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 74 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-7.4_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 80 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-8.0_buster"
-      - pecl_tests:
-          requires: [ "Build PECL" ]
-          name: "PHP 81 PECL tests"
-          docker_image: "datadog/dd-trace-ci:php-8.1_buster"
+      # SIGNALFX: disable PECL
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 70 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-7.0_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 71 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-7.1_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 72 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-7.2_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 73 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-7.3_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 74 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-7.4_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 80 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-8.0_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 81 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-8.1_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 72 web tests with apache (+ opcache)"
