@@ -435,6 +435,23 @@ build_pecl_package:
 packages: .apk.x86_64 .apk.aarch64 .rpm.x86_64 .rpm.aarch64 .deb.x86_64 .deb.arm64 .tar.gz.x86_64 .tar.gz.aarch64 bundle.tar.gz
 	tar zcf packages.tar.gz $(PACKAGES_BUILD_DIR) --owner=0 --group=0
 
+# SIGNALFX: build SFX release packages by repackaging DD packages
+SFX_PACKAGES_BUILD_DIR:=build/packages-sfx
+
+$(SFX_PACKAGES_BUILD_DIR):
+	mkdir -p "$@"
+
+sfx-bundle.tar.gz: $(PACKAGES_BUILD_DIR) $(SFX_PACKAGES_BUILD_DIR)
+	bash ./tooling/bin/generate-sfx-final-artifact.sh \
+		$(VERSION) \
+		$(PACKAGES_BUILD_DIR) \
+		$(SFX_PACKAGES_BUILD_DIR)
+	bash ./tooling/bin/generate-sfx-installers.sh \
+		$(VERSION) \
+		$(SFX_PACKAGES_BUILD_DIR)
+
+sfx_packages: sfx-bundle.tar.gz
+
 verify_version:
 	@grep -q "#define PHP_DDTRACE_VERSION \"$(VERSION)" ext/version.h || (echo ext/version.h Version missmatch && exit 1)
 	@grep -q "const VERSION = '$(VERSION)" src/DDTrace/Tracer.php || (echo src/DDTrace/Tracer.php Version missmatch && exit 1)

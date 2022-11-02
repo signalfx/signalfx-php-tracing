@@ -39,6 +39,7 @@
         <exclude-pattern>build/packages/*</exclude-pattern>
         <exclude-pattern>datadog-setup.php</exclude-pattern>
         <exclude-pattern>examples/long-running/long-running-script.php</exclude-pattern>
+        <exclude-pattern>signalfx-setup.php</exclude-pattern>
         <exclude-pattern>src/api/GlobalTracer.php</exclude-pattern>
         <exclude-pattern>src/DDTrace/Tracer.php</exclude-pattern>
         <exclude-pattern>tests/api/bootstrap.php</exclude-pattern>
