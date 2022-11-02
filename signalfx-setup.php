@@ -1256,6 +1256,12 @@ function get_ini_settings($requestInitHookPath)
             'description' => 'Sets the SignalFX endpoint path. Ignored if signalfx.endpoint_url is set',
         ],
         [
+            'name' => 'signalfx.access_token',
+            'default' => '',
+            'commented' => true,
+            'description' => 'Ingest access token, which is required if sending directly to the ingest endpoint',
+        ],
+        [
             'name' => 'signalfx.capture_env_vars',
             'default' => '',
             'commented' => true,
