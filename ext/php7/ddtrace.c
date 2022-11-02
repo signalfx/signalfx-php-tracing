@@ -18,6 +18,7 @@
 #include <php_main.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdlib.h>
 
 #include <ext/spl/spl_exceptions.h>
 #include <ext/standard/info.h>
@@ -285,6 +286,11 @@ ZEND_ARG_INFO(0, method_name_or_tracing_closure)
 ZEND_ARG_INFO(0, tracing_closure)
 ZEND_END_ARG_INFO()
 
+// SIGNALFX: test function arguments
+ZEND_BEGIN_ARG_INFO_EX(arginfo_sfxtrace_ddspan_to_sfx_array, 0, 0, 1)
+ZEND_ARG_INFO(0, dd_span)
+ZEND_END_ARG_INFO()
+
 static void php_ddtrace_init_globals(zend_ddtrace_globals *ng) { memset(ng, 0, sizeof(zend_ddtrace_globals)); }
 
 static PHP_GINIT_FUNCTION(ddtrace) {
@@ -489,6 +495,14 @@ static PHP_MINIT_FUNCTION(ddtrace) {
     if (!ddtrace_config_minit(module_number)) {
         return FAILURE;
     }
+
+    // SIGNALFX: change default values for some configuration options if SFX mode is enabled
+    if (get_global_SIGNALFX_MODE()) {
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_SERVICE, ZAI_STRL_VIEW("unnamed-php-service"));
+    }
+
     if (ZSTR_LEN(get_global_DD_SPAN_SAMPLING_RULES_FILE()) > 0) {
         dd_save_sampling_rules_file_config(get_global_DD_SPAN_SAMPLING_RULES_FILE(), PHP_INI_SYSTEM, PHP_INI_STAGE_STARTUP);
     }
@@ -640,13 +654,6 @@ static PHP_RINIT_FUNCTION(ddtrace) {
     // ZAI config is always set up
     pthread_once(&dd_rinit_config_once_control, ddtrace_config_first_rinit);
     zai_config_rinit();
-
-    // SIGNALFX: change default values for some configuration options if SFX mode is enabled
-    if (get_global_SIGNALFX_MODE()) {
-        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
-        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
-        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_SERVICE, ZAI_STRL_VIEW("unnamed-php-service"));
-    }
 
     if (ZSTR_LEN(get_DD_SPAN_SAMPLING_RULES_FILE()) > 0 && !zend_string_equals(get_global_DD_SPAN_SAMPLING_RULES_FILE(), get_DD_SPAN_SAMPLING_RULES_FILE())) {
         dd_save_sampling_rules_file_config(get_DD_SPAN_SAMPLING_RULES_FILE(), PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
@@ -1757,6 +1764,37 @@ static PHP_FUNCTION(extract_ip_from_headers) {
     RETURN_ARR(Z_ARR(meta));
 }
 
+// SIGNALFX: functions used to test correct conversion of DD spans to SFX
+static uint64_t sfx_read_u64_from_key(zval *array, const char *key, size_t key_size) {
+    zval *value = zend_hash_str_find(Z_ARR_P(array), key, key_size);
+
+    if (value != NULL && Z_TYPE_P(value) == IS_STRING) {
+        const char *cstr_value = Z_STRVAL_P(value);
+        return strtoull(cstr_value, NULL, 10);
+    }
+
+    return 0;
+}
+
+static PHP_FUNCTION(sfxtrace_ddspan_to_sfx_array) {
+    array_init(return_value);
+
+    zval *dd_span;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "a", &dd_span) == FAILURE) {
+        return;
+    }
+
+    ddtrace_span_t dummy_span = {
+        .trace_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("trace_id")),
+        .parent_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("parent_id")),
+        .span_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("span_id")),
+        .start = sfx_read_u64_from_key(dd_span, ZEND_STRL("start")),
+        .duration = sfx_read_u64_from_key(dd_span, ZEND_STRL("duration"))
+    };
+
+    signalfx_serialize_sfx_span_to_array(return_value, &dummy_span, dd_span);
+}
+
 static const zend_function_entry ddtrace_functions[] = {
     DDTRACE_FE(dd_trace, arginfo_dd_trace),  // Noop legacy API
     DDTRACE_FE(dd_trace_buffer_span, arginfo_dd_trace_buffer_span),
@@ -1817,6 +1855,7 @@ static const zend_function_entry ddtrace_functions[] = {
     DDTRACE_SUB_NS_FE("System\\", container_id, arginfo_ddtrace_void),
     DDTRACE_SUB_NS_FE("Testing\\", trigger_error, arginfo_ddtrace_testing_trigger_error),
     DDTRACE_SUB_NS_FE("Testing\\", extract_ip_from_headers, arginfo_extract_ip_from_headers),
+    DDTRACE_SUB_NS_FE("Testing\\", sfxtrace_ddspan_to_sfx_array, arginfo_sfxtrace_ddspan_to_sfx_array),
     DDTRACE_FE_END};
 
 static const zend_module_dep ddtrace_module_deps[] = {ZEND_MOD_REQUIRED("json") ZEND_MOD_REQUIRED("standard")

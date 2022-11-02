@@ -67,6 +67,10 @@ extern bool runtime_config_first_init;
     CONFIG(BOOL, SIGNALFX_ENDPOINT_HTTPS, "false")                                                             \
     CONFIG(STRING, SIGNALFX_ENDPOINT_PATH, "/v1/trace")                                                        \
     CONFIG(STRING, SIGNALFX_ACCESS_TOKEN, "")                                                                  \
+    CONFIG(SET, SIGNALFX_CAPTURE_ENV_VARS, "")                                                                 \
+    CONFIG(SET_LOWERCASE, SIGNALFX_CAPTURE_REQUEST_HEADERS, "")                                                \
+    CONFIG(INT, SIGNALFX_RECORDED_VALUE_MAX_LENGTH, "1024")                                                    \
+    CONFIG(INT, SIGNALFX_ERROR_STACK_MAX_LENGTH, "8192")                                                       \
     CONFIG(STRING, DD_TRACE_AGENT_URL, "", .ini_change = zai_config_system_ini_change)                         \
     CONFIG(STRING, DD_AGENT_HOST, "", .ini_change = zai_config_system_ini_change)                              \
     CONFIG(STRING, DD_DOGSTATSD_URL, "")                                                                       \

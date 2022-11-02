@@ -7,6 +7,8 @@ int ddtrace_serialize_simple_array_into_c_string(zval *trace, char **data_p, siz
 // SIGNALFX: custom JSON serializer, see implementation
 int ddtrace_serialize_simple_array_into_c_string_json(zval *trace, char **data_p, size_t *size_p);
 
+// SIGNALFX: used from ddtrace_serialize_span_to_array, but exposed for testing
+void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span);
 void ddtrace_serialize_span_to_array(ddtrace_span_fci *span_fci, zval *array);
 
 void ddtrace_save_active_error_to_metadata(void);

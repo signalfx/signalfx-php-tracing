@@ -495,14 +495,29 @@ static zend_result dd_add_meta_array(void *context, ddtrace_string key, ddtrace_
 
 static void dd_add_header_to_meta(zend_array *meta, const char *type, zend_string *lowerheader,
                                   zend_string *headerval) {
-    if (zend_hash_exists(get_DD_TRACE_HEADER_TAGS(), lowerheader)) {
+    // SIGNALFX: request headers also added based on SFX configuration option
+    bool add_dd_tag = zend_hash_exists(get_DD_TRACE_HEADER_TAGS(), lowerheader);
+    bool add_sfx_tag = strcmp(type, "request") == 0 &&
+                       zend_hash_exists(get_SIGNALFX_CAPTURE_REQUEST_HEADERS(), lowerheader);
+
+    if (add_dd_tag || add_sfx_tag) {
         for (char *ptr = ZSTR_VAL(lowerheader); *ptr; ++ptr) {
             if ((*ptr < 'a' || *ptr > 'z') && *ptr != '-' && (*ptr < '0' || *ptr > '9')) {
                 *ptr = '_';
             }
         }
+    }
 
+    if (add_dd_tag) {
         zend_string *headertag = zend_strpprintf(0, "http.%s.headers.%s", type, ZSTR_VAL(lowerheader));
+        zval headerzv;
+        ZVAL_STR_COPY(&headerzv, headerval);
+        zend_hash_update(meta, headertag, &headerzv);
+        zend_string_release(headertag);
+    }
+
+    if (add_sfx_tag) {
+        zend_string *headertag = zend_strpprintf(0, "http.request.header.%s", ZSTR_VAL(lowerheader));
         zval headerzv;
         ZVAL_STR_COPY(&headerzv, headerval);
         zend_hash_update(meta, headertag, &headerzv);
@@ -642,10 +657,40 @@ static void signalfx_set_meta_component(zend_array *meta, const char *component,
     zend_hash_str_add_new(meta, ZEND_STRL("component"), &component_zv);
 }
 
+static void signalfx_set_meta_env_vars(zend_array *meta) {
+    zend_array *var_names = get_SIGNALFX_CAPTURE_ENV_VARS();
+    zend_string *var_name_zstr;
+
+    ZEND_HASH_FOREACH_STR_KEY(var_names, var_name_zstr) {
+        if (var_name_zstr == NULL) {
+            continue;
+        }
+
+        const char* var_name = ZSTR_VAL(var_name_zstr);
+        const char* value = getenv(var_name);
+
+        if (value != NULL) {
+            char tag_name[256];
+            snprintf(tag_name, sizeof(tag_name), "php.env.%s", var_name);
+
+            for (char* c = tag_name; *c; ++c) {
+                *c = tolower(*c);
+            }
+
+            zval zvalue;
+            zend_string* value_str = zend_string_init(value, strlen(value), 0);
+            ZVAL_STR_COPY(&zvalue, value_str);
+            zend_hash_str_add_new(meta, tag_name, strlen(tag_name), &zvalue);
+            zend_string_release(value_str);
+        }
+    } ZEND_HASH_FOREACH_END();
+}
+
 // SIGNALFX: set autoroot properties
 void signalfx_set_autoroot_properties(ddtrace_span_t *span) {
     zend_array *meta = ddtrace_spandata_property_meta(span);
     signalfx_set_meta_component(meta, ZEND_STRL("web.request"));
+    signalfx_set_meta_env_vars(meta);
 }
 
 void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
@@ -996,11 +1041,11 @@ static bool signalfx_is_known_server_span_type(const char* dd_span_type) {
 
 static void signalfx_add_assoc_hex64(zval *span, const char* name, uint64_t value) {
     char hex_str[MAX_ID_BUFSIZ];
-    sprintf(hex_str, "%" PRIx64, value);
+    sprintf(hex_str, "%016" PRIx64, value);
     add_assoc_string(span, name, hex_str);
 }
 
-static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span) {
+void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *span, zval *dd_span) {
     zval sfx_span_zv;
     zval *sfx_span = &sfx_span_zv;
     array_init(sfx_span);
@@ -1022,7 +1067,7 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
     const char* name_cstr = NULL;
 
     if (dd_name != NULL && Z_TYPE_P(dd_name) == IS_STRING) {
-        add_assoc_zval(sfx_span, "name", dd_name);
+        _add_assoc_zval_copy(sfx_span, "name", dd_name);
         name_cstr = Z_STRVAL_P(dd_name);
     }
 
@@ -1038,9 +1083,9 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         zval *val;
 
         ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARR_P(dd_tags), str_key, val) {
-            if (str_key != NULL) {
+            if (str_key != NULL && Z_TYPE_P(val) == IS_STRING) {
                 const char* cstr_key = ZSTR_VAL(str_key);
-                size_t truncate_to = SIZE_MAX;
+                size_t truncate_to = get_SIGNALFX_RECORDED_VALUE_MAX_LENGTH();
 
                 // Rename error and database tags
                 if (strcmp(cstr_key, "error.type") == 0) {
@@ -1050,13 +1095,13 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                     cstr_key = "sfx.error.message";
                 } else if (strcmp(cstr_key, "error.stack") == 0) {
                     cstr_key = "sfx.error.stack";
+                    truncate_to = get_SIGNALFX_ERROR_STACK_MAX_LENGTH();
                 } else if (strcmp(cstr_key, "db.engine") == 0) {
                     cstr_key = "db.type";
                 } else if (strcmp(cstr_key, "db.name") == 0) {
                     cstr_key = "db.instance";
                 } else if (strcmp(cstr_key, "sql.query") == 0) {
                     cstr_key = "db.statement";
-                    truncate_to = 65536;
                 }
 
                 // Drop DD internal tags
@@ -1064,15 +1109,12 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
                     continue;
                 }
 
-                if (truncate_to != SIZE_MAX) {
-                    // Drop if we need to truncate but is not a string
-                    if (Z_TYPE_P(val) == IS_STRING) {
-                        const char* full_string = Z_STRVAL_P(val);
-                        size_t truncated_length = strnlen(full_string, truncate_to);
-                        add_assoc_stringl_ex(tags, cstr_key, ZSTR_LEN(str_key), full_string, truncated_length);
-                    }
+                if (truncate_to != 0 && truncate_to < Z_STRLEN_P(val)) {
+                    const char* full_string = Z_STRVAL_P(val);
+                    size_t truncated_length = strnlen(full_string, truncate_to);
+                    add_assoc_stringl_ex(tags, cstr_key, strlen(cstr_key), full_string, truncated_length);
                 } else {
-                    add_assoc_zval(tags, cstr_key, val);
+                    _add_assoc_zval_copy(tags, cstr_key, val);
                 }
             }
         }
@@ -1113,15 +1155,15 @@ static void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span
         if (signalfx_is_known_client_span_type(Z_STRVAL_P(dd_type))) {
             add_assoc_string(sfx_span, SFX_ATTRIBUTE_KIND, "CLIENT");
 
-            zval *prop_service = ddtrace_spandata_property_service(span);
+            zval *dd_service = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("service"));
 
             // Add span['remoteEndpoint']['serviceName']
-            if (prop_service != NULL) {
+            if (dd_service != NULL) {
                 zval remote_endpoint_zv;
                 zval *remote_endpoint = &remote_endpoint_zv;
                 array_init(remote_endpoint);
 
-                add_assoc_zval(remote_endpoint, "serviceName", prop_service);
+                _add_assoc_zval_copy(remote_endpoint, "serviceName", dd_service);
                 add_assoc_zval(sfx_span, "remoteEndpoint", remote_endpoint);
             }
         } else if (signalfx_is_known_server_span_type(Z_STRVAL_P(dd_type))) {

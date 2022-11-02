@@ -18,6 +18,7 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
         return array_merge(parent::getEnvs(), [
             'DD_SERVICE' => 'my-service',
             'DD_TRACE_HEADER_TAGS' => '  fIrSt-HEADER   ,  SECOND-header  , third-HEADER , FORTH-HEADER, W$%rd-header',
+            'SIGNALFX_CAPTURE_REQUEST_HEADERS' => 'sFxHeAdEr1, other-header',
         ]);
     }
 
@@ -31,6 +32,8 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
                     'first-Header: some value: with colon',
                     'FORTH-header: 123',
                     'W$%rd-header: foo',
+                    'SFXHEADER1: one',
+                    'OTHER-HEADER: two',
                 ]
             );
             $this->call($spec);
@@ -43,6 +46,8 @@ final class HttpHeadersConfiguredTest extends WebFrameworkTestCase
             'http.request.headers.first-header' => 'some value: with colon',
             'http.request.headers.forth-header' => '123',
             'http.response.headers.third-header' => 'separated: with  : colon',
+            'http.request.header.sfxheader1' => 'one',
+            'http.request.header.other-header' => 'two',
             'component' => 'web.request',
         ];
         if (\getenv('DD_TRACE_TEST_SAPI') != 'apache2handler') {
