@@ -91,6 +91,9 @@ if(NOT TARGET Tea::Tea)
   message(FATAL_ERROR "TEA is required but not found")
 endif()
 
+# SIGNALFX: directory for signalfx specific ZAI source files
+add_subdirectory(signalfx)
+
 add_subdirectory(env)
 add_subdirectory(exceptions)
 add_subdirectory(config)
@@ -103,8 +106,6 @@ add_subdirectory(sandbox)
 add_subdirectory(uri_normalization)
 add_subdirectory(zai_string)
 add_subdirectory(zai_assert)
-# SIGNALFX: directory for signalfx specific ZAI source files
-add_subdirectory(signalfx)
 
 install(
   EXPORT ZendAbstractInterfaceTargets
