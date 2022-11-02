@@ -121,13 +121,124 @@ to set INI file options without having to manually locate the files. For
 example:
 
 ```bash
-php signalfx-setup.php --update-config --signalfx.endpoint_url=http://172.17.0.1:9411/v1/trace
+php signalfx-setup.php --update-config --signalfx.endpoint_url=http://172.17.0.1:9080/v1/trace
 ```
 
 This is useful for options which can be the same for all PHP services running
 in the system. A common case where this might not be suitable is for providing
 `SIGNALFX_SERVICE_NAME` when there are multiple Apache VirtualHost
 configurations where the service name should be different.
+
+## Sending traces to Splunk
+
+There are three different methods available to get the traces from this tracing
+library to Splunk APM. Before you configure the endpoint, make sure that the
+service name is configured either by:
+
+```bash
+SIGNALFX_SERVICE_NAME=my-php-service
+# or
+php signalfx-setup.php --update-config --signalfx.service_name=my-php-service
+```
+
+For more information about what types of endpoints Splunk APM has and which
+types of data they accept, see [Compatible span formats for Splunk APM](https://docs.splunk.com/Observability/apm/apm-spans-traces/span-formats.html#span-formats-compatible-with-the-ingest-endpoint).
+
+### Via Splunk OpenTelemetry Collector
+
+This is the recommended way. With this option, the tracing library is configured
+to send the traces to the [Splunk OpenTelemetry Collector](https://github.com/signalfx/splunk-otel-collector),
+which will then send the data to Splunk ingest endpoints. In this case, the
+access token only has to be configured in the collector, and the tracing library
+sends the data to the collector without any authentication.
+
+To configure the tracing library for this option, only the endpoint URL has to
+be changed. In case the collector is configured as shown here, the value would
+be `http://<collector_host>:9080/v1/trace`, where `<collector_host>` is the
+hostname or IP address of the collector from the perspective of the instance
+running PHP.
+
+```bash
+SIGNALFX_ENDPOINT_URL=http://<collector_host>:9080/v1/trace
+# or
+php signalfx-setup.php --update-config --signalfx.endpoint_url=http://<collector_host>:9080/v1/trace
+```
+
+The following is an example configuration for Splunk OpenTelemetry Collector
+for forwarding the traces from PHP tracing library agent to Splunk APM:
+
+```
+receivers:
+  smartagent/signalfx-forwarder:
+    type: signalfx-forwarder
+    listenAddress: 0.0.0.0:9080
+  
+  exporters:
+    sapm:
+      access_token: <token>
+      endpoint: https://ingest.<realm>.signalfx.com/v2/trace
+  
+  service:
+    extensions: []
+    pipelines:
+      traces:
+        receivers: [smartagent/signalfx-forwarder]
+        exporters: [sapm]
+```
+
+The `<token>` is a Splunk SignalFX access token with `INGEST` authorization
+scope. Tokens can be viewed/edited/added under "Settings -> Access Tokens"
+on Splunk APM website. If unsure about what the value of `<realm>` should
+be, this can be checked under "Settings -> Profile -> Organizations".
+
+If traces do not appear in Splunk APM, you can add debug logging to make
+sure they reach the collector. To do this, change `exporters: [sapm]` to
+`exporters: [logging, sapm]` and add the following to `exporters:` block:
+
+```
+    logging:
+      loglevel: debug
+      sampling_initial: 0
+      sampling_thereafter: 1
+```
+
+If the spans are logged, but not displayed by Splunk APM, the collector
+configuration should be double-checked. If they are not logged, the tracing
+library configuration should be double checked, especially to make sure the
+endpoint that has been specified is reachable from that instance (can check
+with cURL for example).
+
+### Sent directly to Splunk ingest endpoint
+
+The tracing library can also send traces directly to Splunk APM without the
+use of either Splunk OpenTelemetry Collector nor SignalFx Smart Agent. In this
+case, both the endpoint URL and access token has to be configured.
+
+```bash
+SIGNALFX_ENDPOINT_URL=https://ingest.<realm>.signalfx.com/v2/trace/signalfxv1
+SIGNALFX_ACCESS_TOKEN=<token>
+# or
+php signalfx-setup.php --update-config --signalfx.endpoint_url=https://ingest.<realm>.signalfx.com/v2/trace/signalfxv1
+php signalfx-setup.php --update-config --signalfx.access_token=<token>
+```
+
+See previous section about Splunk OpenTelemetry Collector for more information
+about `<realm>` and `<token>`.
+
+### Via SignalFx Smart Agent
+
+This option is not recommended. While Splunk APM still supports this, it is
+scheduled to be deprecated. New deployments should not use this option.
+
+Configuration of the tracing library for Smart Agent is basically the same as
+for Splunk OpenTelemetry Collector, as just the endpoint URL has to be set. For
+example:
+
+```bash
+SIGNALFX_ENDPOINT_URL=http://<smartagent_host>:9080/v1/trace
+# or
+php signalfx-setup.php --update-config --signalfx.endpoint_url=http://<smartagent_host>:9080/v1/trace
+```
 
 ## Use OpenTracing for custom instrumentation
 
