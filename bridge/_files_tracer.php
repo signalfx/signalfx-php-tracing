@@ -18,4 +18,6 @@ return [
     __DIR__ . '/../src/DDTrace/Http/Request.php',
     __DIR__ . '/../src/DDTrace/ScopeManager.php',
     __DIR__ . '/../src/DDTrace/Tracer.php',
+    __DIR__ . '/../src/SignalFx/GlobalTracer.php',
+    __DIR__ . '/../src/SignalFx/Tracing.php',
 ];
