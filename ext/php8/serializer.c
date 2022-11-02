@@ -157,11 +157,11 @@ int ddtrace_serialize_simple_array_into_c_string(zval *trace, char **data_p, siz
     }
 }
 
-static int json_write_zval(json_writer_s *writer, zval *trace);
+static int json_write_zval(json_writer_s *writer, zval *trace, bool force_associative);
 
 // SIGNALFX: JSON equivalent for msgpack write_hash_table, additionally it does
 // not change trace/span IDs to number types as is done for msgpack
-static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
+static int json_write_hash_table(json_writer_s *writer, HashTable *ht, bool force_associative) {
     zval *tmp;
     zend_string *string_key;
     zend_long num_key;
@@ -174,6 +174,10 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
     ZEND_HASH_FOREACH_BUCKET(ht, bucket) { is_assoc = is_assoc || bucket->key != NULL; }
     ZEND_HASH_FOREACH_END();
 #endif
+
+    if (force_associative) {
+        is_assoc = true;
+    }
 
     if (is_assoc) {
         json_writer_object_begin(writer);
@@ -190,11 +194,17 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
             json_writer_element_separator(writer);
         }
 
+        bool known_associative_value = false;
+
         // Writing the key, if associative
         if (is_assoc == 1) {
             char num_str_buf[MAX_ID_BUFSIZ], *key;
             if (string_key) {
                 key = ZSTR_VAL(string_key);
+
+                if (strcmp(key, "tags") == 0) {
+                    known_associative_value = true;
+                }
             } else {
                 key = num_str_buf;
                 sprintf(num_str_buf, ZEND_LONG_FMT, num_key);
@@ -204,7 +214,7 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
         }
 
         // Writing the value
-        if (json_write_zval(writer, tmp) != 1) {
+        if (json_write_zval(writer, tmp, known_associative_value) != 1) {
             return 0;
         }
     }
@@ -219,14 +229,14 @@ static int json_write_hash_table(json_writer_s *writer, HashTable *ht) {
 }
 
 // SIGNALFX: JSON equivalent for msgpack msgpack_write_zval
-static int json_write_zval(json_writer_s *writer, zval *trace) {
+static int json_write_zval(json_writer_s *writer, zval *trace, bool force_associative) {
     if (Z_TYPE_P(trace) == IS_REFERENCE) {
         trace = Z_REFVAL_P(trace);
     }
 
     switch (Z_TYPE_P(trace)) {
         case IS_ARRAY:
-            if (json_write_hash_table(writer, Z_ARRVAL_P(trace)) != 1) {
+            if (json_write_hash_table(writer, Z_ARRVAL_P(trace), force_associative) != 1) {
                 return 0;
             }
             break;
@@ -261,7 +271,7 @@ int ddtrace_serialize_simple_array_into_c_string_json(zval *trace, char **data_p
     size_t size;
     json_writer_s writer;
     json_writer_initialize(&writer);
-    if (json_write_zval(&writer, trace) != 1) {
+    if (json_write_zval(&writer, trace, false) != 1) {
         json_writer_destroy(&writer);
         return 0;
     }
@@ -1130,7 +1140,13 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_t *spa
         zval *dd_service = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("service"));
 
         if (dd_service != NULL && Z_TYPE_P(dd_service) == IS_STRING) {
-            _add_assoc_zval_copy(tags, SFX_TAG_COMPONENT, dd_service);
+            zend_string *default_service = get_DD_SERVICE();
+
+            // This is only a valid fallback value if it is custom from the integration and
+            // not the default service, which is already sent as localEndpoint['serviceName']
+            if (strcmp(ZSTR_VAL(default_service), Z_STRVAL_P(dd_service)) != 0) {
+                _add_assoc_zval_copy(tags, SFX_TAG_COMPONENT, dd_service);
+            }
         }
     }
 

@@ -69,7 +69,7 @@ extern bool runtime_config_first_init;
     CONFIG(STRING, SIGNALFX_ACCESS_TOKEN, "")                                                                  \
     CONFIG(SET, SIGNALFX_CAPTURE_ENV_VARS, "")                                                                 \
     CONFIG(SET_LOWERCASE, SIGNALFX_CAPTURE_REQUEST_HEADERS, "")                                                \
-    CONFIG(INT, SIGNALFX_RECORDED_VALUE_MAX_LENGTH, "1024")                                                    \
+    CONFIG(INT, SIGNALFX_RECORDED_VALUE_MAX_LENGTH, "1200")                                                    \
     CONFIG(INT, SIGNALFX_ERROR_STACK_MAX_LENGTH, "8192")                                                       \
     CONFIG(BOOL, SIGNALFX_TRACE_JSON, "false")                                                                 \
     CONFIG(BOOL, SIGNALFX_TRACE_FILE_GET_CONTENTS, "false")                                                    \
