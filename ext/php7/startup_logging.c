@@ -296,6 +296,9 @@ void ddtrace_startup_diagnostics(HashTable *ht, bool quick) {
             } else if (strcmp(old_name->ptr, "SIGNALFX_SERVICE_NAME") == 0) {
                 // This variation is preferred for SFX, do not warn
                 continue;
+            } else if (strcmp(old_name->ptr, "DDTRACE_REQUEST_INIT_HOOK") == 0) {
+                // This variation is still necessary, do not warn
+                continue;
             }
             zend_string *message = zend_strpprintf(0, "'%s=%s' is deprecated, use %s instead.", old_name->ptr,
                                                    ZSTR_VAL(cfg->ini_entries[0]->value), cfg->names[0].ptr);
