@@ -92,6 +92,7 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
             ini_name->ptr[sizeof("datadog.trace") - 1] = '.';
         }
     } else if (env_name.ptr == strstr(env_name.ptr, "SIGNALFX_")) {
+        // SIGNALFX: allow SIGNALFX_ prefix for configuration options
         dd_copy_tolower(ini_name->ptr, env_name.ptr);
         ini_name->ptr[sizeof("signalfx") - 1] = '.';
         ini_name->len = env_name.len;

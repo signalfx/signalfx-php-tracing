@@ -165,6 +165,7 @@ if test "$PHP_DDTRACE" != "no"; then
       zend_abstract_interface/interceptor/php8/interceptor.c \
       zend_abstract_interface/interceptor/php8/resolver.c \
       zend_abstract_interface/json/json.c \
+      zend_abstract_interface/signalfx/json_writer.c \
       zend_abstract_interface/symbols/lookup.c \
       zend_abstract_interface/symbols/call.c \
       zend_abstract_interface/sandbox/php8/sandbox.c \

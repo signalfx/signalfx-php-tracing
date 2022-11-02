@@ -59,6 +59,7 @@ extern bool runtime_config_first_init;
 #define DD_CONFIGURATION                                                                                       \
     CALIAS(STRING, DD_TRACE_REQUEST_INIT_HOOK, DD_DEFAULT_REQUEST_INIT_HOOK_PATH,                              \
            CALIASES("DDTRACE_REQUEST_INIT_HOOK"), .ini_change = zai_config_system_ini_change)                  \
+    /* SIGNALFX: add SignalFX specific configuration options */                                                \
     CONFIG(BOOL, SIGNALFX_MODE, "false")                                                                       \
     CONFIG(STRING, SIGNALFX_ENDPOINT_URL, "")                                                                  \
     CONFIG(STRING, SIGNALFX_ENDPOINT_HOST, "localhost")                                                        \

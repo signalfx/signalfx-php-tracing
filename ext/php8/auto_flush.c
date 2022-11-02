@@ -7,6 +7,30 @@
 #include "serializer.h"
 #include "span.h"
 
+// SIGNALFX: JSON equivalent for the serialization+sending part in ddtrace_flush_tracer,
+// does not wrap the trace into an array like ddtrace_flush_tracer does
+static bool ddtrace_flush_tracer_json(zval* trace) {
+    char *payload;
+    size_t size;
+
+    if (!ddtrace_serialize_simple_array_into_c_string_json(trace, &payload, &size)) {
+        return false;
+    }
+
+    bool success = ddtrace_send_trace_via_thread(payload, size);
+    if (success) {
+        char *url = ddtrace_agent_url();
+        ddtrace_log_debugf("Flushing trace of size %d to send-queue for %s (json)",
+                            zend_hash_num_elements(Z_ARR(*trace)), url);
+        free(url);
+    }
+    ddtrace_send_trace_via_thread(payload, size);
+    dd_prepare_for_new_trace();
+    free(payload);
+
+    return true;
+}
+
 ZEND_RESULT_CODE ddtrace_flush_tracer() {
     bool success = true;
 
@@ -25,6 +49,11 @@ ZEND_RESULT_CODE ddtrace_flush_tracer() {
         zend_array_destroy(Z_ARR(trace));
         ddtrace_log_debug("No finished traces to be sent to the agent");
         return SUCCESS;
+    }
+
+    // SIGNALFX: serialize with JSON and without wrapping an additional array around it
+    if (get_global_SIGNALFX_MODE()) {
+        return ddtrace_flush_tracer_json(&trace) ? SUCCESS : FAILURE;
     }
 
     // background sender only wants a singular trace

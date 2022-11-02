@@ -48,3 +48,25 @@ bool ddtrace_send_traces_via_thread(size_t num_traces, char *payload, size_t pay
     mpack_reader_destroy(&reader);
     return sent_to_background_sender;
 }
+
+
+// SIGNALFX: similar to ddtrace_send_traces_via_thread, but takes one trace instead of an array,
+// as that depends on the payload being msgpack, whereas this method is agnostic to serialization,
+// allowing JSON
+bool ddtrace_send_trace_via_thread(char *payload, size_t payload_len) {
+    if (!get_DD_TRACE_ENABLED()) {
+        // If the tracer is set to drop all the spans, we do not signal an error.
+        ddtrace_log_debugf("Traces are dropped by PID %ld because tracing is disabled.", getpid());
+        return true;
+    }
+
+    bool sent_to_background_sender = false;
+
+    if (ddtrace_coms_buffer_data(DDTRACE_G(traces_group_id), payload, payload_len)) {
+        sent_to_background_sender = true;
+    } else {
+        ddtrace_log_debug("Unable to send payload to background sender's buffer");
+    }
+
+    return sent_to_background_sender;
+}
