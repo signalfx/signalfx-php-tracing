@@ -1163,7 +1163,7 @@ function get_ini_settings($requestInitHookPath)
             'description' => 'Enables or disables tracing (set by the installer, do not change it)',
         ],
         [
-            'name' => 'ddtrace.request_init_hook',
+            'name' => 'signalfx.trace.request_init_hook',
             'default' => $requestInitHookPath,
             'commented' => false,
             'description' => 'Path to the request init hook (set by the installer, do not change it)',
