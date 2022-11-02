@@ -172,12 +172,12 @@ receivers:
   smartagent/signalfx-forwarder:
     type: signalfx-forwarder
     listenAddress: 0.0.0.0:9080
-  
+
   exporters:
     sapm:
       access_token: <token>
       endpoint: https://ingest.<realm>.signalfx.com/v2/trace
-  
+
   service:
     extensions: []
     pipelines:
