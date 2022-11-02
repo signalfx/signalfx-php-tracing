@@ -103,6 +103,8 @@ add_subdirectory(sandbox)
 add_subdirectory(uri_normalization)
 add_subdirectory(zai_string)
 add_subdirectory(zai_assert)
+# SIGNALFX: directory for signalfx specific ZAI source files
+add_subdirectory(signalfx)
 
 install(
   EXPORT ZendAbstractInterfaceTargets

@@ -83,8 +83,8 @@ static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized,
     zai_config_copy_name(dest, sfx_name);
 }
 
-static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoized, 
-                                              zai_string_view *name, zai_string_view dd_prefix, 
+static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoized,
+                                              zai_string_view *name, zai_string_view dd_prefix,
                                               zai_string_view sfx_prefix) {
     if (memoized->names_count >= ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX) {
         return;
@@ -103,7 +103,7 @@ static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoize
 
 static void signalfx_memoize_alternates_names(zai_config_memoized_entry *memoized, zai_string_view *name, bool is_main) {
     if (is_main) {
-        signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"), 
+        signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"),
                                         ZAI_STRL_VIEW("SIGNALFX_TRACING_ENABLED"));
     }
 
@@ -207,6 +207,27 @@ void zai_config_rinit(void) {
 }
 
 void zai_config_rshutdown(void) { zai_config_runtime_config_dtor(); }
+
+// SIGNALFX: Replace DD default value with SFX default value. This is done here rather than where
+// the configuration options are defined, as the defaults should only be set if SIGNALFX_MODE is
+// enabled, which can only be determined at runtime.
+void zai_config_use_signalfx_default(zai_config_id id, zai_string_view default_value) {
+    zai_config_memoized_entry *memoized = &zai_config_memoized_entries[id];
+
+    memoized->default_encoded_value = default_value;
+
+    // this has been manually set already, different default has no effect
+    if (memoized->name_index != -1) {
+        return;
+    }
+
+    ZVAL_UNDEF(&memoized->decoded_value);
+    if (!zai_config_decode_value(default_value, memoized->type, &memoized->decoded_value, true)) {
+        assert(0 && "Error decoding signalfx default value");
+    }
+
+    zai_config_replace_runtime_config(id, &memoized->decoded_value);
+}
 
 bool zai_config_system_ini_change(zval *old_value, zval *new_value) {
     (void)old_value;

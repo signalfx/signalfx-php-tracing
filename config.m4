@@ -106,6 +106,7 @@ if test "$PHP_DDTRACE" != "no"; then
       zend_abstract_interface/interceptor/php7/interceptor.c \
       zend_abstract_interface/interceptor/php7/resolver.c \
       zend_abstract_interface/json/json.c \
+      zend_abstract_interface/signalfx/json_writer.c \
       zend_abstract_interface/symbols/lookup.c \
       zend_abstract_interface/symbols/call.c \
       zend_abstract_interface/sandbox/php7/sandbox.c \
@@ -219,6 +220,8 @@ if test "$PHP_DDTRACE" != "no"; then
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox/php7])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/sandbox/php8])
+  dnl SIGNALFX: signalfx ZAI directory added
+  PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/signalfx])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/uri_normalization])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/zai_assert])
   PHP_ADD_BUILD_DIR([$ext_builddir/zend_abstract_interface/zai_string])

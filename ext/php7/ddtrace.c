@@ -638,6 +638,13 @@ static PHP_RINIT_FUNCTION(ddtrace) {
     pthread_once(&dd_rinit_config_once_control, ddtrace_config_first_rinit);
     zai_config_rinit();
 
+    // SIGNALFX: change default values for some configuration options if SFX mode is enabled
+    if (get_global_SIGNALFX_MODE()) {
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_SERVICE, ZAI_STRL_VIEW("unnamed-php-service"));
+    }
+
     if (ZSTR_LEN(get_DD_SPAN_SAMPLING_RULES_FILE()) > 0 && !zend_string_equals(get_global_DD_SPAN_SAMPLING_RULES_FILE(), get_DD_SPAN_SAMPLING_RULES_FILE())) {
         dd_save_sampling_rules_file_config(get_DD_SPAN_SAMPLING_RULES_FILE(), PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
     }
