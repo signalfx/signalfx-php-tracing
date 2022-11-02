@@ -380,9 +380,9 @@ void ddtrace_startup_logging_first_rinit(void) {
     _dd_serialize_json(ht, &buf);
     ddtrace_log_errf("DATADOG TRACER CONFIGURATION - %s", ZSTR_VAL(buf.s));
     ddtrace_log_errf(
-        "For additional diagnostic checks such as Agent connectivity, see the 'ddtrace' section of a phpinfo() "
-        "page. Alternatively set DD_TRACE_DEBUG=1 to add diagnostic checks to the error logs on the first request "
-        "of a new PHP process. Set DD_TRACE_STARTUP_LOGS=0 to disable this tracer configuration message.");
+        "For additional diagnostic checks such as Agent connectivity, see the 'signalfx_tracing' section of a "
+        "phpinfo() page. Alternatively set DD_TRACE_DEBUG=1 to add diagnostic checks to the error logs on the first "
+        "request of a new PHP process. Set DD_TRACE_STARTUP_LOGS=0 to disable this tracer configuration message.");
     smart_str_free(&buf);
 
     zend_hash_destroy(ht);
