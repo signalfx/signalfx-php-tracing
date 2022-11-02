@@ -863,7 +863,6 @@ static void _dd_curl_set_headers(struct _writer_loop_data_t *writer, size_t trac
         headers = curl_slist_append(headers, current->data);
     }
     headers = curl_slist_append(headers, "Transfer-Encoding: chunked");
-    headers = curl_slist_append(headers, "Content-Type: application/msgpack");
 
     // SIGNALFX: sending JSON data, so set the content type to JSON instead of msgpack and skip DD specific headers
     if (get_global_SIGNALFX_MODE()) {
