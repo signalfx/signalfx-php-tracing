@@ -30,6 +30,7 @@ final class CommonScenariosTest extends CLITestCase
                 'cli',
                 'run'
             )->withExactTags([
+                'component' => 'web.request',
             ])
         ]);
     }

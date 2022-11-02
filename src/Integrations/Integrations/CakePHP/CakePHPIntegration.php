@@ -47,6 +47,7 @@ class CakePHPIntegration extends Integration
         $integration->appName = \ddtrace_config_app_name(CakePHPIntegration::NAME);
         $integration->rootSpan = $rootSpan;
         $integration->addTraceAnalyticsIfEnabled($integration->rootSpan);
+        $integration->rootSpan->meta[Tag::COMPONENT] = 'cakephp';
         $integration->rootSpan->service = $integration->appName;
         if ('cli' === PHP_SAPI) {
             $integration->rootSpan->name = 'cakephp.console';
@@ -63,6 +64,7 @@ class CakePHPIntegration extends Integration
                 $span->name = $span->resource = 'Controller.invokeAction';
                 $span->type = Type::WEB_SERVLET;
                 $span->service = $integration->appName;
+                $span->meta[Tag::COMPONENT] = 'cakephp';
 
                 $request = $args[0];
                 if (!$request instanceof CakeRequest) {
@@ -114,6 +116,7 @@ class CakePHPIntegration extends Integration
             $file = $this->viewPath . '/' . $this->view . $this->ext;
             $span->resource = $file;
             $span->meta = ['cakephp.view' => $file];
+            $span->meta[Tag::COMPONENT] = 'cakephp';
             $span->service = $integration->appName;
         });
 

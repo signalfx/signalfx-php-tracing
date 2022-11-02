@@ -194,6 +194,7 @@ class PDOIntegration extends Integration
         }
 
         $span->type = Type::SQL;
+        $span->meta[Tag::COMPONENT] = 'PDO';
         $span->service = 'pdo';
         if (\DDTrace\Util\Runtime::getBoolIni("datadog.trace.db_client_split_by_instance")) {
             if (isset($storedConnectionInfo[Tag::TARGET_HOST])) {

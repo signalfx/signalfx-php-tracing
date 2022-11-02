@@ -34,7 +34,9 @@ class EloquentTest extends WebFrameworkTestCase
             'laravel',
             'sql',
             'User'
-        )->withExactTags([]));
+        )->withExactTags([
+            'component' => 'eloquent',
+        ]));
     }
 
     public function testGet()
@@ -50,6 +52,7 @@ class EloquentTest extends WebFrameworkTestCase
             'select * from `users`'
         )->withExactTags([
             'sql.query' => 'select * from `users`',
+            'component' => 'eloquent',
         ]));
     }
 
@@ -65,6 +68,7 @@ class EloquentTest extends WebFrameworkTestCase
             'sql',
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -81,6 +85,7 @@ class EloquentTest extends WebFrameworkTestCase
             'sql',
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 
@@ -97,6 +102,7 @@ class EloquentTest extends WebFrameworkTestCase
             'sql',
             'User'
         )->withExactTags([
+            'component' => 'eloquent',
         ]));
     }
 

@@ -54,6 +54,7 @@ final class CircuitBreakerTest extends WebFrameworkTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://localhost:' . self::PORT . '/circuit_breaker',
                     'http.status_code' => '200',
+                    'component' => 'web.request',
                 ]),
             ]
         );

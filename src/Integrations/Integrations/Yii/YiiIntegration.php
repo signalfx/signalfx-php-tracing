@@ -45,6 +45,7 @@ class YiiIntegration extends Integration
 
         $this->addTraceAnalyticsIfEnabled($rootSpan);
         $service = \ddtrace_config_app_name(YiiIntegration::NAME);
+        $rootSpan->meta[Tag::COMPONENT] = 'yii';
 
         \DDTrace\trace_method(
             'yii\web\Application',
@@ -52,6 +53,7 @@ class YiiIntegration extends Integration
             function (SpanData $span) use ($service) {
                 $span->name = $span->resource = \get_class($this) . '.run';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->service = $service;
             }
         );
@@ -79,6 +81,7 @@ class YiiIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = \get_class($this) . '.runAction';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->service = $service;
                 $span->resource = YiiIntegration::extractResourceNameFromRunAction($args) ?: $span->name;
             }
@@ -90,6 +93,7 @@ class YiiIntegration extends Integration
             function (SpanData $span, $args) use (&$firstController, $service, $rootSpan) {
                 $span->name = \get_class($this) . '.runAction';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->service = $service;
                 $span->resource = YiiIntegration::extractResourceNameFromRunAction($args) ?: $span->name;
 
@@ -141,6 +145,7 @@ class YiiIntegration extends Integration
             function (SpanData $span, $args) use ($service) {
                 $span->name = \get_class($this) . '.renderFile';
                 $span->type = Type::WEB_SERVLET;
+                $span->meta[Tag::COMPONENT] = 'yii';
                 $span->service = $service;
                 $span->resource = isset($args[0]) && \is_string($args[0]) ? $args[0] : $span->name;
             }

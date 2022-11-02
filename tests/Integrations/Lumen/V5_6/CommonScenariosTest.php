@@ -51,6 +51,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'lumen',
                     ])->withChildren([
                         SpanAssertion::build(
                             'Laravel\Lumen\Application.handleFoundRoute',
@@ -59,6 +60,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                             'simple_route'
                         )->withExactTags([
                             'lumen.route.action' => 'App\Http\Controllers\ExampleController@simple',
+                            'component' => 'lumen',
                         ]),
                     ]),
                 ],
@@ -73,6 +75,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
+                        'component' => 'lumen',
                     ])->withChildren([
                         SpanAssertion::build(
                             'Laravel\Lumen\Application.handleFoundRoute',
@@ -81,19 +84,24 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                             'Laravel\Lumen\Application.handleFoundRoute'
                         )->withExactTags([
                             'lumen.route.action' => 'App\Http\Controllers\ExampleController@simpleView',
+                            'component' => 'lumen',
                         ])->withChildren([
                             SpanAssertion::build(
                                 'laravel.view.render',
                                 'lumen_test_app',
                                 'web',
                                 'simple_view'
-                            )->withExactTags([])->withChildren([
+                            )->withExactTags([
+                                'component' => 'lumen',
+                            ])->withChildren([
                                 SpanAssertion::build(
                                     'lumen.view',
                                     'lumen_test_app',
                                     'web',
                                     '*/resources/views/simple_view.blade.php'
-                                )->withExactTags([]),
+                                )->withExactTags([
+                                    'component' => 'lumen',
+                                ]),
                             ]),
                         ]),
                     ]),
@@ -109,6 +117,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/error?key=value&<redacted>',
                         'http.status_code' => '500',
+                        'component' => 'lumen',
                     ])->withExistingTagsNames([
                         'error.stack',
                     ])->setError('Exception', 'Controller error')
@@ -120,6 +129,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                             'Laravel\Lumen\Application.handleFoundRoute'
                         )->withExactTags([
                             'lumen.route.action' => 'App\Http\Controllers\ExampleController@error',
+                            'component' => 'lumen',
                         ])->withExistingTagsNames([
                             'error.stack',
                         ])->setError('Exception', 'Controller error'),

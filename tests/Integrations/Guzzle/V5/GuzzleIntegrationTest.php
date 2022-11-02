@@ -314,6 +314,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://example.com',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ]),
         ]);
     }
@@ -332,6 +333,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'http.url' => 'http://?:?@example.com',
                     'http.status_code' => '200',
+                    'component' => 'guzzle',
                 ]),
         ]);
     }
@@ -359,6 +361,7 @@ class GuzzleIntegrationTest extends IntegrationTestCase
                             'http.method' => 'GET',
                             'http.url' => self::URL . '/status/200',
                             'http.status_code' => '200',
+                            'component' => 'guzzle',
                         ])
                         ->withChildren([
                             SpanAssertion::exists('curl_exec'),

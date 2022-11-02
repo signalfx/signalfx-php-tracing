@@ -636,6 +636,19 @@ static zend_string *dd_get_user_agent() {
     return ZSTR_EMPTY_ALLOC();
 }
 
+// SIGNALFX: function to add component tag to root span
+static void signalfx_set_meta_component(zend_array *meta, const char *component, size_t component_length) {
+    zval component_zv;
+    ZVAL_STR(&component_zv, zend_string_init(component, component_length, 0));
+    zend_hash_str_add_new(meta, ZEND_STRL("component"), &component_zv);
+}
+
+// SIGNALFX: set autoroot properties
+void signalfx_set_autoroot_properties(ddtrace_span_t *span) {
+    zend_array *meta = ddtrace_spandata_property_meta(span);
+    signalfx_set_meta_component(meta, ZEND_STRL("web.request"));
+}
+
 void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
     zend_array *meta = ddtrace_spandata_property_meta(span);
 
@@ -727,6 +740,7 @@ void ddtrace_set_root_span_properties(ddtrace_span_t *span) {
         ZVAL_STR(prop_type, zend_string_init(ZEND_STRL("web"), 0));
         ZVAL_STR(prop_name, zend_string_init(ZEND_STRL("web.request"), 0));
     }
+
     zval *prop_service = ddtrace_spandata_property_service(span);
     ZVAL_STR_COPY(prop_service, ZSTR_LEN(get_DD_SERVICE()) ? get_DD_SERVICE() : Z_STR_P(prop_name));
 
