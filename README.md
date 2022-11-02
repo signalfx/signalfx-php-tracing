@@ -40,7 +40,7 @@ any fielded request using the `$_SERVER` execution environment.
 1. Download the setup script of the latest release.
 
 ```bash
-curl -LO https://github.com/signalfx/signalfx-php-tracing/releases/latest/signalfx-php-tracing/signalfx-setup.php
+curl -LO https://github.com/signalfx/signalfx-php-tracing/releases/download/0.78.0-beta-sfx7/signalfx-setup.php
 ```
 
 Optionally, replace `latest` with the specific version you want to use.
