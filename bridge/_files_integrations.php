@@ -35,6 +35,9 @@ return [
     __DIR__ . '/../src/Integrations/Integrations/ZendFramework/ZendFrameworkIntegration.php',
     // SIGNALFX: combines all SFX-added built-in function tracing
     __DIR__ . '/../src/Integrations/Integrations/Builtins/BuiltinsIntegration.php',
+    // SIGNALFX: add drupal
+    __DIR__ . '/../src/Integrations/Integrations/Drupal/DrupalCommon.php',
+    __DIR__ . '/../src/Integrations/Integrations/Drupal/DrupalIntegration.php',
     __DIR__ . '/../src/Integrations/Util/Runtime.php',
     __DIR__ . '/../src/Integrations/Util/Versions.php',
     __DIR__ . '/../src/Integrations/Util/ObjectKVStore.php',
