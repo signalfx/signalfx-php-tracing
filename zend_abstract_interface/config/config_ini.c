@@ -234,7 +234,7 @@ static void zai_config_add_ini_entry(zai_config_memoized_entry *memoized, zai_st
 }
 
 // PHP 5 expects 'static storage duration for ini entry names
-zai_config_name ini_names[ZAI_CONFIG_ENTRIES_COUNT_MAX * ZAI_CONFIG_NAMES_COUNT_MAX];
+zai_config_name ini_names[ZAI_CONFIG_ENTRIES_COUNT_MAX * ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX];
 
 void zai_config_ini_minit(zai_config_env_to_ini_name env_to_ini, int module_number) {
     env_to_ini_name = env_to_ini;
@@ -246,7 +246,7 @@ void zai_config_ini_minit(zai_config_env_to_ini_name env_to_ini, int module_numb
     for (zai_config_id i = 0; i < zai_config_memoized_entries_count; ++i) {
         zai_config_memoized_entry *memoized = &zai_config_memoized_entries[i];
         for (uint8_t n = 0; n < memoized->names_count; ++n) {
-            zai_config_name *ini_name = &ini_names[i * ZAI_CONFIG_NAMES_COUNT_MAX + n];
+            zai_config_name *ini_name = &ini_names[i * ZAI_CONFIG_NAMES_COUNT_INTERNAL_MAX + n];
             zai_string_view name = {.len = memoized->names[n].len, .ptr = memoized->names[n].ptr};
             zai_config_add_ini_entry(memoized, name, ini_name, module_number, i);
             // We need to cache ini directives here, at least for ZTS in order to access the global inis

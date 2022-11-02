@@ -91,6 +91,10 @@ static void dd_ini_env_to_ini_name(const zai_string_view env_name, zai_config_na
         if (env_name.ptr == strstr(env_name.ptr, "DD_TRACE_")) {
             ini_name->ptr[sizeof("datadog.trace") - 1] = '.';
         }
+    } else if (env_name.ptr == strstr(env_name.ptr, "SIGNALFX_")) {
+        dd_copy_tolower(ini_name->ptr, env_name.ptr);
+        ini_name->ptr[sizeof("signalfx") - 1] = '.';
+        ini_name->len = env_name.len;
     } else {
         ini_name->len = 0;
         assert(false && "Unexpected env var name: missing 'DD_' prefix");
