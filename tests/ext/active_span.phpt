@@ -35,7 +35,7 @@ object(DDTrace\SpanData)#%d (8) {
   string(3) "cli"
   ["meta"]=>
   array(2) {
-    ["system.pid"]=>
+    ["process_id"]=>
     int(%d)
     ["component"]=>
     string(11) "web.request"

@@ -11,7 +11,7 @@ class Tag
     const SERVICE_NAME = 'service.name';
     const MANUAL_KEEP = 'manual.keep';
     const MANUAL_DROP = 'manual.drop';
-    const PID = 'system.pid';
+    const PID = 'process_id';
     const RESOURCE_NAME = 'resource.name';
     // SIGNALFX: component tag is for SFX zipkin, cannot reliably deduce in serializer, thus set explicitly
     const COMPONENT = 'component';
