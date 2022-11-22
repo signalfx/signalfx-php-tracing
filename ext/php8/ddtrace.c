@@ -837,7 +837,7 @@ static PHP_MINFO_FUNCTION(ddtrace) {
             "https://docs.splunk.com/Observability/gdi/get-data-in/application/php/get-started.html");
     }
     datadog_info_print(!sapi_module.phpinfo_as_text ? "<br><br>" : "\n");
-    datadog_info_print("(c) Datadog 2020\n");
+    datadog_info_print("(c) Splunk 2022, Datadog 2020\n");
     php_info_print_box_end();
 
     php_info_print_table_start();
