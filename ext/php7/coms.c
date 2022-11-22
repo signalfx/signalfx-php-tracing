@@ -320,6 +320,7 @@ struct _writer_loop_data_t {
     struct _writer_thread_variables_t *thread;
 
     bool set_secbit;
+    bool first_send_attempted;
 
     _Atomic(bool) running, starting_up;
     _Atomic(pid_t) current_pid;
@@ -885,6 +886,33 @@ static void _dd_curl_set_headers(struct _writer_loop_data_t *writer, size_t trac
     writer->headers = headers;
 }
 
+// SIGNALFX: always log the failure of first send failure regardless of curl logging setting
+static void signalfx_log_curl_errors(struct _writer_loop_data_t *writer, CURLcode res) {
+    long response_code = 0;
+
+    if (writer->first_send_attempted) {
+        return;
+    }
+
+    writer->first_send_attempted = true;
+
+    if (res == CURLE_OK) {
+        curl_easy_getinfo(writer->curl, CURLINFO_RESPONSE_CODE, &response_code);
+    }
+
+    if (res != CURLE_OK || response_code < 200 || response_code >= 300) {
+        char* url = signalfx_agent_url();
+
+        if (res != CURLE_OK) {
+            ddtrace_bgs_logf_always("[bgs] ERROR - First attempt to send traces to %s failed with error: %s\n", url, curl_easy_strerror(res));
+        } else {
+            ddtrace_bgs_logf_always("[bgs] ERROR - First attempt to send traces to %s failed with unexpected response code: %ld\n", url, response_code);
+        }
+
+        free(url);
+    }
+}
+
 static void _dd_curl_send_stack(struct _writer_loop_data_t *writer, ddtrace_coms_stack_t *stack) {
     if (!writer->curl) {
         ddtrace_bgs_logf("[bgs] no curl session - dropping the current stack.\n", NULL);
@@ -917,6 +945,11 @@ static void _dd_curl_send_stack(struct _writer_loop_data_t *writer, ddtrace_coms
             double uploaded;
             curl_easy_getinfo(writer->curl, CURLINFO_SIZE_UPLOAD, &uploaded);
             ddtrace_bgs_logf("[bgs] uploaded %.0f bytes\n", uploaded);
+        }
+
+        // SIGNALFX: additional logging for SFX endpoints
+        if (get_global_SIGNALFX_MODE()) {
+            signalfx_log_curl_errors(writer, res);
         }
 
         _dd_deinit_read_userdata(read_data);

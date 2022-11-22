@@ -32,8 +32,7 @@ void ddtrace_bgs_log_mshutdown(void) {
     free(error_log);
 }
 
-#undef ddtrace_bgs_logf
-int ddtrace_bgs_logf(const char *fmt, ...) {
+int ddtrace_bgs_logf_always(const char *fmt, ...) {
     int ret = 0;
     char *error_log = (char *)atomic_load(&php_ini_error_log);
     if (error_log) {
