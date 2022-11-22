@@ -1046,23 +1046,23 @@ static PHP_MINFO_FUNCTION(ddtrace) {
     UNUSED(zend_module);
 
     php_info_print_box_start(0);
-    datadog_info_print("Datadog PHP tracer extension");
+    datadog_info_print("SignalFX PHP tracing extension");
     if (!sapi_module.phpinfo_as_text) {
         datadog_info_print("<br><strong>For help, check out ");
         datadog_info_print(
-            "<a href=\"https://docs.datadoghq.com/tracing/languages/php/\" "
+            "<a href=\"https://docs.splunk.com/Observability/gdi/get-data-in/application/php/get-started.html\" "
             "style=\"background:transparent;\">the documentation</a>.</strong>");
     } else {
         datadog_info_print(
             "\nFor help, check out the documentation at "
-            "https://docs.datadoghq.com/tracing/languages/php/");
+            "https://docs.splunk.com/Observability/gdi/get-data-in/application/php/get-started.html");
     }
     datadog_info_print(!sapi_module.phpinfo_as_text ? "<br><br>" : "\n");
     datadog_info_print("(c) Datadog 2020\n");
     php_info_print_box_end();
 
     php_info_print_table_start();
-    php_info_print_table_row(2, "Datadog tracing support", DDTRACE_G(disable) ? "disabled" : "enabled");
+    php_info_print_table_row(2, "SignalFX tracing support", DDTRACE_G(disable) ? "disabled" : "enabled");
     php_info_print_table_row(2, "Version", PHP_DDTRACE_VERSION);
     _dd_info_tracer_config();
     php_info_print_table_end();
