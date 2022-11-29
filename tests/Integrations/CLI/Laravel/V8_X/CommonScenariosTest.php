@@ -74,7 +74,7 @@ class CommonScenariosTest extends CLITestCase
             )->withExactTags([
                 'component' => 'laravel',
             ])->withExistingTagsNames([
-                'error.msg',
+                'error.message',
                 'error.stack'
             ])->withChildren([
                 SpanAssertion::exists(
