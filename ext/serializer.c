@@ -449,7 +449,7 @@ static zend_result ddtrace_exception_to_meta(zend_object *exception, void *conte
 
 typedef struct dd_error_info {
     zend_string *type;
-    zend_string *msg;
+    zend_string *message;
     zend_string *stack;
 } dd_error_info;
 
@@ -494,8 +494,8 @@ static int dd_fatal_error_to_meta(zend_array *meta, dd_error_info error) {
         zend_symtable_str_update(meta, ZEND_STRL("error.type"), &tmp);
     }
 
-    if (error.msg) {
-        zval tmp = ddtrace_zval_zstr(zend_string_copy(error.msg));
+    if (error.message) {
+        zval tmp = ddtrace_zval_zstr(zend_string_copy(error.message));
         zend_symtable_str_update(meta, ZEND_STRL("error.message"), &tmp);
     }
 
@@ -504,7 +504,7 @@ static int dd_fatal_error_to_meta(zend_array *meta, dd_error_info error) {
         zend_symtable_str_update(meta, ZEND_STRL("error.stack"), &tmp);
     }
 
-    return error.type && error.msg ? SUCCESS : FAILURE;
+    return error.type && error.message ? SUCCESS : FAILURE;
 }
 
 static zend_result dd_add_meta_array(void *context, ddtrace_string key, ddtrace_string value) {
@@ -1098,7 +1098,7 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_data *
                 if (strcmp(cstr_key, "error.type") == 0) {
                     cstr_key = "sfx.error.kind";
                     error_kind_present = true;
-                } else if (strcmp(cstr_key, "error.msg") == 0) {
+                } else if (strcmp(cstr_key, "error.message") == 0) {
                     cstr_key = "sfx.error.message";
                 } else if (strcmp(cstr_key, "error.stack") == 0) {
                     cstr_key = "sfx.error.stack";
@@ -1481,7 +1481,7 @@ void ddtrace_save_active_error_to_metadata(void) {
 
     dd_error_info error = {
         .type = dd_error_type(DDTRACE_G(active_error).type),
-        .msg = zend_string_copy(DDTRACE_G(active_error).message),
+        .message = zend_string_copy(DDTRACE_G(active_error).message),
         .stack = dd_fatal_error_stack(),
     };
     for (ddtrace_span_data *span = ddtrace_active_span(); span; span = span->parent) {
@@ -1492,7 +1492,7 @@ void ddtrace_save_active_error_to_metadata(void) {
         dd_fatal_error_to_meta(ddtrace_spandata_property_meta(span), error);
     }
     zend_string_release(error.type);
-    zend_string_release(error.msg);
+    zend_string_release(error.message);
     if (error.stack) {
         zend_string_release(error.stack);
     }
@@ -1522,7 +1522,7 @@ void ddtrace_error_cb(DDTRACE_ERROR_CB_PARAMETERS) {
 #endif
             dd_error_info error = {
                 .type = dd_error_type(orig_type),
-                .msg = dd_truncate_uncaught_exception(message),
+                .message = dd_truncate_uncaught_exception(message),
                 .stack = dd_fatal_error_stack(),
             };
 #if PHP_VERSION_ID < 80000
@@ -1537,7 +1537,7 @@ void ddtrace_error_cb(DDTRACE_ERROR_CB_PARAMETERS) {
                 dd_fatal_error_to_meta(ddtrace_spandata_property_meta(span), error);
             }
             zend_string_release(error.type);
-            zend_string_release(error.msg);
+            zend_string_release(error.message);
             if (error.stack) {
                 zend_string_release(error.stack);
             }

@@ -56,7 +56,7 @@ class MysqliTest extends IntegrationTestCase
                 ->setError()
                 ->withExactTags(self::baseTags())
                 ->withExistingTagsNames([
-                    Tag::ERROR_MSG,
+                    'error.message',
                     'error.type',
                     'error.stack',
                 ]),
@@ -78,7 +78,7 @@ class MysqliTest extends IntegrationTestCase
                 ->setError()
                 ->withExactTags(self::baseTags())
                 ->withExistingTagsNames([
-                    Tag::ERROR_MSG,
+                    'error.message',
                     'error.type',
                     'error.stack',
                 ]),
@@ -286,7 +286,7 @@ class MysqliTest extends IntegrationTestCase
             SpanAssertion::build('mysqli.__construct', 'mysqli', 'sql', 'mysqli.__construct')
                 ->setError()
                 ->withExistingTagsNames([
-                    Tag::ERROR_MSG,
+                    'error.message',
                     'error.type',
                     'error.stack',
                 ]),
