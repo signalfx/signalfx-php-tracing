@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Curl;
 
+use DDTrace\Tag;
 use DDTrace\Integrations\IntegrationsLoader;
 use DDTrace\Sampling\PrioritySampling;
 use DDTrace\Tests\Common\IntegrationTestCase;
@@ -289,7 +290,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'component' => 'curl',
                 ])
-                ->withExistingTagsNames(['error.message'])
+                ->withExistingTagsNames([Tag::ERROR_MSG])
                 ->withExistingTagsNames(self::commonCurlInfoTags())
                 ->skipTagsLike('/^curl\..*/')
                 ->setError('curl error'),
@@ -315,7 +316,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'component' => 'curl',
                 ])
-                ->withExistingTagsNames(['error.message'])
+                ->withExistingTagsNames([Tag::ERROR_MSG])
                 ->withExistingTagsNames(self::commonCurlInfoTags())
                 ->skipTagsLike('/^curl\..*/')
                 ->setError('curl error'),
