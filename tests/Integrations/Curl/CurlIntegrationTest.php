@@ -290,7 +290,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'component' => 'curl',
                 ])
-                ->withExistingTagsNames(['error.message'])
+                ->withExistingTagsNames([Tag::ERROR_MSG])
                 ->withExistingTagsNames(self::commonCurlInfoTags())
                 ->skipTagsLike('/^curl\..*/')
                 ->setError('curl error'),
@@ -316,7 +316,7 @@ final class CurlIntegrationTest extends IntegrationTestCase
                     'http.method' => 'GET',
                     'component' => 'curl',
                 ])
-                ->withExistingTagsNames(['error.message'])
+                ->withExistingTagsNames([Tag::ERROR_MSG])
                 ->withExistingTagsNames(self::commonCurlInfoTags())
                 ->skipTagsLike('/^curl\..*/')
                 ->setError('curl error'),

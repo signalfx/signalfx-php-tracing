@@ -192,7 +192,7 @@ class MongoDBTest extends IntegrationTestCase
                     'out.port' => self::PORT,
                     'component' => 'mongodb',
                 ])->setError('MongoDB\Exception\InvalidArgumentException')
-                ->withExistingTagsNames(['error.message', 'error.stack']),
+                ->withExistingTagsNames([Tag::ERROR_MSG, 'error.stack']),
         ]);
     }
 
@@ -783,7 +783,7 @@ class MongoDBTest extends IntegrationTestCase
                 'out.port' => self::PORT,
                 'component' => 'mongodb',
             ])->setError()
-                ->withExistingTagsNames(['error.message', 'error.stack']),
+                ->withExistingTagsNames([Tag::ERROR_MSG, 'error.stack']),
         ]);
     }
 
