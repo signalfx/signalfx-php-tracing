@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Laravel\V8_x;
 
+use DDTrace\Tag;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
@@ -57,6 +58,9 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             ->withExactTags([
                                 'component' => 'laravel',
                             ]),
+                        TAG::SPAN_KIND => 'server'
+                    ])->withChildren([
+                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple'),
                         SpanAssertion::exists(
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
@@ -81,6 +85,9 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             ->withExactTags([
                                 'component' => 'laravel',
                             ]),
+                        TAG::SPAN_KIND => 'server'
+                    ])->withChildren([
+                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple_view'),
                         SpanAssertion::exists(
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
@@ -117,6 +124,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/error?key=value&<redacted>',
                         'http.status_code' => '500',
                         'component' => 'laravel',
+                        TAG::SPAN_KIND => 'server'
                     ])->setError('Exception', 'Controller error', true)->withChildren([
                         SpanAssertion::exists('laravel.action'),
 

@@ -54,6 +54,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'app.endpoint' => 'app\controllers\SimpleController::actionIndex',
                         'app.route.path' => '/simple',
                         'component' => 'yii',
+                        Tag::SPAN_KIND => 'server',
                     ])->withChildren([
                         SpanAssertion::build(
                             'yii\web\Application.run',
@@ -90,6 +91,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'app.endpoint' => 'app\controllers\SimpleController::actionView',
                         'app.route.path' => '/simple_view',
                         'component' => 'yii',
+                        Tag::SPAN_KIND => 'server',
                     ])->withChildren([
                         SpanAssertion::build(
                             'yii\web\Application.run',
@@ -129,6 +131,7 @@ final class CommonScenariosTest extends WebFrameworkTestCase
                         'app.endpoint' => 'app\controllers\SimpleController::actionError',
                         'app.route.path' => '/error',
                         'component' => 'yii',
+                        Tag::SPAN_KIND => 'server',
                     ])
                         ->setError(
                             'Exception',

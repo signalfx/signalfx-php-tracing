@@ -32,6 +32,7 @@ class TraceRequest extends Zend_Controller_Plugin_Abstract
         $span->resource = $controller . '@' . $action . ' ' . $route;
         $span->meta[Tag::HTTP_METHOD] = $request->getMethod();
         $span->meta[Tag::COMPONENT] = 'zendframework';
+        $span->meta[Tag::SPAN_KIND] = 'server';
 
         if (!array_key_exists(Tag::HTTP_URL, $span->meta)) {
             $span->meta[Tag::HTTP_URL] = \DDTrace\Util\Normalizer::urlSanitize(

@@ -49,6 +49,7 @@ class InternalExceptionsTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/not-implemented',
                         'http.status_code' => '501',
                         'component' => 'laravel',
+                        TAG::SPAN_KIND => 'server'
                     ])
                     ->withExactMetrics([
                         '_sampling_priority_v1' => 1,
@@ -94,6 +95,7 @@ class InternalExceptionsTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/unauthorized',
                         'http.status_code' => '403',
                         'component' => 'laravel',
+                        TAG::SPAN_KIND => 'server'
                     ])
                     ->withExactMetrics([
                         '_sampling_priority_v1' => 1,

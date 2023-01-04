@@ -51,6 +51,7 @@ class SymfonyIntegration extends Integration
                     $service = \ddtrace_config_app_name('symfony');
                     $rootSpan->name = 'symfony.request';
                     $rootSpan->service = $service;
+                    $rootSpan->meta[Tag::SPAN_KIND] = 'server';
 
                     $span->name = 'symfony.httpkernel.kernel.handle';
                     $span->resource = \get_class($this);
@@ -188,6 +189,7 @@ class SymfonyIntegration extends Integration
                 $span->meta[Tag::COMPONENT] = 'symfony';
 
                 $integration->symfonyRequestSpan->meta[Tag::HTTP_METHOD] = $request->getMethod();
+                $integration->symfonyRequestSpan->meta[Tag::SPAN_KIND] = 'server';
 
                 if (!array_key_exists(Tag::HTTP_URL, $integration->symfonyRequestSpan->meta)) {
                     $integration->symfonyRequestSpan->meta[Tag::HTTP_URL] = Normalizer::urlSanitize($request->getUri());

@@ -66,6 +66,7 @@ class LaravelIntegration extends Integration
                 }
                 $rootSpan->service = $integration->getServiceName();
                 $rootSpan->meta[Tag::COMPONENT] = 'laravel';
+                $rootSpan->meta[Tag::SPAN_KIND] = 'server';
 
                 $span->name = 'laravel.application.handle';
                 $span->type = Type::WEB_SERVLET;
@@ -101,6 +102,7 @@ class LaravelIntegration extends Integration
                     $rootSpan->meta[Tag::HTTP_URL] = \DDTrace\Util\Normalizer::urlSanitize($request->fullUrl());
                 }
                 $rootSpan->meta[Tag::HTTP_METHOD] = $request->method();
+                $rootSpan->meta[Tag::SPAN_KIND] = 'server';
             }
         );
 
@@ -174,6 +176,7 @@ class LaravelIntegration extends Integration
                 $span->resource = 'Illuminate\Foundation\ProviderRepository::load';
                 $rootSpan->name = 'laravel.request';
                 $rootSpan->service = $serviceName;
+                $rootSpan->meta[Tag::SPAN_KIND] = 'server';
             }
         );
 
@@ -184,6 +187,7 @@ class LaravelIntegration extends Integration
                 $rootSpan->name = 'laravel.artisan';
                 $rootSpan->resource = !empty($_SERVER['argv'][1]) ? 'artisan ' . $_SERVER['argv'][1] : 'artisan';
                 $rootSpan->meta[Tag::COMPONENT] = 'laravel';
+                unset($rootSpan->meta[Tag::SPAN_KIND]);
             }
         );
 
