@@ -20,7 +20,7 @@ var_dump(sfxtrace_ddspan_to_sfx_array(array(
     "type" => "cli",
     "meta" => array(
         "error.type" => "dd_error_type",
-        "error.msg" => "dd_error_msg",
+        "error.message" => "dd_error_msg",
         "error.stack" => "dd_error_stack",
         "component" => "dd_component",
         "random" => "dd_random",

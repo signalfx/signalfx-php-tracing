@@ -20,7 +20,7 @@ $base = array(
     "type" => "cli",
     "meta" => array(
         "error.type" => "dd_error_type",
-        "error.msg" => "dd_error_msg",
+        "error.message" => "dd_error_msg",
         "error.stack" => "dd_error_stack",
         "component" => "dd_component",
         "random" => "dd_random",
@@ -47,7 +47,7 @@ $span = $base;
 echo sfxtrace_ddspan_to_sfx_array($span)[0]["tags"]["error"] . "\n";
 
 unset($span["meta"]["error.type"]);
-unset($span["meta"]["error.msg"]);
+unset($span["meta"]["error.message"]);
 unset($span["meta"]["error.stack"]);
 echo (array_key_exists("error", sfxtrace_ddspan_to_sfx_array($span)[0]["tags"]) ? "present" : "missing") . "\n";
 
