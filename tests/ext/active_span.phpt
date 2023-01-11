@@ -34,14 +34,14 @@ object(DDTrace\SpanData)#%d (8) {
   ["type"]=>
   string(3) "cli"
   ["meta"]=>
-  array(2) {
-    ["process_id"]=>
-    int(%d)
+  array(1) {
     ["component"]=>
     string(11) "web.request"
   }
   ["metrics"]=>
-  array(0) {
+  array(1) {
+    ["process_id"]=>
+    float(%f)
   }
   ["id"]=>
   string(%d) "%d"
