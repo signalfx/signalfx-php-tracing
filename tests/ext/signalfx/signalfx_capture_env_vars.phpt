@@ -11,9 +11,7 @@ THREE=no
 var_dump(DDTrace\active_span()->meta);
 ?>
 --EXPECTF--
-array(4) {
-  ["system.pid"]=>
-  int(%d)
+array(3) {
   ["component"]=>
   string(11) "web.request"
   ["php.env.one"]=>

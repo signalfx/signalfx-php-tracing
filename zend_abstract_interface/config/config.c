@@ -73,7 +73,7 @@ static void zai_config_copy_name(zai_config_name *dest, zai_string_view src) {
 
 // SIGNALFX: functions for adding SIGNALFX_ prefixed aliases and custom aliases for an upstream DD_
 // configuration option.
-static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized, zai_string_view *name,
+static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized, const zai_string_view *name,
                                             zai_string_view dd_name, zai_string_view sfx_name) {
     if (memoized->names_count >= ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX) {
         return;
@@ -86,7 +86,7 @@ static void signalfx_memoize_alternate_name(zai_config_memoized_entry *memoized,
 }
 
 static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoized,
-                                              zai_string_view *name, zai_string_view dd_prefix,
+                                              const zai_string_view *name, zai_string_view dd_prefix,
                                               zai_string_view sfx_prefix) {
     if (memoized->names_count >= ZAI_CONFIG_NAMES_COUNT_SIGNALFX_MAX) {
         return;
@@ -103,7 +103,7 @@ static void signalfx_memoize_alternate_prefix(zai_config_memoized_entry *memoize
     dest->len = new_length;
 }
 
-static void signalfx_memoize_alternates_names(zai_config_memoized_entry *memoized, zai_string_view *name, bool is_main) {
+static void signalfx_memoize_alternates_names(zai_config_memoized_entry *memoized, const zai_string_view *name, bool is_main) {
     if (is_main) {
         signalfx_memoize_alternate_name(memoized, name, ZAI_STRL_VIEW("DD_TRACE_ENABLED"),
                                         ZAI_STRL_VIEW("SIGNALFX_TRACING_ENABLED"));

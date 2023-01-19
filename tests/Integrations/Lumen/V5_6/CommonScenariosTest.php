@@ -95,7 +95,7 @@ class CommonScenariosTest extends V5_2_CommonScenariosTest
                                 'web',
                                 'simple_view'
                             )->withExactTags([
-                                'component' => 'lumen',
+                                'component' => 'laravel',
                             ])->withChildren([
                                 SpanAssertion::build(
                                     'lumen.view',

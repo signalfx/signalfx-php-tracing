@@ -9,7 +9,7 @@ DD_TRACE_SAMPLING_RULES='[]'
 --FILE--
 <?php
 
-$ddtrace = new ReflectionExtension('ddtrace');
+$ddtrace = new ReflectionExtension('signalfx_tracing');
 
 // This tests for a crash regression, no need for specific output.
 ob_start();

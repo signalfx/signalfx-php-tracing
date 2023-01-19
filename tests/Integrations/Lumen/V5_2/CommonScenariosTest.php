@@ -71,7 +71,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 'web',
                                 'simple_view'
                             )->withExactTags([
-                                'component' => 'lumen',
+                                'component' => 'laravel',
                             ])
                             ->withChildren([
                                 SpanAssertion::build(
@@ -88,7 +88,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                     'web',
                                     'composing: simple_view'
                                 )->withExactTags([
-                                    'component' => 'lumen',
+                                    'component' => 'laravel',
                                 ]),
                             ]),
                             SpanAssertion::build(
@@ -97,7 +97,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                                 'web',
                                 'creating: simple_view'
                             )->withExactTags([
-                                'component' => 'lumen',
+                                'component' => 'laravel',
                             ])
                         ])
                     ]),

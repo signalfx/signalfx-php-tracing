@@ -44,6 +44,7 @@ class LumenIntegration extends Integration
             return Integration::NOT_LOADED;
         }
 
+        $rootSpan->meta[Tag::COMPONENT] = LumenIntegration::NAME;
         $rootSpan->meta[Tag::SPAN_KIND] = 'server';
 
         $integration = $this;
@@ -56,7 +57,7 @@ class LumenIntegration extends Integration
                 $request = $args[0];
                 $rootSpan->name = 'lumen.request';
                 $rootSpan->service = $appName;
-                $rootSpan->meta[Tag::COMPONENT] = 'lumen';
+                $span->meta[Tag::COMPONENT] = LumenIntegration::NAME;
                 $integration->addTraceAnalyticsIfEnabled($rootSpan);
 
                 if (!array_key_exists(Tag::HTTP_URL, $rootSpan->meta)) {

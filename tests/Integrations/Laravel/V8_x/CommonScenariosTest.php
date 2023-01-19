@@ -52,15 +52,13 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple?key=value&<redacted>',
                         'http.status_code' => '200',
-                        'component' => 'laravel',
+                        TAG::SPAN_KIND => 'server',
+                        TAG::COMPONENT => 'laravel',
                     ])->withChildren([
                         SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple')
                             ->withExactTags([
                                 'component' => 'laravel',
                             ]),
-                        TAG::SPAN_KIND => 'server'
-                    ])->withChildren([
-                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple'),
                         SpanAssertion::exists(
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
@@ -79,15 +77,13 @@ class CommonScenariosTest extends WebFrameworkTestCase
                         'http.method' => 'GET',
                         'http.url' => 'http://localhost:9999/simple_view?key=value&<redacted>',
                         'http.status_code' => '200',
+                        TAG::SPAN_KIND => 'server',
                         'component' => 'laravel',
                     ])->withChildren([
                         SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple_view')
                             ->withExactTags([
                                 'component' => 'laravel',
                             ]),
-                        TAG::SPAN_KIND => 'server'
-                    ])->withChildren([
-                        SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'simple_view'),
                         SpanAssertion::exists(
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'

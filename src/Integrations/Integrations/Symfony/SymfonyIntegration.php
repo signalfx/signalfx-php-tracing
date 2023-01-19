@@ -52,12 +52,14 @@ class SymfonyIntegration extends Integration
                     $rootSpan->name = 'symfony.request';
                     $rootSpan->service = $service;
                     $rootSpan->meta[Tag::SPAN_KIND] = 'server';
+                    $rootSpan->meta[Tag::COMPONENT] = SymfonyIntegration::NAME;
 
                     $span->name = 'symfony.httpkernel.kernel.handle';
                     $span->resource = \get_class($this);
                     $span->type = Type::WEB_SERVLET;
-                    $span->meta[Tag::COMPONENT] = 'symfony';
                     $span->service = $service;
+                    $span->meta[Tag::SPAN_KIND] = 'server';
+                    $span->meta[Tag::COMPONENT] = SymfonyIntegration::NAME;
                 },
             ]
         );
@@ -74,8 +76,8 @@ class SymfonyIntegration extends Integration
                     $span->name = 'symfony.httpkernel.kernel.boot';
                     $span->resource = \get_class($this);
                     $span->type = Type::WEB_SERVLET;
-                    $span->meta[Tag::COMPONENT] = 'symfony';
                     $span->service = \ddtrace_config_app_name('symfony');
+                    $span->meta[Tag::COMPONENT] = 'symfony';
                 },
             ]
         );
@@ -108,6 +110,7 @@ class SymfonyIntegration extends Integration
                         $span->service = \ddtrace_config_app_name('symfony');
                         $span->type = Type::CLI;
                         $span->meta['symfony.console.command.class'] = $scope;
+                        $span->meta[Tag::COMPONENT] = 'symfony';
                     }]);
             }
         );
@@ -189,6 +192,7 @@ class SymfonyIntegration extends Integration
                 $span->meta[Tag::COMPONENT] = 'symfony';
 
                 $integration->symfonyRequestSpan->meta[Tag::HTTP_METHOD] = $request->getMethod();
+                $integration->symfonyRequestSpan->meta[Tag::COMPONENT] = 'symfony';
                 $integration->symfonyRequestSpan->meta[Tag::SPAN_KIND] = 'server';
 
                 if (!array_key_exists(Tag::HTTP_URL, $integration->symfonyRequestSpan->meta)) {
@@ -249,8 +253,8 @@ class SymfonyIntegration extends Integration
                                                 $span->name = 'symfony.controller';
                                                 $span->resource = $controllerName;
                                                 $span->type = Type::WEB_SERVLET;
-                                                $span->meta[Tag::COMPONENT] = 'symfony';
                                                 $span->service = \ddtrace_config_app_name('symfony');
+                                                $span->meta[Tag::COMPONENT] = SymfonyIntegration::NAME;
                                             }
                                         );
                                     }
@@ -261,8 +265,8 @@ class SymfonyIntegration extends Integration
                                             $span->name = 'symfony.controller';
                                             $span->resource = $controllerName;
                                             $span->type = Type::WEB_SERVLET;
-                                            $span->meta[Tag::COMPONENT] = 'symfony';
                                             $span->service = \ddtrace_config_app_name('symfony');
+                                            $span->meta[Tag::COMPONENT] = SymfonyIntegration::NAME;
                                         }
                                     );
                                 }
@@ -272,6 +276,7 @@ class SymfonyIntegration extends Integration
 
                     $span->name = $span->resource = 'symfony.' . $eventName;
                     $span->service = \ddtrace_config_app_name('symfony');
+                    $span->meta[Tag::COMPONENT] = 'symfony';
                     if ($event === null) {
                         return;
                     }
@@ -303,10 +308,10 @@ class SymfonyIntegration extends Integration
             $span->name = 'symfony.templating.render';
             $span->service = \ddtrace_config_app_name('symfony');
             $span->type = Type::WEB_SERVLET;
-            $span->meta[Tag::COMPONENT] = 'symfony';
 
             $resourceName = count($args) > 0 ? get_class($this) . ' ' . $args[0] : get_class($this);
             $span->resource = $resourceName;
+            $span->meta[Tag::COMPONENT] = SymfonyIntegration::NAME;
         };
         \DDTrace\trace_method('Symfony\Bridge\Twig\TwigEngine', 'render', $traceRender);
         \DDTrace\trace_method('Symfony\Bundle\FrameworkBundle\Templating\TimedPhpEngine', 'render', $traceRender);
