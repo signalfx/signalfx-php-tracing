@@ -70,9 +70,6 @@ function install($options)
 
     // Checking required libraries
     check_library_prerequisite_or_exit('libcurl');
-    if (is_alpine()) {
-        check_library_prerequisite_or_exit('libexecinfo');
-    }
 
     // Picking the right binaries to install the library
     $selectedBinaries = require_binaries_or_exit($options, false);
@@ -323,6 +320,15 @@ function update_config($options)
 
         if ($phpProperties[INI_SCANDIR]) {
             $iniFileName = '98-signalfx-tracing.ini';
+            // Search for pre-existing files with extension = signalfx-tracing.so to avoid conflicts
+            foreach (scandir($phpProperties[INI_SCANDIR]) as $ini) {
+                $path = "{$phpProperties[INI_SCANDIR]}/$ini";
+                if (is_file($path)) {
+                    if (preg_match('(^\s*extension\s*=.+signalfx-tracing\.so)m', file_get_contents($path))) {
+                        $iniFileName = $ini;
+                    }
+                }
+            }
             $iniFilePaths[$phpProperties[INI_SCANDIR] . '/' . $iniFileName] = 1;
 
             if (\strpos($phpProperties[INI_SCANDIR], '/cli/conf.d') !== false) {
@@ -1462,7 +1468,7 @@ function get_ini_settings($requestInitHookPath)
  */
 function get_supported_php_versions()
 {
-    return ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1'];
+    return ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2'];
 }
 
 main();
