@@ -2640,8 +2640,9 @@ workflows:
           matrix:
             parameters:
               batch: [ 6, 7, 8, 9, 10 ]
-      - installer_tests:
-          requires: [ 'package extension' ]
+      # SIGNALFX: disable DD-specific installer tests, they add flakiness and are not relevant for SFX
+      # - installer_tests:
+      #    requires: [ 'package extension' ]
       - placeholder:
           requires: [ 'package extension' ]
           name: Framework tests
