@@ -4,7 +4,9 @@ tmp/build_extension/
 composer.lock
 **/core*
 !tests/Frameworks/Drupal/Version_8_9/core
+.DS_Store
 .scenarios.lock/
+.idea/
 .vscode/
 .libs
 .deps
