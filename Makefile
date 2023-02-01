@@ -808,6 +808,7 @@ TEST_WEB_82 := \
 	test_web_slim_312 \
 	test_web_slim_4 \
 	test_web_symfony_52 \
+	test_web_symfony_62 \
 	test_web_wordpress_59 \
 	test_web_custom
 #	test_web_yii_2 \
@@ -1017,6 +1018,10 @@ test_web_symfony_52: global_test_run_dependencies
 	$(COMPOSER) --working-dir=tests/Frameworks/Symfony/Version_5_2 update
 	php tests/Frameworks/Symfony/Version_5_2/bin/console cache:clear --no-warmup --env=prod
 	$(call run_tests,--testsuite=symfony-52-test)
+test_web_symfony_62: global_test_run_dependencies
+	$(COMPOSER) --working-dir=tests/Frameworks/Symfony/Version_6_2 update
+	php tests/Frameworks/Symfony/Version_6_2/bin/console cache:clear --no-warmup --env=prod
+	$(call run_tests,--testsuite=symfony-62-test)
 
 test_web_wordpress_48: global_test_run_dependencies
 	$(call run_tests,tests/Integrations/WordPress/V4_8)
