@@ -30,7 +30,7 @@ static bool ddtrace_flush_tracer_json(zval* trace) {
     return true;
 }
 
-DDTRACE_PUBLIC ZEND_RESULT_CODE ddtrace_flush_tracer(bool force_on_startup) {
+ZEND_RESULT_CODE ddtrace_flush_tracer(bool force_on_startup) {
     bool success = true;
 
     zval trace, traces;
@@ -86,4 +86,10 @@ DDTRACE_PUBLIC ZEND_RESULT_CODE ddtrace_flush_tracer(bool force_on_startup) {
     zval_ptr_dtor(&traces);
 
     return success ? SUCCESS : FAILURE;
+}
+
+DDTRACE_PUBLIC void ddtrace_close_all_spans_and_flush()
+{
+    ddtrace_close_all_open_spans(true);
+    ddtrace_flush_tracer(true);
 }
