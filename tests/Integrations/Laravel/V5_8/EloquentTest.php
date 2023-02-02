@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Laravel\V5_8;
 
+use DDTrace\Tag;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\SpanAssertionTrait;
 use DDTrace\Tests\Common\TracerTestTrait;
@@ -38,6 +39,7 @@ class EloquentTest extends WebFrameworkTestCase
             'App\User'
         )->withExactTags([
             'component' => 'eloquent',
+            TAG::SPAN_KIND => 'client'
         ]));
     }
 
@@ -55,6 +57,7 @@ class EloquentTest extends WebFrameworkTestCase
             'App\User'
         )->withExactTags([
             'component' => 'eloquent',
+            TAG::SPAN_KIND => 'client'
         ]));
     }
 
@@ -70,6 +73,7 @@ class EloquentTest extends WebFrameworkTestCase
             'sql',
             'select * from `users`'
         )->withExactTags([
+            TAG::SPAN_KIND => 'client',
             'sql.query' => 'select * from `users`',
             'component' => 'eloquent',
         ]));
@@ -88,6 +92,7 @@ class EloquentTest extends WebFrameworkTestCase
             'App\User'
         )->withExactTags([
             'component' => 'eloquent',
+            TAG::SPAN_KIND => 'client'
         ]));
     }
 
@@ -105,6 +110,7 @@ class EloquentTest extends WebFrameworkTestCase
             'App\User'
         )->withExactTags([
             'component' => 'eloquent',
+            TAG::SPAN_KIND => 'client'
         ]));
     }
 
@@ -122,6 +128,7 @@ class EloquentTest extends WebFrameworkTestCase
             'App\User'
         )->withExactTags([
             'component' => 'eloquent',
+            TAG::SPAN_KIND => 'client'
         ]));
     }
 

@@ -48,3 +48,42 @@ zend_module_entry *datadog_get_module_entry(const uint8_t *str, uintptr_t len) {
 
 ddtrace_profiling_context (*datadog_php_profiling_get_profiling_context)(void) =
     noop_get_profiling_context;
+
+void datadog_php_profiling_install_internal_function_handler(
+    datadog_php_profiling_internal_function_handler handler) {
+    zend_function *old_handler;
+    old_handler = zend_hash_str_find_ptr(CG(function_table), handler.name, handler.name_len);
+    if (old_handler != NULL) {
+        *handler.old_handler = old_handler->internal_function.handler;
+        old_handler->internal_function.handler = handler.new_handler;
+    }
+}
+
+void datadog_php_profiling_copy_string_view_into_zval(zval *dest, zai_string_view view,
+                                                      bool persistent) {
+    ZEND_ASSERT(dest);
+
+    if (view.len == 0) {
+        if (persistent) {
+            ZVAL_EMPTY_PSTRING(dest);
+        } else {
+            ZVAL_EMPTY_STRING(dest);
+        }
+    } else {
+        ZEND_ASSERT(view.ptr);
+        ZVAL_STR(dest, zend_string_init(view.ptr, view.len, persistent));
+    }
+}
+
+/**
+ * Converts the zend_string pointer into a string view. Null pointers and
+ * empty strings will be converted into a string view to a static empty
+ * string (single byte of null, len of 0).
+ */
+zai_string_view datadog_php_profiling_zend_string_view(zend_string *zstr) {
+    if (!zstr || ZSTR_LEN(zstr) == 0) {
+        return ZAI_STRING_EMPTY;
+    }
+
+    return ZAI_STRING_FROM_ZSTR(zstr);
+}

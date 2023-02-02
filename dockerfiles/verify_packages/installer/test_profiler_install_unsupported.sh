@@ -8,7 +8,7 @@ set -e
 assert_no_ddtrace
 
 # Install using the php installer
-new_version="0.75.0"
+new_version="0.79.0"
 generate_installers "${new_version}"
 
 set +e
@@ -17,9 +17,9 @@ exit_status=$?
 set -e
 
 if [ "${exit_status}" = "1" ]; then
-    dashed_print "Ok: expected exit status 1." "${exit_status}"
+    dashed_print "Ok: expected exit status 1." "${exit_status}" "${output}"
 else
-    dashed_print "Error: Unexpected exit status. Should be 1." "${exit_status}"
+    dashed_print "Error: Unexpected exit status. Should be 1." "${exit_status}" "${output}"
     exit 1
 fi
 

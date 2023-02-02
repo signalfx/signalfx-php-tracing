@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Lumen\V5_6;
 
+use DDTrace\Tag;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
@@ -45,6 +46,7 @@ class DeprecatedResourceNameTest extends WebFrameworkTestCase
                         'http.url' => 'http://localhost:9999/simple',
                         'http.status_code' => '200',
                         'component' => 'lumen',
+                        Tag::SPAN_KIND => 'server',
                     ])
                     ->withChildren([
                         SpanAssertion::build(

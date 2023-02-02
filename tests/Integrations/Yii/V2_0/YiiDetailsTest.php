@@ -45,6 +45,7 @@ class LazyLoadingIntegrationsFromYiiTest extends WebFrameworkTestCase
                     'app.route.path' => '/site/index',
                     'app.endpoint' => 'app\controllers\SiteController::actionIndex',
                     'component' => 'yii',
+                    Tag::SPAN_KIND => 'server',
                 ])->withChildren([
                     SpanAssertion::build(
                         'yii\web\Application.run',

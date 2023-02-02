@@ -4,13 +4,13 @@ set -e
 
 . "$(dirname ${0})/utils.sh"
 
-apk add php7 curl libexecinfo
+apk add php7 curl
 
 # Initially no ddtrace
 assert_no_ddtrace
 
 # Install using the php installer
-new_version="0.74.0"
+new_version="0.78.0"
 generate_installers "${new_version}"
 
 set +e

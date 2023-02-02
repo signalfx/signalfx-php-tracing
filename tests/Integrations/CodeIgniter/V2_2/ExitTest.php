@@ -42,6 +42,7 @@ class ExitTest extends WebFrameworkTestCase
                     Tag::HTTP_STATUS_CODE => '200',
                     'app.endpoint' => 'Exits::index',
                     'component' => 'codeigniter',
+                    Tag::SPAN_KIND => 'server',
                 ])->withChildren([
                     SpanAssertion::build(
                         'Exits.index',
@@ -49,7 +50,7 @@ class ExitTest extends WebFrameworkTestCase
                         Type::WEB_SERVLET,
                         'Exits.index'
                     )
-                ]),
+                ])
             ]
         );
     }

@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Mysqli;
 
+use DDTrace\Tag;
 use DDTrace\Integrations\IntegrationsLoader;
 use DDTrace\Tests\Common\IntegrationTestCase;
 use DDTrace\Tests\Common\SpanAssertion;
@@ -55,7 +56,7 @@ class MysqliTest extends IntegrationTestCase
                 ->setError()
                 ->withExactTags(self::baseTags())
                 ->withExistingTagsNames([
-                    'error.msg',
+                    Tag::ERROR_MSG,
                     'error.type',
                     'error.stack',
                 ]),
@@ -77,7 +78,7 @@ class MysqliTest extends IntegrationTestCase
                 ->setError()
                 ->withExactTags(self::baseTags())
                 ->withExistingTagsNames([
-                    'error.msg',
+                    Tag::ERROR_MSG,
                     'error.type',
                     'error.stack',
                 ]),
@@ -205,6 +206,7 @@ class MysqliTest extends IntegrationTestCase
             SpanAssertion::build('mysqli.prepare', 'mysqli', 'sql', 'INSERT INTO tests (id, name) VALUES (?, ?)')
                 ->withExactTags(self::baseTags()),
             SpanAssertion::build('mysqli_stmt.execute', 'mysqli', 'sql', 'INSERT INTO tests (id, name) VALUES (?, ?)')
+                ->withExactTags([Tag::SPAN_KIND => 'client'])
                 ->setTraceAnalyticsCandidate(),
         ]);
     }
@@ -267,7 +269,8 @@ class MysqliTest extends IntegrationTestCase
             SpanAssertion::exists('mysqli_connect', 'mysqli_connect'),
             SpanAssertion::build('mysqli_prepare', 'mysqli', 'sql', 'INSERT INTO tests (id, name) VALUES (?, ?)')
                 ->withExactTags(self::baseTags()),
-            SpanAssertion::build('mysqli_stmt_execute', 'mysqli', 'sql', 'INSERT INTO tests (id, name) VALUES (?, ?)'),
+            SpanAssertion::build('mysqli_stmt_execute', 'mysqli', 'sql', 'INSERT INTO tests (id, name) VALUES (?, ?)')
+                ->withExactTags([Tag::SPAN_KIND => 'client']),
         ]);
     }
 
@@ -285,9 +288,10 @@ class MysqliTest extends IntegrationTestCase
             SpanAssertion::build('mysqli.__construct', 'mysqli', 'sql', 'mysqli.__construct')
                 ->setError()
                 ->withExistingTagsNames([
-                    'error.msg',
+                    Tag::ERROR_MSG,
                     'error.type',
                     'error.stack',
+                    Tag::SPAN_KIND,
                 ]),
         ]);
     }
@@ -298,6 +302,7 @@ class MysqliTest extends IntegrationTestCase
             'out.host' => self::$host,
             'out.port' => self::$port,
             'db.type' => 'mysql',
+            Tag::SPAN_KIND => "client",
         ];
     }
 

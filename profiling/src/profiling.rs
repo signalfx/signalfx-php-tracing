@@ -1,21 +1,22 @@
 use crate::bindings::{
     datadog_php_profiling_get_profiling_context, zend_execute_data, zend_function, zend_string,
-    ZEND_INTERNAL_FUNCTION, ZEND_USER_FUNCTION,
+    ZEND_USER_FUNCTION,
 };
-use crate::{AgentEndpoint, RequestLocals, PHP_VERSION};
-use crossbeam_channel::{Receiver, Sender, TrySendError};
+use crate::{
+    bindings, AgentEndpoint, RequestLocals, PHP_VERSION, PROFILER_NAME_STR, PROFILER_VERSION_STR,
+};
+use crossbeam_channel::{select, Receiver, Sender, TrySendError};
 use datadog_profiling::exporter::{Endpoint, File, Tag};
 use datadog_profiling::profile;
 use datadog_profiling::profile::api::{Function, Line, Location, Period, Sample};
-use log::{debug, error, info, trace, warn};
+use log::{debug, info, trace, warn};
 use std::borrow::{Borrow, Cow};
-use std::collections::{HashMap, HashSet};
-use std::ffi::CStr;
+use std::collections::HashMap;
 use std::hash::Hash;
-use std::os::raw::c_char;
+use std::str;
 use std::str::Utf8Error;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Barrier, Mutex};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant, SystemTime};
 
@@ -113,6 +114,19 @@ pub struct SampleMessage {
     pub value: SampleData,
 }
 
+#[derive(Debug)]
+pub struct LocalRootSpanResourceMessage {
+    pub local_root_span_id: u64,
+    pub resource: String,
+}
+
+#[derive(Debug)]
+pub enum ProfilerMessage {
+    Cancel,
+    Sample(SampleMessage),
+    LocalRootSpanResource(LocalRootSpanResourceMessage),
+}
+
 pub struct Globals {
     pub interrupt_count: AtomicU32,
     pub last_interrupt: SystemTime,
@@ -137,16 +151,9 @@ pub struct ZendFrame {
     pub line: u32, // use 0 for no line info
 }
 
-unsafe fn zend_string_to_bytes<'a>(ptr: *const zend_string) -> &'a [u8] {
-    if ptr.is_null() {
-        return b"";
-    }
-    let zstr = &*ptr;
-    if zstr.len == 0 {
-        b""
-    } else {
-        std::slice::from_raw_parts(zstr.val.as_ptr() as *const u8, zstr.len as usize)
-    }
+// todo: dedup
+unsafe fn zend_string_to_bytes(zstr: Option<&mut zend_string>) -> &[u8] {
+    bindings::datadog_php_profiling_zend_string_view(zstr).into_bytes()
 }
 
 /// Extract the "function name" component for the frame. This is a string which
@@ -159,7 +166,7 @@ unsafe fn zend_string_to_bytes<'a>(ptr: *const zend_string) -> &'a [u8] {
 /// Closures and anonymous classes get reformatted by the backend (or maybe
 /// frontend, either way it's not our concern, at least not right now).
 unsafe fn extract_function_name(func: &zend_function) -> String {
-    let method_name: &[u8] = zend_string_to_bytes(func.common.function_name);
+    let method_name: &[u8] = func.name().unwrap_or(b"");
 
     /* The top of the stack seems to reasonably often not have a function, but
      * still has a scope. I don't know if this intentional, or if it's more of
@@ -173,29 +180,21 @@ unsafe fn extract_function_name(func: &zend_function) -> String {
     let mut buffer = Vec::<u8>::new();
 
     // User functions do not have a "module". Maybe one day use composer info?
-    if func.type_ == ZEND_INTERNAL_FUNCTION as u8
-        && !func.internal_function.module.is_null()
-        && !(*func.internal_function.module).name.is_null()
-    {
-        let ptr = (*func.internal_function.module).name as *const c_char;
-        let bytes = CStr::from_ptr(ptr).to_bytes();
-        if !bytes.is_empty() {
-            buffer.extend_from_slice(bytes);
-            buffer.push(b'|');
-        }
+    let module_name = func.module_name().unwrap_or(b"");
+    if !module_name.is_empty() {
+        buffer.extend_from_slice(module_name);
+        buffer.push(b'|');
     }
 
-    if !func.common.scope.is_null() {
-        let class_name = zend_string_to_bytes((*func.common.scope).name);
-        if !class_name.is_empty() {
-            buffer.extend_from_slice(class_name);
-            buffer.extend_from_slice(b"::");
-        }
+    let class_name = func.scope_name().unwrap_or(b"");
+    if !class_name.is_empty() {
+        buffer.extend_from_slice(class_name);
+        buffer.extend_from_slice(b"::");
     }
 
     buffer.extend_from_slice(method_name);
 
-    String::from_utf8_lossy(buffer.as_slice()).to_string()
+    String::from_utf8_lossy(buffer.as_slice()).into_owned()
 }
 
 unsafe fn extract_file_name(execute_data: &zend_execute_data) -> String {
@@ -206,7 +205,7 @@ unsafe fn extract_file_name(execute_data: &zend_execute_data) -> String {
 
     let func = &*execute_data.func;
     if func.type_ == ZEND_USER_FUNCTION as u8 {
-        let filename = zend_string_to_bytes(func.op_array.filename);
+        let filename = zend_string_to_bytes(func.op_array.filename.as_mut());
         return String::from_utf8_lossy(filename).to_string();
     }
     String::new()
@@ -278,22 +277,34 @@ pub struct VmInterrupt {
     pub engine_ptr: *const AtomicBool,
 }
 
+impl std::fmt::Display for VmInterrupt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "VmInterrupt{{{:?}, {:?}}}",
+            self.interrupt_count_ptr, self.engine_ptr
+        )
+    }
+}
+
 // This is a lie, technically, but we're trying to build it safely on top of
 // the PHP VM.
 unsafe impl Send for VmInterrupt {}
 
 pub struct Profiler {
-    vm_interrupt_lock: Arc<Mutex<HashSet<VmInterrupt>>>,
-    message_sender: Sender<SampleMessage>,
-    time_collector_cancel_sender: Sender<()>,
+    fork_barrier: Arc<Barrier>,
+    fork_senders: [Sender<()>; 2],
+    vm_interrupts: Arc<Mutex<Vec<VmInterrupt>>>,
+    message_sender: Sender<ProfilerMessage>,
     time_collector_handle: JoinHandle<()>,
     uploader_handle: JoinHandle<()>,
 }
 
 struct TimeCollector {
-    message_receiver: Receiver<SampleMessage>,
-    cancel_receiver: Receiver<()>,
-    vm_interrupt_lock: Arc<Mutex<HashSet<VmInterrupt>>>,
+    fork_barrier: Arc<Barrier>,
+    fork_receiver: Receiver<()>,
+    vm_interrupts: Arc<Mutex<Vec<VmInterrupt>>>,
+    message_receiver: Receiver<ProfilerMessage>,
     upload_sender: Sender<UploadMessage>,
     wall_time_period: Duration,
     upload_period: Duration,
@@ -360,7 +371,23 @@ impl TimeCollector {
             .build()
     }
 
-    fn handle_message(
+    fn handle_resource_message(
+        message: LocalRootSpanResourceMessage,
+        profiles: &mut HashMap<ProfileIndex, profile::Profile>,
+    ) {
+        trace!(
+            "Received Endpoint Profiling message for span id {}.",
+            message.local_root_span_id
+        );
+        let local_root_span_id = message.local_root_span_id.to_string();
+        for (_, profile) in profiles.iter_mut() {
+            let local_root_span_id = Cow::Borrowed(local_root_span_id.as_ref());
+            let endpoint = Cow::Borrowed(message.resource.as_str());
+            profile.add_endpoint(local_root_span_id, endpoint)
+        }
+    }
+
+    fn handle_sample_message(
         message: SampleMessage,
         profiles: &mut HashMap<ProfileIndex, profile::Profile>,
         started_at: &WallTime,
@@ -433,41 +460,57 @@ impl TimeCollector {
 
         while running {
             crossbeam_channel::select! {
+
                 recv(self.message_receiver) -> result => {
                     match result {
-                        Ok(message) =>
-                            Self::handle_message(message, &mut profiles, &last_wall_export),
-                        Err(err) => {
-                            trace!("empty message? {:?}", err);
-                            break;
-                        }
-                    }
-                },
-                recv(self.cancel_receiver) -> _ => {
-                    // flush what we have before exiting
-                    last_wall_export = self.handle_timeout(&mut profiles, &last_wall_export);
-                    running = false;
-                },
-                recv(wall_time_tick) -> _ => {
-                    match self.vm_interrupt_lock.lock() {
-                        Ok(interrupts) => {
-                            interrupts.iter().for_each(|obj| unsafe {
-                                (&*obj.engine_ptr).store(true, Ordering::SeqCst);
-                                (&*obj.interrupt_count_ptr).fetch_add(1, Ordering::SeqCst);
-                            });
-                        }
-                        Err(err) => {
-                            error!(
-                                "Stopping time related profiling: failed to acquire vm_interrupt lock: {}",
-                                err
-                            );
-                            break;
+                        Ok(message) => match message {
+                            ProfilerMessage::Sample(sample) =>
+                                Self::handle_sample_message(sample, &mut profiles, &last_wall_export),
+                            ProfilerMessage::LocalRootSpanResource(message) =>
+                                Self::handle_resource_message(message, &mut profiles),
+                            ProfilerMessage::Cancel => {
+                                // flush what we have before exiting
+                                last_wall_export = self.handle_timeout(&mut profiles, &last_wall_export);
+                                running = false;
+                            }
                         },
+                        Err(_) => {
+                            /* Docs say:
+                             * > A message could not be received because the
+                             * > channel is empty and disconnected.
+                             * If this happens, let's just break and end.
+                             */
+                            break;
+                        }
                     }
                 },
-                recv(upload_tick) -> _ => {
-                    last_wall_export = self.handle_timeout(&mut profiles, &last_wall_export);
+
+                recv(wall_time_tick) -> message => {
+                    if message.is_ok() {
+                        let vm_interrupts = self.vm_interrupts.lock().unwrap();
+
+                        vm_interrupts.iter().for_each(|obj| unsafe {
+                            (&*obj.engine_ptr).store(true, Ordering::SeqCst);
+                            (&*obj.interrupt_count_ptr).fetch_add(1, Ordering::SeqCst);
+                        });
+                    }
                 },
+
+                recv(upload_tick) -> message => {
+                    if message.is_ok() {
+                        last_wall_export = self.handle_timeout(&mut profiles, &last_wall_export);
+                    }
+                },
+
+                recv(self.fork_receiver) -> message => {
+                    if message.is_ok() {
+                        // First, wait for every thread to finish what they are currently doing.
+                        self.fork_barrier.wait();
+                        // Then, wait for the fork to be completed.
+                        self.fork_barrier.wait();
+                    }
+                }
+
             }
         }
     }
@@ -481,6 +524,8 @@ struct UploadMessage {
 }
 
 struct Uploader {
+    fork_barrier: Arc<Barrier>,
+    fork_receiver: Receiver<()>,
     upload_receiver: Receiver<UploadMessage>,
 }
 
@@ -489,9 +534,17 @@ impl Uploader {
         let index = message.index;
         let profile = message.profile;
 
+        let profiling_library_name: &str = &PROFILER_NAME_STR;
+        let profiling_library_version: &str = &PROFILER_VERSION_STR;
         let endpoint: Endpoint = (&*index.endpoint).try_into()?;
-        let exporter =
-            datadog_profiling::exporter::ProfileExporter::new("php", Some(index.tags), endpoint)?;
+        let exporter = datadog_profiling::exporter::ProfileExporter::new(
+            profiling_library_name,
+            profiling_library_version,
+            "php",
+            Some(index.tags),
+            endpoint,
+        )?;
+
         let serialized = profile.serialize(Some(message.end_time), message.duration)?;
         let start = serialized.start.into();
         let end = serialized.end.into();
@@ -507,95 +560,158 @@ impl Uploader {
     }
 
     pub fn run(&self) {
-        self.upload_receiver
-            .iter()
-            .for_each(|message| match Self::upload(message) {
-                Ok(status) => {
-                    if status >= 400 {
-                        warn!(
-                            "Unexpected HTTP status when sending profile (HTTP {}).",
-                            status
-                        )
-                    } else {
-                        info!("Successfully uploaded profile (HTTP {}).", status)
+        /* Safety: Called from Profiling::new, which is after config is
+         * initialized, and before it's destroyed in mshutdown.
+         */
+        let pprof_filename = unsafe { crate::config::profiling_output_pprof() };
+        let mut i = 0;
+
+        loop {
+            /* Since profiling uploads are going over the Internet and not just
+             * the local network, it would be ideal if they were the lowest
+             * priority message, but crossbeam selects at random.
+             * todo: fix fork message priority.
+             */
+            select! {
+                recv(self.fork_receiver) -> message => match message {
+                    Ok(_) => {
+                        // First, wait for every thread to finish what they are currently doing.
+                        self.fork_barrier.wait();
+                        // Then, wait for the fork to be completed.
+                        self.fork_barrier.wait();
                     }
-                }
-                Err(err) => {
-                    warn!("Failed to upload profile: {}", err)
-                }
-            });
+                    _ => {
+                        trace!("Fork channel closed; joining upload thread.");
+                        break;
+                    }
+                },
+
+                recv(self.upload_receiver) -> message => match message {
+                    Ok(upload_message) => {
+                        match pprof_filename.as_ref() {
+                            Some(filename) => {
+                                let r = upload_message.profile.serialize(None, None).unwrap();
+                                i += 1;
+                                std::fs::write(format!("{filename}.{i}"), r.buffer).expect("write to succeed")
+                            },
+                            None => match Self::upload(upload_message) {
+                                Ok(status) => {
+                                    if status >= 400 {
+                                        warn!("Unexpected HTTP status when sending profile (HTTP {status}).")
+                                    } else {
+                                        info!("Successfully uploaded profile (HTTP {status}).")
+                                    }
+                                }
+                                Err(err) => {
+                                    warn!("Failed to upload profile: {err}")
+                                }
+                            },
+                        }
+                    },
+                    _ => {
+                        trace!("No more upload messages to handle; joining thread.");
+                        break;
+                    }
+
+                },
+            }
+        }
     }
 }
 
 impl Profiler {
     pub fn new() -> Self {
+        let fork_barrier = Arc::new(Barrier::new(3));
+        let (fork_sender0, fork_receiver0) = crossbeam_channel::bounded(1);
+        let vm_interrupts = Arc::new(Mutex::new(Vec::with_capacity(1)));
         let (message_sender, message_receiver) = crossbeam_channel::bounded(100);
-        let (time_collector_cancel_sender, time_collector_cancel_receiver) =
-            crossbeam_channel::bounded(0);
-        let vm_interrupt_lock = Arc::new(Mutex::new(HashSet::with_capacity(1)));
         let (upload_sender, upload_receiver) = crossbeam_channel::bounded(UPLOAD_CHANNEL_CAPACITY);
+        let (fork_sender1, fork_receiver1) = crossbeam_channel::bounded(1);
         let time_collector = TimeCollector {
+            fork_barrier: fork_barrier.clone(),
+            fork_receiver: fork_receiver0,
+            vm_interrupts: vm_interrupts.clone(),
             message_receiver,
-            cancel_receiver: time_collector_cancel_receiver,
-            vm_interrupt_lock: vm_interrupt_lock.clone(),
             upload_sender,
             wall_time_period: WALL_TIME_PERIOD,
             upload_period: UPLOAD_PERIOD,
         };
-        let uploader = Uploader { upload_receiver };
+
+        let uploader = Uploader {
+            fork_barrier: fork_barrier.clone(),
+            fork_receiver: fork_receiver1,
+            upload_receiver,
+        };
         Profiler {
+            fork_barrier,
+            fork_senders: [fork_sender0, fork_sender1],
+            vm_interrupts,
             message_sender,
-            time_collector_cancel_sender,
-            vm_interrupt_lock,
             time_collector_handle: std::thread::spawn(move || time_collector.run()),
             uploader_handle: std::thread::spawn(move || uploader.run()),
         }
     }
 
-    pub fn add_interrupt(
-        &self,
-        engine_ptr: *const AtomicBool,
-        interrupt_count_ptr: *const AtomicU32,
-    ) {
-        match self.vm_interrupt_lock.lock() {
-            Ok(mut interrupts) => {
-                interrupts.insert(VmInterrupt {
-                    interrupt_count_ptr,
-                    engine_ptr,
-                });
+    pub fn add_interrupt(&self, interrupt: VmInterrupt) -> Result<(), (usize, VmInterrupt)> {
+        let mut vm_interrupts = self.vm_interrupts.lock().unwrap();
+        for (index, value) in vm_interrupts.iter().enumerate() {
+            if *value == interrupt {
+                return Err((index, interrupt));
             }
-            Err(err) => {
-                error!("failed to acquire vm_interrupt lock: {}", err);
-            }
-        };
+        }
+        vm_interrupts.push(interrupt);
+        Ok(())
     }
 
-    pub fn remove_interrupt(
-        &self,
-        engine_ptr: *const AtomicBool,
-        interrupt_count_ptr: *const AtomicU32,
-    ) {
-        match self.vm_interrupt_lock.lock() {
-            Ok(mut interrupts) => {
-                interrupts.remove(&VmInterrupt {
-                    interrupt_count_ptr,
-                    engine_ptr,
-                });
+    pub fn remove_interrupt(&self, interrupt: VmInterrupt) -> Result<(), VmInterrupt> {
+        let mut vm_interrupts = self.vm_interrupts.lock().unwrap();
+        let mut offset = None;
+        for (index, value) in vm_interrupts.iter().enumerate() {
+            if *value == interrupt {
+                offset = Some(index);
+                break;
             }
-            Err(err) => {
-                error!("failed to acquire vm_interrupt lock: {}", err);
-            }
-        };
+        }
+
+        if let Some(index) = offset {
+            vm_interrupts.swap_remove(index);
+            Ok(())
+        } else {
+            Err(interrupt)
+        }
     }
 
-    pub fn send_sample(&self, message: SampleMessage) -> Result<(), TrySendError<SampleMessage>> {
-        self.message_sender.try_send(message)
+    /// Call before a fork, on the thread of the parent process that will fork.
+    pub fn fork_prepare(&self) {
+        for sender in self.fork_senders.iter() {
+            // Hmm, what to do with errors?
+            let _ = sender.send(());
+        }
+        self.fork_barrier.wait();
+    }
+
+    /// Call after a fork, but only on the thread of the parent process that forked.
+    pub fn post_fork_parent(&self) {
+        self.fork_barrier.wait();
+    }
+
+    pub fn send_sample(&self, message: SampleMessage) -> Result<(), TrySendError<ProfilerMessage>> {
+        self.message_sender
+            .try_send(ProfilerMessage::Sample(message))
+    }
+
+    pub fn send_local_root_span_resource(
+        &self,
+        message: LocalRootSpanResourceMessage,
+    ) -> Result<(), TrySendError<ProfilerMessage>> {
+        self.message_sender
+            .try_send(ProfilerMessage::LocalRootSpanResource(message))
     }
 
     pub fn stop(self) {
         // todo: what should be done when a thread panics?
         debug!("Stopping profiler.");
-        let _ = self.time_collector_cancel_sender.send(());
+        let _ = self.message_sender.send(ProfilerMessage::Cancel);
         if let Err(err) = self.time_collector_handle.join() {
             std::panic::resume_unwind(err)
         }
@@ -710,7 +826,97 @@ impl Profiler {
                     },
                 };
 
-                // Panic: profiler was checked above for is_none().
+                match self.send_sample(message) {
+                    Ok(_) => trace!(
+                        "Sent stack sample of depth {} with labels {:?} to profiler.",
+                        depth,
+                        labels
+                    ),
+                    Err(err) => warn!(
+                        "Failed to send stack sample of depth {} with labels {:?} to profiler: {}",
+                        depth, labels, err
+                    ),
+                }
+            }
+            Err(err) => {
+                warn!("Failed to collect stack sample: {}", err)
+            }
+        }
+    }
+
+    /// Collect a stack sample with memory allocations
+    pub unsafe fn collect_allocations(
+        &self,
+        execute_data: *mut zend_execute_data,
+        allocation_size: u64,
+        locals: &RequestLocals,
+    ) {
+        let result = collect_stack_sample(execute_data);
+        match result {
+            Ok(frames) => {
+                let depth = frames.len();
+
+                let sample_types = vec![
+                    ValueType {
+                        r#type: Cow::Borrowed("alloc-samples"),
+                        unit: Cow::Borrowed("count"),
+                    },
+                    ValueType {
+                        r#type: Cow::Borrowed("alloc-size"),
+                        unit: Cow::Borrowed("bytes"),
+                    },
+                ];
+
+                let sample_values = vec![1, allocation_size as i64];
+
+                let mut labels = vec![];
+                let gpc = datadog_php_profiling_get_profiling_context;
+                if let Some(get_profiling_context) = gpc {
+                    let context = get_profiling_context();
+                    if context.local_root_span_id != 0 {
+                        labels.push(Label {
+                            key: "local root span id".into(),
+                            value: LabelValue::Str(
+                                format!("{}", context.local_root_span_id).into(),
+                            ),
+                        });
+                        labels.push(Label {
+                            key: "span id".into(),
+                            value: LabelValue::Str(format!("{}", context.span_id).into()),
+                        });
+                    }
+                }
+
+                let mut tags = locals.tags.clone();
+
+                if let Some(version) = PHP_VERSION.get() {
+                    /* This should probably be "language_version", but this is
+                     * the tag that was standardized for this purpose. */
+                    let tag = Tag::new("runtime_version", version)
+                        .expect("runtime_version to be a valid tag");
+                    tags.push(tag);
+                }
+
+                if let Some(sapi) = crate::SAPI.get() {
+                    match Tag::new("php.sapi", sapi.to_string()) {
+                        Ok(tag) => tags.push(tag),
+                        Err(err) => warn!("Tag error: {}", err),
+                    }
+                }
+
+                let message = SampleMessage {
+                    key: ProfileIndex {
+                        sample_types,
+                        tags,
+                        endpoint: locals.uri.clone(),
+                    },
+                    value: SampleData {
+                        frames,
+                        labels: labels.clone(),
+                        sample_values,
+                    },
+                };
+
                 match self.send_sample(message) {
                     Ok(_) => trace!(
                         "Sent stack sample of depth {} with labels {:?} to profiler.",

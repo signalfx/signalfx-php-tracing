@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Symfony\V4_2;
 
+use DDTrace\Tag;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\GetSpec;
@@ -45,16 +46,20 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                     'http.url' => 'http://localhost:9999/simple',
                     'http.status_code' => '200',
                     'component' => 'symfony',
+                    Tag::SPAN_KIND => 'server',
                 ])->withExactMetrics([
                     '_dd1.sr.eausr' => 0.3,
                     '_sampling_priority_v1' => 1,
+                    'process_id' => getmypid(),
                 ]) ->withChildren([
                     SpanAssertion::exists('symfony.kernel.terminate'),
                     SpanAssertion::exists('symfony.httpkernel.kernel.handle')->withChildren([
                         SpanAssertion::exists('symfony.httpkernel.kernel.boot'),
                         SpanAssertion::exists('symfony.kernel.handle')
                             ->withChildren([
-                                SpanAssertion::exists('symfony.kernel.request'),
+                                SpanAssertion::exists('symfony.kernel.request')->withChildren([
+                                    SpanAssertion::exists('symfony.security.authentication.success'),
+                                ]),
                                 SpanAssertion::exists('symfony.kernel.controller'),
                                 SpanAssertion::exists('symfony.kernel.controller_arguments'),
                                 SpanAssertion::build(
@@ -63,9 +68,7 @@ class TraceSearchConfigTest extends WebFrameworkTestCase
                                     'web',
                                     'App\Controller\CommonScenariosController::simpleAction'
                                 ),
-                                SpanAssertion::exists('symfony.kernel.response')->withChildren([
-                                    SpanAssertion::exists('symfony.security.authentication.success')
-                                ]),
+                                SpanAssertion::exists('symfony.kernel.response'),
                                 SpanAssertion::exists('symfony.kernel.finish_request'),
                             ]),
                     ]),

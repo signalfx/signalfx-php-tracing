@@ -2,6 +2,7 @@
 
 namespace DDTrace\Tests\Integrations\Laravel\V4;
 
+use DDTrace\Tag;
 use DDTrace\Tests\Common\SpanAssertion;
 use DDTrace\Tests\Common\WebFrameworkTestCase;
 use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
@@ -51,6 +52,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
                             'component' => 'laravel',
+                            TAG::SPAN_KIND => 'server',
                         ])
                         ->withChildren([
                             SpanAssertion::exists('laravel.application.handle')
@@ -134,6 +136,7 @@ class CommonScenariosTest extends WebFrameworkTestCase
                             'some.key1' => 'value',
                             'some.key2' => 'value2',
                             'component' => 'laravel',
+                            TAG::SPAN_KIND => 'server',
                         ])->setError()->withChildren([
                             SpanAssertion::exists('laravel.application.handle')
                                 ->withChildren([
