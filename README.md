@@ -1,11 +1,10 @@
 # SignalFx Tracing Library for PHP
 
-[![CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master.svg?style=svg)](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/master)
-[![Packagist Version](https://img.shields.io/packagist/v/signalfx/signalfx-tracing.svg)](https://packagist.org/packages/signalfx/signalfx-tracing)
+[![CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/main.svg?style=svg)](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/main)
 
 This library provides an OpenTracing-compatible tracer and automatically
 configurable instrumentations for many popular PHP libraries and frameworks.
-It is a native extension that supports PHP versions 5.4+ running on the Zend Engine.
+It is a native extension that supports PHP versions 7.0+ running on the Zend Engine.
 
 The SignalFx Tracing Library for PHP is in beta.
 
