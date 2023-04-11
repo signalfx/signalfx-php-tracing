@@ -160,7 +160,7 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
     }
 
     /**
-     * Executed a call to the test web server.
+     * SIGNALFX: Executed a call to the test web server and returns response array(body, headers)
      *
      * @param RequestSpec $spec
      * @return mixed|null
