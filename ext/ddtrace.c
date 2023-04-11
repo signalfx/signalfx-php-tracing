@@ -704,6 +704,7 @@ static PHP_MINIT_FUNCTION(ddtrace) {
         zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
         zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
         zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_SERVICE, ZAI_STRL_VIEW("unnamed-php-service"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_SIGNALFX_TRACE_RESPONSE_HEADER_ENABLED, ZAI_STRL_VIEW("true"));
     }
 
     if (ZSTR_LEN(get_global_DD_SPAN_SAMPLING_RULES_FILE()) > 0) {

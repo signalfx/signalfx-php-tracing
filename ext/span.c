@@ -123,6 +123,38 @@ static uint64_t _get_nanoseconds(bool monotonic_clock) {
     return 0;
 }
 
+// SIGNALFX: save 
+void signalfx_append_response_header(const char* full_header) {
+    sapi_header_line header_line = {0};
+    header_line.line = full_header;
+    header_line.line_len = strlen(full_header);
+    header_line.response_code = 0;
+    sapi_header_op(SAPI_HEADER_ADD, &header_line);
+}
+
+void signalfx_append_server_timings_headers(ddtrace_span_data *span) {
+    if (!get_global_SIGNALFX_TRACE_RESPONSE_HEADER_ENABLED()) {
+        return;
+    }
+
+    char header_buffer[128];
+
+    int result = snprintf(
+        header_buffer,
+        sizeof(header_buffer),
+        "Server-Timing: traceparent;desc=\"00-%032" PRIx64 "-%016" PRIx64 "-01\"",
+        span->trace_id,
+        span->span_id);
+
+    if (result < 0 || (size_t) result >= sizeof(header_buffer)) {
+        ddtrace_log_err("Failed to format Server-Timing header");
+        return;
+    }
+
+    signalfx_append_response_header("Access-Control-Expose-Headers: Server-Timing");
+    signalfx_append_response_header(header_buffer);
+}
+
 void ddtrace_open_span(ddtrace_span_data *span) {
     ddtrace_span_stack *stack = DDTRACE_G(active_stack);
     bool primary_stack = stack->parent_stack == NULL;
@@ -177,6 +209,7 @@ void ddtrace_open_span(ddtrace_span_data *span) {
         // SIGNALFX: sfx custom root properties are only set for autoroot
         if (span->type == DDTRACE_AUTOROOT_SPAN) {
             signalfx_set_autoroot_properties(span);
+            signalfx_append_server_timings_headers(span);
         }
     } else {
         // do not copy the parent, it was active span before, just transfer that reference
