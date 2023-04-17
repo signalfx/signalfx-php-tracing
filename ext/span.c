@@ -126,7 +126,7 @@ static uint64_t _get_nanoseconds(bool monotonic_clock) {
 // SIGNALFX: send server timing header with trace/span ID if feature is enabled
 void signalfx_append_response_header(const char* full_header) {
     sapi_header_line header_line = {0};
-    header_line.line = full_header;
+    header_line.line = (char*) full_header;
     header_line.line_len = strlen(full_header);
     header_line.response_code = 0;
     sapi_header_op(SAPI_HEADER_ADD, &header_line);

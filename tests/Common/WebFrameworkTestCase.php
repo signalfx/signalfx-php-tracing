@@ -189,13 +189,13 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
             if ($headers) {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             }
-            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$responseHeaders) {
                 $splitHeader = explode(':', $header, 2);
-    
+
                 if (count($splitHeader) == 2) {
                     $responseHeaders[strtolower(trim($splitHeader[0]))][] = trim($splitHeader[1]);
                 }
-    
+
                 return strlen($header);
             });
             $response = curl_exec($ch);
