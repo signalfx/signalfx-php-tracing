@@ -354,19 +354,19 @@ static void _dd_print_values_to_log(HashTable *ht) {
     ZEND_HASH_FOREACH_STR_KEY_VAL_IND(ht, key, val) {
         switch (Z_TYPE_P(val)) {
             case IS_STRING:
-                ddtrace_log_errf("DATADOG TRACER DIAGNOSTICS - %s: %s", ZSTR_VAL(key), Z_STRVAL_P(val));
+                ddtrace_log_errf("SIGNALFX TRACER DIAGNOSTICS - %s: %s", ZSTR_VAL(key), Z_STRVAL_P(val));
                 break;
             case IS_NULL:
-                ddtrace_log_errf("DATADOG TRACER DIAGNOSTICS - %s: NULL", ZSTR_VAL(key));
+                ddtrace_log_errf("SIGNALFX TRACER DIAGNOSTICS - %s: NULL", ZSTR_VAL(key));
                 break;
             case IS_TRUE:
-                ddtrace_log_errf("DATADOG TRACER DIAGNOSTICS - %s: true", ZSTR_VAL(key));
+                ddtrace_log_errf("SIGNALFX TRACER DIAGNOSTICS - %s: true", ZSTR_VAL(key));
                 break;
             case IS_FALSE:
-                ddtrace_log_errf("DATADOG TRACER DIAGNOSTICS - %s: false", ZSTR_VAL(key));
+                ddtrace_log_errf("SIGNALFX TRACER DIAGNOSTICS - %s: false", ZSTR_VAL(key));
                 break;
             default:
-                ddtrace_log_errf("DATADOG TRACER DIAGNOSTICS - %s: {unknown type}", ZSTR_VAL(key));
+                ddtrace_log_errf("SIGNALFX TRACER DIAGNOSTICS - %s: {unknown type}", ZSTR_VAL(key));
                 break;
         }
     }
@@ -389,7 +389,7 @@ void ddtrace_startup_logging_first_rinit(void) {
 
     smart_str buf = {0};
     _dd_serialize_json(ht, &buf, 0);
-    ddtrace_log_errf("DATADOG TRACER CONFIGURATION - %s", ZSTR_VAL(buf.s));
+    ddtrace_log_errf("SIGNALFX TRACER CONFIGURATION - %s", ZSTR_VAL(buf.s));
     ddtrace_log_errf(
         "For additional diagnostic checks such as Agent connectivity, see the 'signalfx_tracing' section of a "
         "phpinfo() page. Alternatively set SIGNALFX_TRACE_DEBUG=1 to add diagnostic checks to the error logs on the "
