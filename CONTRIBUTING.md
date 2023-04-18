@@ -1,7 +1,5 @@
 # Contributing to dd-trace-php
 
-As an open-source project we welcome contributions of many forms, but due to the experimental pre-beta nature of this repository, you should [reach out to us](https://github.com/DataDog/dd-trace-php/issues) before starting work on any major code changes. This will ensure we avoid duplicating work, or that your code can't be merged due to a rapidly changing base.
-
 ## Getting set up with Docker
 
 The easiest way to get the development environment set up is to install [Docker](https://www.docker.com/) and
@@ -61,21 +59,6 @@ You can check that the extension was installed properly.
 
 ```bash
 $ php --ri=ddtrace
-```
-
-You should see output similar to the following:
-
-```
-ddtrace
-
-
-Datadog PHP tracer extension
-For help, check out the documentation at https://docs.datadoghq.com/tracing/languages/php/
-(c) Datadog 2020
-
-Datadog tracing support => enabled
-Version => 1.0.0-nightly
-DATADOG TRACER CONFIGURATION => ...
 ```
 
 When you're done with development, you can stop and remove the containers with the following:
