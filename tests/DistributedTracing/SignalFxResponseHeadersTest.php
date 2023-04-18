@@ -3,7 +3,7 @@
 namespace DDTrace\Tests\DistributedTracing;
 
 use DDTrace\Tests\Common\WebFrameworkTestCase;
-use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;\
+use DDTrace\Tests\Frameworks\Util\Request\RequestSpec;
 
 // SIGNALFX: Test that SIGNALFX_TRACE_RESPONSE_HEADER_ENABLED sets Server-Timing header
 class SignalFxResponseHeadersTest extends WebFrameworkTestCase
