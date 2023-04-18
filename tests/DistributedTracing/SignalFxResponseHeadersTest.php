@@ -54,8 +54,11 @@ class SignalFxResponseHeadersTest extends WebFrameworkTestCase
         $this->assertNotNull($serverTimingHeaders);
         $this->assertSame(1, count($serverTimingHeaders));
 
-        $matched = preg_match('/^traceparent;desc="00-([a-z0-9]{32,32})-([a-z0-9]{16,16})-01"$/',
-            $serverTimingHeaders[0], $matches);
+        $matched = preg_match(
+            '/^traceparent;desc="00-([a-z0-9]{32,32})-([a-z0-9]{16,16})-01"$/',
+            $serverTimingHeaders[0],
+            $matches
+        );
         $this->assertSame(1, $matched);
 
         $this->assertSame($matches[1], '0000000000000000000000000000100a');
