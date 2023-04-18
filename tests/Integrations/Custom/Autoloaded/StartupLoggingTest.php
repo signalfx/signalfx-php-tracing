@@ -90,7 +90,7 @@ final class StartupLoggingTest extends WebFrameworkTestCase
         $contents = \file_get_contents(self::getAppErrorLog());
         $lines = explode(PHP_EOL, $contents);
 
-        $target = 'DATADOG TRACER CONFIGURATION - ';
+        $target = 'SIGNALFX TRACER CONFIGURATION - ';
         $json = '';
         foreach ($lines as $line) {
             $pos = strpos($line, $target);

@@ -29,7 +29,7 @@ function dd_get_startup_logs(array $args = [], array $env = [])
     $cmd = $envVars . ' ' . $cgi . ' ' . getenv("TEST_PHP_EXTRA_ARGS") . ' ' . $argList . ' -v 2>&1';
     exec($cmd, $o);
 
-    $target = 'DATADOG TRACER CONFIGURATION - ';
+    $target = 'SIGNALFX TRACER CONFIGURATION - ';
     $json = '';
     foreach ($o as $line) {
         $pos = strpos($line, $target);

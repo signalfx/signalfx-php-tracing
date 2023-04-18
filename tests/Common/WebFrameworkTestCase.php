@@ -155,7 +155,33 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
      */
     protected function sendRequest($method, $url, $headers = [])
     {
+        list($responseBody, $responseHeaders) = $this->sendRequestWithResponseHeaders($method, $url, $headers);
+        return $responseBody;
+    }
+
+    /**
+     * SIGNALFX: Executed a call to the test web server and returns response array(body, headers)
+     *
+     * @param RequestSpec $spec
+     * @return mixed|null
+     */
+    protected function callWithResponseHeaders(RequestSpec $spec)
+    {
+        $response = $this->sendRequestWithResponseHeaders(
+            $spec->getMethod(),
+            self::HOST . ':' . self::PORT . $spec->getPath(),
+            $spec->getHeaders()
+        );
+        return $response;
+    }
+
+    protected function sendRequestWithResponseHeaders($method, $url, $headers = [])
+    {
+        // SIGNALFX: collect headers too
+        $responseHeaders = null;
+
         for ($i = 0; $i < 10; ++$i) {
+            $responseHeaders = array();
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -163,6 +189,15 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
             if ($headers) {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             }
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$responseHeaders) {
+                $splitHeader = explode(':', $header, 2);
+
+                if (count($splitHeader) == 2) {
+                    $responseHeaders[strtolower(trim($splitHeader[0]))][] = trim($splitHeader[1]);
+                }
+
+                return strlen($header);
+            });
             $response = curl_exec($ch);
             if ($response === false && $i < 9) {
                 \curl_close($ch);
@@ -191,6 +226,7 @@ abstract class WebFrameworkTestCase extends IntegrationTestCase
 
         curl_close($ch);
 
-        return $response;
+        // SIGNALFX: collect headers too
+        return array($response, $responseHeaders);
     }
 }

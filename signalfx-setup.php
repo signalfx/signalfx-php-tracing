@@ -1268,6 +1268,12 @@ function get_ini_settings($requestInitHookPath)
             'description' => 'Ingest access token, which is required if sending directly to the ingest endpoint',
         ],
         [
+            'name' => 'signalfx.trace.response_header_enabled',
+            'default' => 'On',
+            'commented' => true,
+            'description' => 'Sets whether setting the response header that links with RUM traces is enabled',
+        ],
+        [
             'name' => 'signalfx.capture_env_vars',
             'default' => '',
             'commented' => true,

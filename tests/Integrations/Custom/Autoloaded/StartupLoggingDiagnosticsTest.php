@@ -52,7 +52,7 @@ final class StartupLoggingDiagnosticsTest extends WebFrameworkTestCase
 
         $contents = \file_get_contents(self::getAppErrorLog());
 
-        self::assertStringContains('DATADOG TRACER DIAGNOSTICS - agent_error:', $contents);
-        self::assertStringContains('DATADOG TRACER DIAGNOSTICS - datadog.trace.request_init_hook_reachable:', $contents);
+        self::assertStringContains('SIGNALFX TRACER DIAGNOSTICS - agent_error:', $contents);
+        self::assertStringContains('SIGNALFX TRACER DIAGNOSTICS - datadog.trace.request_init_hook_reachable:', $contents);
     }
 }
