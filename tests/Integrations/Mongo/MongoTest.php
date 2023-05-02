@@ -43,6 +43,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.server' => 'mongodb://mongodb_integration:27017',
                     'mongodb.db' => self::DATABASE,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -70,6 +71,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.server' => 'mongodb://?:?@mongodb_integration:27017',
                     'mongodb.db' => self::DATABASE,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -97,6 +99,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.server' => 'mongodb://mongodb_integration:27017/' . self::DATABASE,
                     'mongodb.db' => self::DATABASE,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -112,6 +115,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.collection' => 'foo_collection',
                     'mongodb.db' => self::DATABASE,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -126,6 +130,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoClient.selectDB', 'mongo', 'mongodb', 'selectDB')
                 ->withExactTags([
                     'mongodb.db' => self::DATABASE,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -140,6 +145,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoClient.setReadPreference', 'mongo', 'mongodb', 'setReadPreference')
                 ->withExactTags([
                     'mongodb.read_preference' => MongoClient::RP_NEAREST,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -196,6 +202,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.query' => '{"age":{"$gte":18}}',
                     'mongodb.timeout' => '500',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -211,6 +218,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.collection' => 'foo_collection',
                     'mongodb.bson.id' => '47cc67093475061e3d9536d2',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -225,6 +233,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoDB.createCollection', 'mongo', 'mongodb', 'createCollection')
                 ->withExactTags([
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -253,6 +262,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoDB.getDBRef', 'mongo', 'mongodb', 'getDBRef')
                 ->withExactTags([
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -267,6 +277,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoDB.selectCollection', 'mongo', 'mongodb', 'selectCollection')
                 ->withExactTags([
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -281,6 +292,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoDB.setProfilingLevel', 'mongo', 'mongodb', 'setProfilingLevel')
                 ->withExactTags([
                     'mongodb.profiling_level' => '2',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -295,6 +307,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoDB.setReadPreference', 'mongo', 'mongodb', 'setReadPreference')
                 ->withExactTags([
                     'mongodb.read_preference' => MongoClient::RP_NEAREST,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -352,6 +365,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.db' => self::DATABASE,
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -402,6 +416,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoCollection.count', 'mongo', 'mongodb', 'count')
                 ->withExactTags([
                     'mongodb.query' => '{"title":"Foo"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -417,6 +432,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.bson.id' => '47cc67093475061e3d9536d2',
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -454,6 +470,7 @@ class MongoTest extends IntegrationTestCase
                 ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'mongodb.query' => '{"foo":"bar"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -469,6 +486,7 @@ class MongoTest extends IntegrationTestCase
                 ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'mongodb.query' => '{"foo":"bar"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -489,6 +507,7 @@ class MongoTest extends IntegrationTestCase
                 ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'mongodb.query' => '{"foo":"bar"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -503,6 +522,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoCollection.findOne', 'mongo', 'mongodb', 'findOne')
                 ->setTraceAnalyticsCandidate()
                 ->withExactTags([
+                    'db.system' => 'mongo',
                     'mongodb.query' => '{"foo":"bar"}',
                 ]),
         ]);
@@ -522,6 +542,7 @@ class MongoTest extends IntegrationTestCase
                 ->withExactTags([
                     'mongodb.bson.id' => '47cc67093475061e3d9536d2',
                     'mongodb.collection' => 'foo_collection',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -578,6 +599,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoCollection.remove', 'mongo', 'mongodb', 'remove')
                 ->withExactTags([
                     'mongodb.query' => '{"foo":"bar"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -603,6 +625,7 @@ class MongoTest extends IntegrationTestCase
             SpanAssertion::build('MongoCollection.setReadPreference', 'mongo', 'mongodb', 'setReadPreference')
                 ->withExactTags([
                     'mongodb.read_preference' => MongoClient::RP_NEAREST,
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
@@ -632,6 +655,7 @@ class MongoTest extends IntegrationTestCase
                 ->setTraceAnalyticsCandidate()
                 ->withExactTags([
                     'mongodb.query' => '{"foo":"bar"}',
+                    'db.system' => 'mongo',
                 ]),
         ]);
     }
