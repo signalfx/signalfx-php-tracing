@@ -82,7 +82,7 @@ missing
 present
 
 ERROR TAG
-1
+true
 missing
 
 COMPONENT TAG
