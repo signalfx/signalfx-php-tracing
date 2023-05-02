@@ -1107,7 +1107,7 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_data *
                     cstr_key = "db.type";
                 } else if (strcmp(cstr_key, "db.name") == 0) {
                     cstr_key = "db.instance";
-                } else if (strcmp(cstr_key, "sql.query") == 0) {
+                } else if (strcmp(cstr_key, "sql.query") == 0 || strcmp(cstr_key, "mongodb.query") == 0) {
                     cstr_key = "db.statement";
                 }
 

@@ -634,6 +634,7 @@ class MongoDBIntegration extends Integration
         $span->type = Type::MONGO;
         $span->meta[Tag::COMPONENT] = 'mongodb';
         $span->meta[Tag::SPAN_KIND] = 'client';
+        $span->meta[Tag::DB_SYSTEM] = 'mongo';
         $serializedQuery = $rawQuery ? MongoDBIntegration::serializeQuery($rawQuery) : null;
         $span->resource = \implode(' ', array_filter([$method, $database, $collection, $command, $serializedQuery]));
         if ($database) {
