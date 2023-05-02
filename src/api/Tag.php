@@ -16,6 +16,7 @@ class Tag
     // SIGNALFX: component tag is for SFX zipkin, cannot reliably deduce in serializer, thus set explicitly
     const COMPONENT = 'component';
     const DB_STATEMENT = 'sql.query';
+    const DB_SYSTEM = 'db.system';
     const ERROR = 'error';
     const ERROR_MSG = 'error.message'; // string representing the error message
     const ERROR_TYPE = 'error.type'; // string representing the type of the error
