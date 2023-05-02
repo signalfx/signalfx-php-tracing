@@ -1129,7 +1129,7 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_data *
     }
 
     if (error_kind_present) {
-        add_assoc_bool(tags, "error", true);
+        add_assoc_string(tags, "error", "true");
     }
 
     // Pseudo: sfx_span['tags']['component'] = dd_span['service'] (if tag not yet present)

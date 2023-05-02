@@ -62,7 +62,7 @@ array(1) {
       ["random"]=>
       string(9) "dd_random"
       ["error"]=>
-      bool(true)
+      string(4) "true"
       ["resource.name"]=>
       string(11) "dd_resource"
     }
