@@ -77,7 +77,7 @@ function install($options)
 
     // Preparing clean tmp folder to extract files
     $tmpDir = sys_get_temp_dir() . '/signalfx-install';
-    $tmpDirTarGz = $tmpDir . "/signalfx-library-php-${platform}.tar.gz";
+    $tmpDirTarGz = $tmpDir . "/signalfx-library-php-{$platform}.tar.gz";
     $tmpArchiveRoot = $tmpDir . '/signalfx-library-php';
     $tmpArchiveTraceRoot = $tmpDir . '/signalfx-library-php/trace';
     $tmpBridgeDir = $tmpArchiveTraceRoot . '/bridge';
@@ -96,11 +96,11 @@ function install($options)
     } elseif (isset($options[OPT_FILE_DIR])) {
         $version = RELEASE_VERSION;
         $tarGzDir = $options[OPT_FILE_DIR];
-        $tarGzName = "signalfx-library-php-${version}-${platform}.tar.gz";
-        $tmpDirTarGz = "${tarGzDir}/${tarGzName}";
+        $tarGzName = "signalfx-library-php-{$version}-{$platform}.tar.gz";
+        $tmpDirTarGz = "{$tarGzDir}/{$tarGzName}";
 
         if (!file_exists($tmpDirTarGz)) {
-            print_error_and_exit("Could not find ${tarGzName} in provided directory ${tarGzDir}");
+            print_error_and_exit("Could not find {$tarGzName} in provided directory {$tarGzDir}");
         }
         unset($version);
     } else {
@@ -109,7 +109,7 @@ function install($options)
         // For testing purposes, we need an alternate repo where we can push bundles that includes changes that we are
         // trying to test, as the previously released versions would not have those changes.
         $url = "https://github.com/signalfx/signalfx-php-tracing"
-            . "/releases/download/${version}/signalfx-library-php-${version}-${platform}.tar.gz";
+            . "/releases/download/{$version}/signalfx-library-php-{$version}-{$platform}.tar.gz";
         // phpcs:enable Generic.Files.LineLength.TooLong
         download($url, $tmpDirTarGz);
         unset($version);
@@ -589,7 +589,7 @@ function check_library_prerequisite_or_exit($requiredLibrary)
     if (is_alpine()) {
         $lastLine = execute_or_exit(
             "Error while searching for library '$requiredLibrary'.",
-            "find /usr/local/lib /usr/lib -type f -name '*${requiredLibrary}*.so*'"
+            "find /usr/local/lib /usr/lib -type f -name '*{$requiredLibrary}*.so*'"
         );
     } else {
         $ldconfig = search_for_working_ldconfig();
@@ -999,11 +999,11 @@ function search_php_binaries($prefix = '')
 
     $remiSafePaths = array_map(function ($phpVersion) use ($prefix) {
         list($major, $minor) = explode('.', $phpVersion);
-        /* php is installed to /usr/bin/php${major}${minor} so we do not need to do anything special, while php-fpm
-         * is installed to /opt/remi/php${major}${minor}/root/usr/sbin and it needs to be added to the searched
+        /* php is installed to /usr/bin/php{$major}{$minor} so we do not need to do anything special, while php-fpm
+         * is installed to /opt/remi/php{$major}{$minor}/root/usr/sbin and it needs to be added to the searched
          * locations.
          */
-        return "${prefix}/opt/remi/php${major}${minor}/root/usr/sbin";
+        return "{$prefix}/opt/remi/php{$major}{$minor}/root/usr/sbin";
     }, get_supported_php_versions());
 
     $pleskPaths = array_map(function ($phpVersion) use ($prefix) {
@@ -1075,15 +1075,15 @@ function build_known_command_names_matrix()
         list($major, $minor) = explode('.', $phpVersion);
         array_push(
             $results,
-            "php${major}",
-            "php${major}${minor}",
-            "php${major}.${minor}",
-            "php${major}-fpm",
-            "php${major}${minor}-fpm",
-            "php${major}.${minor}-fpm",
-            "php-fpm${major}",
-            "php-fpm${major}${minor}",
-            "php-fpm${major}.${minor}"
+            "php{$major}",
+            "php{$major}{$minor}",
+            "php{$major}.{$minor}",
+            "php{$major}-fpm",
+            "php{$major}{$minor}-fpm",
+            "php{$major}.{$minor}-fpm",
+            "php-fpm{$major}",
+            "php-fpm{$major}{$minor}",
+            "php-fpm{$major}.{$minor}"
         );
     }
 
