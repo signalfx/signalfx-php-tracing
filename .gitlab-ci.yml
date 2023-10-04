@@ -1,6 +1,8 @@
 stages:
   - build
   - deploy
+  - benchmarks
+  - ci-build
 
 variables:
   LATEST_LIBRARY_x86_64_LINUX_GNU:
@@ -9,9 +11,11 @@ variables:
   DOWNSTREAM_REL_BRANCH:
     value: "master"
     description: "Run a specific datadog-reliability-env branch downstream"
-  FORCE_TRIGGER:
-    value: "false"
-    description: "Set to true to override rules in the reliability-env pipeline (e.g. override 'only deploy master')"
+
+include:
+  - remote: https://gitlab-templates.ddbuild.io/libdatadog/include/ci_authenticated_job.yml
+  - local: .gitlab/benchmarks.yml
+  - local: .gitlab/ci-images.yml
 
 build:
   stage: build
