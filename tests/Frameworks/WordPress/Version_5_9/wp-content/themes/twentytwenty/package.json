@@ -19,7 +19,7 @@
 		"autoprefixer": "^10.4.0",
 		"concurrently": "^6.3.0",
 		"postcss-cli": "^9.0.2",
-		"postcss": "^8.3.11",
+		"postcss": "^8.4.31",
 		"rtlcss": "^3.5.0",
 		"stylelint-a11y": "^1.2.3"
 	},
