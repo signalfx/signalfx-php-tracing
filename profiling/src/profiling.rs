@@ -9,6 +9,7 @@ use crossbeam_channel::{select, Receiver, Sender, TrySendError};
 use datadog_profiling::exporter::{Endpoint, File, Tag};
 use datadog_profiling::profile;
 use datadog_profiling::profile::api::{Function, Line, Location, Period, Sample};
+use libc::size_t;
 use log::{debug, info, trace, warn};
 use std::borrow::{Borrow, Cow};
 use std::collections::HashMap;
@@ -848,7 +849,7 @@ impl Profiler {
     pub unsafe fn collect_allocations(
         &self,
         execute_data: *mut zend_execute_data,
-        allocation_size: u64,
+        allocation_size: size_t,
         locals: &RequestLocals,
     ) {
         let result = collect_stack_sample(execute_data);

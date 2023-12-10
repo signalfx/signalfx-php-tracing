@@ -13,7 +13,7 @@ use bindings::{ZendExtension, ZendResult};
 use config::AgentEndpoint;
 use datadog_profiling::exporter::{Tag, Uri};
 use lazy_static::lazy_static;
-use libc::{c_char, c_int};
+use libc::{c_char, c_int, size_t};
 use log::{debug, error, info, trace, warn, LevelFilter};
 use once_cell::sync::OnceCell;
 use sapi::Sapi;
@@ -934,7 +934,7 @@ extern "C" fn execute_internal(
     interrupt_function(execute_data);
 }
 
-unsafe extern "C" fn alloc_profiling_malloc(len: u64) -> *mut ::libc::c_void {
+unsafe extern "C" fn alloc_profiling_malloc(len: size_t) -> *mut ::libc::c_void {
     let ptr: *mut libc::c_void;
 
     // TODO: prepare a function pointer to use so we don't need a runtime check
@@ -988,7 +988,7 @@ unsafe extern "C" fn alloc_profiling_free(ptr: *mut ::libc::c_void) {
 
 unsafe extern "C" fn alloc_profiling_realloc(
     ptr: *mut ::libc::c_void,
-    len: u64,
+    len: size_t,
 ) -> *mut ::libc::c_void {
     if PREV_CUSTOM_MM_REALLOC.is_none() {
         zend::_zend_mm_realloc(zend::zend_mm_get_heap(), ptr, len)
