@@ -110,6 +110,7 @@ ext/date/tests/date_timestamp_set_nullparam2.phpt
 ext/date/tests/test-parse-from-format.phpt
 ext/fileinfo/tests/finfo_open_error.phpt
 ext/ftp/tests
+ext/gd/tests/bug70976.phpt
 ext/json/tests/bug45791.phpt
 ext/json/tests/bug77843.phpt
 ext/json/tests/json_decode_exceptions.phpt
@@ -154,14 +155,14 @@ ext/openssl/tests/tls_wrapper.phpt
 ext/openssl/tests/tlsv1.0_wrapper.phpt
 ext/openssl/tests/tlsv1.1_wrapper.phpt
 ext/openssl/tests/tlsv1.2_wrapper.phpt
+ext/pdo/tests/pdo_023.phpt
+ext/pdo/tests/pdo_030.phpt
 ext/pdo_sqlite/tests/bug43831.phpt
 ext/pdo_sqlite/tests/bug44327_2.phpt
 ext/pdo_sqlite/tests/bug44327_3.phpt
 ext/pdo_sqlite/tests/bug48773.phpt
 ext/pdo_sqlite/tests/pdo_fetch_func_001.phpt
 ext/pdo_sqlite/tests/pdo_sqlite_lastinsertid.phpt
-ext/pdo/tests/pdo_023.phpt
-ext/pdo/tests/pdo_030.phpt
 ext/phar/tests/031.phpt
 ext/phar/tests/032.phpt
 ext/phar/tests/bug69720.phpt
