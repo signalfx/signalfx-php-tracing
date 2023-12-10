@@ -188,7 +188,7 @@ class MongoDBTest extends IntegrationTestCase
             'component' => 'mongodb',
         ];
         // On newer versions of the mongodb library, the datadog subscriber is only called after the arguments check
-        if (PHP_VERSION_ID < 70400) {
+        if (PHP_VERSION_ID < 70400 || (PHP_VERSION_ID >= 80000 && PHP_VERSION_ID < 80200)) {
             $tags += [
                 'out.host' => self::HOST,
                 'out.port' => self::PORT,
