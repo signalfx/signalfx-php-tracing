@@ -1955,10 +1955,9 @@ workflows:
                 - "datadog/dd-trace-ci:alpine"
                 - "datadog/dd-trace-ci:buster"
               cmake_version:
-                - "3.19.8"
-                - "3.21.4"
+                - "3.24.4"
               catch2_version:
-                - "2.13.7"
+                - "2.13.10"
 
   zend_abstract_interface:
     jobs:
@@ -1980,10 +1979,9 @@ workflows:
                 - "8.1"
                 - "8.2"
               cmake_version:
-                - "3.19.7"
-                - "3.20.1"
+                - "3.24.4"
               catch2_version:
-                - "2.13.5"
+                - "2.13.10"
 
   zend_abstract_interface_shared_exts:
     jobs:
@@ -2735,7 +2733,8 @@ workflows:
                 - alpine:3.12
                 - alpine:3.15
                 - alpine:3.16
-                - alpine:latest
+                # SIGNALFX: latest breaks if dd install/verify is not kept up-to-date with upstream
+                #- alpine:latest
       - verify_alpine:
           requires: [ "package extension" ]
           matrix:
@@ -3133,7 +3132,7 @@ workflows:
           requires: [ 'Prepare Code' ]
           name: "PHP 82 Xdebug tests"
           docker_image: "datadog/dd-trace-ci:php-8.2_buster"
-          xdebug_version_one: "3.2.0RC1"
+          xdebug_version_one: "3.2.2"
       - placeholder:
           requires: [ 'Prepare Code' ]
           name: Language tests

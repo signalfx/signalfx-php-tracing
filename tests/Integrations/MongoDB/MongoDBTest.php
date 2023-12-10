@@ -180,18 +180,24 @@ class MongoDBTest extends IntegrationTestCase
             } catch (Exception $e) {
             }
         });
-
+        $tags = [
+            'mongodb.db' => self::DATABASE,
+            'mongodb.collection' => 'cars',
+            'mongodb.query' => '"?"',
+            'span.kind' => 'client',
+            'component' => 'mongodb',
+        ];
+        // On newer versions of the mongodb library, the datadog subscriber is only called after the arguments check
+        if (PHP_VERSION_ID < 70400) {
+            $tags += [
+                'out.host' => self::HOST,
+                'out.port' => self::PORT,
+            ];
+        }
         $this->assertFlameGraph($traces, [
             SpanAssertion::build('mongodb.cmd', 'mongodb', 'mongodb', 'find test_db cars "?"')
-                ->withExactTags([
-                    'mongodb.db' => self::DATABASE,
-                    'mongodb.collection' => 'cars',
-                    'mongodb.query' => '"?"',
-                    'span.kind' => 'client',
-                    'out.host' => self::HOST,
-                    'out.port' => self::PORT,
-                    'component' => 'mongodb',
-                ])->setError('MongoDB\Exception\InvalidArgumentException')
+                ->withExactTags($tags)
+                ->setError('MongoDB\Exception\InvalidArgumentException')
                 ->withExistingTagsNames([Tag::ERROR_MSG, 'error.stack']),
         ]);
     }
