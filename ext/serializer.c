@@ -29,6 +29,7 @@
 #include "signalfx/json_writer.h"
 #include "span.h"
 #include "uri_normalization.h"
+#include "version.h"
 
 ZEND_EXTERN_MODULE_GLOBALS(ddtrace);
 
@@ -1081,6 +1082,9 @@ void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_data *
     zval tags_zv;
     zval *tags = &tags_zv;
     array_init(tags);
+
+    add_assoc_string(tags, "signalfx.tracing.library", "php-tracing");
+    add_assoc_string(tags, "signalfx.tracing.version", PHP_DDTRACE_VERSION);
 
     bool error_kind_present = false;
     zval *dd_tags = zend_hash_str_find(Z_ARR_P(dd_span), ZEND_STRL("meta"));

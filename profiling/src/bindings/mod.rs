@@ -10,8 +10,8 @@ use std::sync::atomic::AtomicBool;
 
 pub type VmInterruptFn = unsafe extern "C" fn(execute_data: *mut zend_execute_data);
 
-pub type VmMmCustomAllocFn = unsafe extern "C" fn(u64) -> *mut libc::c_void;
-pub type VmMmCustomReallocFn = unsafe extern "C" fn(*mut libc::c_void, u64) -> *mut libc::c_void;
+pub type VmMmCustomAllocFn = unsafe extern "C" fn(size_t) -> *mut libc::c_void;
+pub type VmMmCustomReallocFn = unsafe extern "C" fn(*mut libc::c_void, size_t) -> *mut libc::c_void;
 pub type VmMmCustomFreeFn = unsafe extern "C" fn(*mut libc::c_void);
 
 // todo: this a lie on some PHP versions; is it a problem even though zend_bool

@@ -50,7 +50,11 @@ array(1) {
     ["name"]=>
     string(7) "dd_name"
     ["tags"]=>
-    array(7) {
+    array(9) {
+      ["signalfx.tracing.library"]=>
+      string(11) "php-tracing"
+      ["signalfx.tracing.version"]=>
+      string(%d) "%s"
       ["sfx.error.kind"]=>
       string(13) "dd_error_type"
       ["sfx.error.message"]=>
