@@ -40,7 +40,7 @@ for architecture in "${architectures[@]}"; do
     dd_folder_trace_gnu=$tmp_folder_dd_gnu/dd-library-php/trace
     dd_folder_trace_musl=$tmp_folder_dd_musl/dd-library-php/trace
 
-    php_apis=(20151012 20160303 20170718 20180731 20190902 20200930 20210902 20220829)
+    php_apis=(20151012 20160303 20170718 20180731 20190902 20200930 20210902 20220829 20230831)
     # SIGNALFX: API versions 20100412 20121113 20131106 are PHP5 which is built from a separate branch in upstream, which is not present here
     for php_api in "${php_apis[@]}"; do
         mkdir -p ${tmp_folder_final_gnu_trace}/ext/$php_api ${tmp_folder_final_musl_trace}/ext/$php_api;
