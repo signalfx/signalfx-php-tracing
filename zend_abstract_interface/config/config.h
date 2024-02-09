@@ -17,7 +17,7 @@ typedef uint16_t zai_config_id;
 
 #include "config_ini.h"
 
-#define ZAI_CONFIG_ENTRIES_COUNT_MAX 160
+#define ZAI_CONFIG_ENTRIES_COUNT_MAX 200
 #define ZAI_CONFIG_NAMES_COUNT_MAX 4
 // SIGNALFX: increase internal size of names array to 2x+1 of original to accomodate SIGNALFX_ prefixed
 // variations and a possible fully custom name

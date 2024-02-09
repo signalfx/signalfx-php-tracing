@@ -38,7 +38,7 @@ static inline void ddtrace_inject_distributed_headers(zend_array *array) {
     }
     zend_string *propagated_tags = ddtrace_format_propagated_tags();
     // SIGNALFX: do not send DD tags header if SFX mode is enabled
-    if (!get_global_SIGNALFX_MODE() (&& send_datadog || send_b3 || send_b3single)) {
+    if (!get_global_SIGNALFX_MODE() && (send_datadog || send_b3 || send_b3single)) {
         if (propagated_tags) {
             add_next_index_str(&headers, zend_strpprintf(0, "x-datadog-tags: %s", ZSTR_VAL(propagated_tags)));
         }

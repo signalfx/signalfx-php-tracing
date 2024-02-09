@@ -1064,13 +1064,19 @@ static void signalfx_add_assoc_hex64(zval *span, const char* name, uint64_t valu
     add_assoc_string(span, name, hex_str);
 }
 
+static void signalfx_add_assoc_hex128(zval *span, const char* name, uint64_t value_high, uint64_t value_low) {
+    char hex_str[MAX_ID_BUFSIZ];
+    sprintf(hex_str, "%016" PRIx64 "%016" PRIx64, value_high, value_low);
+    add_assoc_string(span, name, hex_str);
+}
+
 void signalfx_serialize_sfx_span_to_array(zval* spans_array, ddtrace_span_data *span, zval *dd_span) {
     zval sfx_span_zv;
     zval *sfx_span = &sfx_span_zv;
     array_init(sfx_span);
 
     // More efficient to just read from the original span structure than from serializer array
-    signalfx_add_assoc_hex64(sfx_span, "traceId", span->trace_id);
+    signalfx_add_assoc_hex128(sfx_span, "traceId", span->trace_id.high, span->trace_id.low);
     signalfx_add_assoc_hex64(sfx_span, "id", span->span_id);
 
     if (span->parent_id > 0) {

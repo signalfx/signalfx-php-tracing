@@ -707,8 +707,8 @@ static PHP_MINIT_FUNCTION(ddtrace) {
 
     // SIGNALFX: change default values for some configuration options if SFX mode is enabled
     if (get_global_SIGNALFX_MODE()) {
-        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
-        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_TRACE_PROPAGATION_STYLE_EXTRACT, ZAI_STRL_VIEW("B3,B3 single header"));
+        zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_TRACE_PROPAGATION_STYLE_INJECT, ZAI_STRL_VIEW("B3"));
         zai_config_use_signalfx_default(DDTRACE_CONFIG_DD_SERVICE, ZAI_STRL_VIEW("unnamed-php-service"));
         zai_config_use_signalfx_default(DDTRACE_CONFIG_SIGNALFX_TRACE_RESPONSE_HEADER_ENABLED, ZAI_STRL_VIEW("true"));
     }
@@ -2113,7 +2113,7 @@ static PHP_FUNCTION(sfxtrace_ddspan_to_sfx_array) {
     }
 
     ddtrace_span_data dummy_span = {
-        .trace_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("trace_id")),
+        .trace_id = { .low = sfx_read_u64_from_key(dd_span, ZEND_STRL("trace_id")), .high = 0 },
         .parent_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("parent_id")),
         .span_id = sfx_read_u64_from_key(dd_span, ZEND_STRL("span_id")),
         .start = sfx_read_u64_from_key(dd_span, ZEND_STRL("start")),
