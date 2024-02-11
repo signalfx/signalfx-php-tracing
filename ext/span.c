@@ -144,8 +144,9 @@ void signalfx_append_server_timings_headers(ddtrace_span_data *span) {
     int result = snprintf(
         header_buffer,
         sizeof(header_buffer),
-        "Server-Timing: traceparent;desc=\"00-%032" PRIx64 "-%016" PRIx64 "-01\"",
-        span->trace_id,
+        "Server-Timing: traceparent;desc=\"00-%016" PRIx64 "%016" PRIx64 "-%016" PRIx64 "-01\"",
+        span->trace_id.high,
+        span->trace_id.low,
         span->span_id);
 
     if (result < 0 || (size_t) result >= sizeof(header_buffer)) {
