@@ -38,7 +38,7 @@ array(1) {
   [0]=>
   array(9) {
     ["traceId"]=>
-    string(16) "01b6995ab4687dea"
+    string(32) "000000000000000001b6995ab4687dea"
     ["id"]=>
     string(16) "0021987762bd2873"
     ["parentId"]=>

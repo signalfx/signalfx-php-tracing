@@ -38,6 +38,9 @@ static inline bool zai_hook_memory_table_del(zend_execute_data *index) {
 }
 
 #if defined(__x86_64__) || defined(__aarch64__)
+# if defined(__GNUC__) && !defined(__clang__)
+__attribute__((no_sanitize_address))
+# endif
 static void zai_hook_safe_finish(zend_execute_data *execute_data, zval *retval, zai_frame_memory *frame_memory) {
     if (!CG(unclean_shutdown)) {
         zai_hook_finish(execute_data, retval, &frame_memory->hook_data);
@@ -53,9 +56,10 @@ static void zai_hook_safe_finish(zend_execute_data *execute_data, zval *retval, 
     // Jump onto a temporary stack here... to avoid messing with stack allocated data
     JMP_BUF target;
     const size_t stack_size = 1 << 17;
+    const size_t stack_top_offset = 0x400;
     void *volatile stack = malloc(stack_size);
     if (SETJMP(target) == 0) {
-        void *stacktop = stack + stack_size, *stacktarget = stacktop - 0x400;
+        void *stacktop = stack + stack_size, *stacktarget = stacktop - stack_top_offset;
 
 #ifdef __SANITIZE_ADDRESS__
         void *volatile fake_stack;
@@ -97,7 +101,20 @@ static void zai_hook_safe_finish(zend_execute_data *execute_data, zval *retval, 
         __sanitizer_finish_switch_fiber(fake_stack, &bottom, &capacity);
 #endif
 
+#if PHP_VERSION_ID >= 80300
+        void *stack_base = EG(stack_base);
+        void *stack_limit = EG(stack_limit);
+
+        EG(stack_base) = stacktarget;
+        EG(stack_limit) = (void*)((uintptr_t)stacktarget - stack_top_offset - EG(reserved_stack_size) * 2);
+#endif
+
         zai_hook_finish(ex, rv, hook_data);
+
+#if PHP_VERSION_ID >= 80300
+        EG(stack_base) = stack_base;
+        EG(stack_limit) = stack_limit;
+#endif
 
 #ifdef __SANITIZE_ADDRESS__
         __sanitizer_start_switch_fiber(NULL, bottom, capacity);

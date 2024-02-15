@@ -58,7 +58,11 @@ HashTable *dd_uhook_collect_args(zend_execute_data *execute_data) {
 
     zval *p = EX_VAR_NUM(0);
     zend_function *func = EX(func);
+#if PHP_VERSION_ID < 80300
     ht->nNumOfElements = num_args;
+#else
+    ht->nTableSize = num_args;
+#endif
 
     zend_hash_real_init(ht, 1);
     ZEND_HASH_FILL_PACKED(ht) {
@@ -188,7 +192,7 @@ static void dd_uhook_dtor(void *data) {
 #endif
 
 /* {{{ proto int DDTrace\install_hook(string|Closure|Generator target, ?Closure begin = null, ?Closure end = null) */
-PHP_FUNCTION(install_hook) {
+PHP_FUNCTION(DDTrace_install_hook) {
     zend_string *name = NULL;
     zend_function *resolved = NULL;
     zval *begin = NULL;
@@ -293,7 +297,7 @@ PHP_FUNCTION(install_hook) {
 } /* }}} */
 
 /* {{{ proto void DDTrace\remove_hook(int $id) */
-PHP_FUNCTION(remove_hook) {
+PHP_FUNCTION(DDTrace_remove_hook) {
     (void)return_value;
 
     zend_long id;
@@ -323,11 +327,25 @@ void zai_uhook_rshutdown() {
     zend_hash_destroy(&dd_active_hooks);
 }
 
+#if PHP_VERSION_ID >= 80000
+void zai_uhook_attributes_minit(void);
+#endif
 void zai_uhook_minit() {
     ddtrace_hook_data_ce = register_class_DDTrace_HookData();
     zend_register_functions(NULL, ext_functions, NULL, MODULE_PERSISTENT);
+#if PHP_VERSION_ID >= 80000
+    zai_uhook_attributes_minit();
+#endif
 }
 
+#if PHP_VERSION_ID >= 80000
+void zai_uhook_attributes_mshutdown(void);
+#endif
 void zai_uhook_mshutdown() {
-    zend_unregister_functions(ext_functions,sizeof(ext_functions) / sizeof(zend_function_entry) - 1,NULL);
+#if PHP_VERSION_ID < 80300
+    zend_unregister_functions(ext_functions, sizeof(ext_functions) / sizeof(zend_function_entry) - 1, NULL);
+#endif
+#if PHP_VERSION_ID >= 80000
+    zai_uhook_attributes_mshutdown();
+#endif
 }

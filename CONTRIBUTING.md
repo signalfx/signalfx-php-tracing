@@ -7,6 +7,24 @@ The easiest way to get the development environment set up is to install [Docker]
 
 ## Developing and testing locally
 
+### PHP linting
+
+The PHP tracer conforms to the [PSR-2 coding style guide](https://www.php-fig.org/psr/psr-2/). The code style is checked with [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) which can be invoked with the following command:
+
+```bash
+$ composer lint
+```
+
+To try to automatically fix the code style, you can run:
+
+```bash
+$ composer fix-lint
+```
+
+### Testing
+
+#### Start your container
+
 While tests in CI run on all php versions, you typically develop on one version locally. Currently the latest local
 dev environment we support is `8.0`.
 
@@ -15,12 +33,6 @@ Ensure that docker has at least 4 GB of RAM available, otherwise composer may ru
 Execute one the following commands from your command line, this will bring up all required services:
 
 ```bash
-# For 5.4
-$ docker-compose run --rm 5.4-buster bash
-# For 5.5
-$ docker-compose run --rm 5.5-buster bash
-# For 5.6
-$ docker-compose run --rm 5.6-buster bash
 # For 7.0
 $ docker-compose run --rm 7.0-buster bash
 # For 7.1
@@ -33,13 +45,19 @@ $ docker-compose run --rm 7.3-buster bash
 $ docker-compose run --rm 7.4-buster bash
 # For 8.0
 $ docker-compose run --rm 8.0-buster bash
+# For 8.1
+$ docker-compose run --rm 8.1-buster bash
+# For 8.2
+$ docker-compose run --rm 8.2-buster bash
 ```
 
 > :memo: **Note:** To run the container in debug mode, pass `docker-compose` an environment variable: `DD_TRACE_DOCKER_DEBUG=1`, eg:
 
 ```bash
-docker-compose run --rm 8.0-buster -e DD_TRACE_DOCKER_DEBUG=1 bash
+docker-compose run --rm 8.2-buster -e DD_TRACE_DOCKER_DEBUG=1 bash
 ```
+
+#### Set up the container
 
 Once inside the container, update dependencies with Composer.
 
@@ -61,13 +79,7 @@ You can check that the extension was installed properly.
 $ php --ri=ddtrace
 ```
 
-When you're done with development, you can stop and remove the containers with the following:
-
-```bash
-$ docker-compose down -v
-```
-
-### Running the tests
+#### Running the tests
 
 First you need to update composer's dependecies in `./tests` folder:
 
@@ -82,26 +94,29 @@ Then you can run tests:
     # Run all tests
     $ make test_all
 
-    # Run unit tests
+    # Run unit tests (tests/Unit folder)
     $ make test_unit
 
-    # Run integration tests
+    # Run integration tests (tests/Integration folder)
     $ make test_integration
 
-    # Run auto-instrumentation tests
+    # Run auto-instrumentation tests (tests/AutoInstrumentation folder)
     $ make test_auto_instrumentation
 
-    # Run composer integration tests
+    # Run composer integration tests (tests/Composer folder)
     $ make test_composer
 
-    # Run distributed tracing tests
+    # Run distributed tracing tests (tests/DistributedTracing folder)
     $ make test_distributed_tracing
 
-    # Run library integrations tests
+    # Run library integrations tests (tests/Integrations folder)
     $ make test_integrations
 
     # Run web frameworks integrations tests
     $ make test_web
+
+    # Run C Tests (the ones in tests/ext)
+    $ make test_c
 
 In order to run the `phpt` tests for the php extension:
 
@@ -109,18 +124,12 @@ In order to run the `phpt` tests for the php extension:
 $ composer test-ext
 ```
 
-### PHP linting
+#### Treardown the environment
 
-The PHP tracer conforms to the [PSR-2 coding style guide](https://www.php-fig.org/psr/psr-2/). The code style is checked with [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer) which can be invoked with the following command:
-
-```bash
-$ composer lint
-```
-
-To try to automatically fix the code style, you can run:
+When you're done with development, you can stop and remove the containers with the following:
 
 ```bash
-$ composer fix-lint
+$ docker-compose down -v
 ```
 
 ## Sending a pull request (PR)

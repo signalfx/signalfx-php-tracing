@@ -68,6 +68,20 @@ class InternalExceptionsTest extends WebFrameworkTestCase
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
                         ),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
                     ]),
             ]
         );
@@ -109,7 +123,11 @@ class InternalExceptionsTest extends WebFrameworkTestCase
                             'web',
                             'errors::403'
                         )->withChildren([
-                            SpanAssertion::exists('laravel.view'),
+                            SpanAssertion::exists('laravel.view')->withChildren([
+                                SpanAssertion::exists('laravel.event.handle'),
+                                SpanAssertion::exists('laravel.event.handle'),
+                            ]),
+                            SpanAssertion::exists('laravel.event.handle'),
                         ]),
                         SpanAssertion::build('laravel.action', 'laravel_test_app', 'web', 'unauthorized')
                             ->setError()
@@ -118,6 +136,21 @@ class InternalExceptionsTest extends WebFrameworkTestCase
                             'laravel.provider.load',
                             'Illuminate\Foundation\ProviderRepository::load'
                         ),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
+                        SpanAssertion::exists('laravel.event.handle'),
                     ]),
             ]
         );

@@ -115,8 +115,11 @@ extern bool runtime_config_first_init;
     CONFIG(SET_LOWERCASE, DD_TRACE_HEADER_TAGS, "")                                                            \
     CONFIG(INT, DD_TRACE_X_DATADOG_TAGS_MAX_LENGTH, "512")                                                     \
     CONFIG(BOOL, DD_TRACE_PROPAGATE_SERVICE, "false")                                                          \
-    CONFIG(SET, DD_PROPAGATION_STYLE_EXTRACT, "Datadog,B3,B3 single header")                                   \
-    CONFIG(SET, DD_PROPAGATION_STYLE_INJECT, "Datadog")                                                        \
+    CALIAS(SET_LOWERCASE, DD_TRACE_PROPAGATION_STYLE_EXTRACT, "tracecontext,Datadog,B3,B3 single header",      \
+           CALIASES("DD_PROPAGATION_STYLE_EXTRACT"))                                                           \
+    CALIAS(SET_LOWERCASE, DD_TRACE_PROPAGATION_STYLE_INJECT, "tracecontext,Datadog",                           \
+           CALIASES("DD_PROPAGATION_STYLE_INJECT"))                                                            \
+    CONFIG(SET_LOWERCASE, DD_TRACE_PROPAGATION_STYLE, "tracecontext,Datadog")                                  \
     CONFIG(SET, DD_TRACE_TRACED_INTERNAL_FUNCTIONS, "")                                                        \
     CONFIG(INT, DD_TRACE_AGENT_TIMEOUT, DD_CFG_EXPSTR(DD_TRACE_AGENT_TIMEOUT_VAL),                             \
            .ini_change = zai_config_system_ini_change)                                                         \
@@ -126,6 +129,7 @@ extern bool runtime_config_first_init;
     CONFIG(BOOL, DD_LOG_BACKTRACE, "false")                                                                    \
     CONFIG(BOOL, DD_TRACE_GENERATE_ROOT_SPAN, "true", .ini_change = ddtrace_span_alter_root_span_config)       \
     CONFIG(INT, DD_TRACE_SPANS_LIMIT, "1000")                                                                  \
+    CONFIG(BOOL, DD_TRACE_128_BIT_TRACEID_GENERATION_ENABLED, "false")                                         \
     CONFIG(INT, DD_TRACE_AGENT_MAX_CONSECUTIVE_FAILURES,                                                       \
            DD_CFG_EXPSTR(DD_TRACE_CIRCUIT_BREAKER_DEFAULT_MAX_CONSECUTIVE_FAILURES))                           \
     CONFIG(INT, DD_TRACE_AGENT_ATTEMPT_RETRY_TIME_MSEC,                                                        \
@@ -145,6 +149,8 @@ extern bool runtime_config_first_init;
     CONFIG(BOOL, DD_TRACE_RETAIN_THREAD_CAPABILITIES, "false", .ini_change = zai_config_system_ini_change)     \
     CONFIG(STRING, DD_VERSION, "")                                                                             \
     CONFIG(STRING, DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP, DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP_DEFAULT) \
+    CONFIG(BOOL, DD_TRACE_CLIENT_IP_ENABLED, "false")                                                          \
+    CONFIG(STRING, DD_TRACE_CLIENT_IP_HEADER, "")                                                              \
     CONFIG(BOOL, DD_TRACE_FORKED_PROCESS, "true")                                                              \
     CONFIG(INT, DD_TRACE_AGENT_MAX_PAYLOAD_SIZE, "52428800", .ini_change = zai_config_system_ini_change)       \
     CONFIG(INT, DD_TRACE_AGENT_STACK_INITIAL_SIZE, "131072", .ini_change = zai_config_system_ini_change)       \

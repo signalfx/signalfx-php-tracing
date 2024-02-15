@@ -161,28 +161,24 @@ aliases:
 
         export CIRCLE_REPOSITORY_URL="${CIRCLE_REPOSITORY_URL/git@github.com:/https://github.com/}"
 
-        if ! [ -e '/home/circleci/datadog/.git' ] ; then
+        if [ -e "$HOME/datadog/.git" ] ; then
+          echo 'Fetching into existing repository'
+          existing_repo='true'
+          cd "$HOME/datadog"
+          git remote set-url origin "$CIRCLE_REPOSITORY_URL" || true
+
+          echo 'Fetching from remote repository'
+          if [ -n "$CIRCLE_TAG" ]; then
+            git fetch --force --no-recurse-submodules --tags origin
+          elif [ -z "$CIRCLE_PR_NUMBER" ]; then
+            git fetch --force --no-recurse-submodules origin "+refs/heads/$CIRCLE_BRANCH:refs/remotes/origin/$CIRCLE_BRANCH"
+          fi
+        else
           echo 'Cloning git repository'
           existing_repo='false'
-          mkdir -p '/home/circleci/datadog'
-          cd '/home/circleci/datadog'
+          mkdir -p "$HOME/datadog"
+          cd "$HOME/datadog"
           git clone --no-checkout "$CIRCLE_REPOSITORY_URL" .
-        fi
-
-        echo 'Fetching into existing repository'
-        existing_repo='true'
-        cd '/home/circleci/datadog'
-        git remote set-url origin "$CIRCLE_REPOSITORY_URL" || true
-
-        echo 'Fetching from remote repository'
-        if [ -n "$CIRCLE_TAG" ]; then
-          git fetch --force --tags origin
-        else
-          if [[ "$CIRCLE_BRANCH" == *"pull/"* ]]; then
-            git fetch --force origin "+refs/$CIRCLE_BRANCH/head:refs/remotes/origin/$CIRCLE_BRANCH"
-          else
-            git fetch --force origin "+refs/heads/$CIRCLE_BRANCH:refs/remotes/origin/$CIRCLE_BRANCH"
-          fi
         fi
 
         if [ -n "$CIRCLE_TAG" ]; then
@@ -191,6 +187,9 @@ aliases:
           git reset --hard "$CIRCLE_SHA1"
         else
           echo 'Checking out branch'
+          if [ -n "$CIRCLE_PR_NUMBER" ]; then
+            git fetch --force origin "+refs/pull/${CIRCLE_PR_NUMBER}/head:refs/remotes/origin/$CIRCLE_BRANCH"
+          fi
           git checkout --force -B "$CIRCLE_BRANCH" "$CIRCLE_SHA1"
           git --no-pager log --no-color -n 1 --format='HEAD is now at %h %s'
         fi
@@ -373,6 +372,10 @@ jobs:
     docker:
       - image: cimg/php:8.1-node
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - lib_curl_workaround:
           command: sudo apt update; sudo apt -y install libcurl4-nss-dev
@@ -418,6 +421,10 @@ jobs:
     docker:
       - image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - lib_curl_workaround:
           command: sudo apt update; sudo apt -y install libcurl4-nss-dev
@@ -437,6 +444,15 @@ jobs:
     docker:
       - image: datadog/dd-trace-ci:php-nginx-apache2
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Install git
+          command: |
+            apt-get update
+            apt-get install -y git
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Start Supervisor
@@ -445,8 +461,8 @@ jobs:
       - run:
           name: Copy post-install script
           command: |
-              mkdir -p /src/ddtrace-scripts
-              cp package/post-install.sh /src/ddtrace-scripts
+            mkdir -p /src/ddtrace-scripts
+            cp package/post-install.sh /src/ddtrace-scripts
       - run:
           name: Test post-install hook
           command: bash tests/PostInstallHook/run-tests.sh
@@ -465,6 +481,10 @@ jobs:
       name: with_agent
       docker_image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - <<: *STEP_EXT_INSTALL
       - <<: *STEP_EXPORT_CI_ENV
@@ -511,6 +531,10 @@ jobs:
     working_directory: ~/datadog
     <<: *BARE_DOCKER_MACHINE
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
           docker_image: datadog/dd-trace-ci:php-<< parameters.php_major_minor >>_buster
@@ -559,6 +583,10 @@ jobs:
     #   DD_AGENT_HOST: 127.0.0.1
     #   DATADOG_HAVE_DEV_ENV: 1
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Install php
@@ -634,6 +662,10 @@ jobs:
     environment:
       COMPOSER_PROCESS_TIMEOUT: 0
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - switch_php:
           php_version: << parameters.switch_php_version >>
@@ -676,6 +708,10 @@ jobs:
       name: with_agent
       docker_image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - prepare_extension_and_composer_with_cache
       - <<: *STEP_PREPARE_TEST_RESULTS_DIR
@@ -757,6 +793,10 @@ jobs:
     environment:
       COMPOSER_PROCESS_TIMEOUT: 0
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - switch_php:
           php_version: << parameters.switch_php_version >>
@@ -801,6 +841,10 @@ jobs:
       name: with_httpbin_and_request_replayer
       docker_image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - switch_php:
           php_version: << parameters.switch_php_version >>
@@ -822,7 +866,7 @@ jobs:
             make test_extension_ci \
               BUILD_DIR=$(pwd)/tmp/build_extension \
               JUNIT_RESULTS_DIR=$(pwd)/test-results \
-              RUN_TESTS_EXTRA_ARGS="-d extension=<< parameters.ext_name >>.so" \
+              RUN_TESTS_EXTRA_ARGS="-d extension=mbstring.so -d extension=<< parameters.ext_name >>.so" \
               TESTS="tests/ext/integrations/<< parameters.ext_name >>"
             if [ "<< parameters.ext_name >>" = "curl" ]
             then
@@ -831,7 +875,7 @@ jobs:
                 make test_c \
                   BUILD_DIR=$(pwd)/tmp/build_extension \
                   JUNIT_RESULTS_DIR=$(pwd)/test-results \
-                  RUN_TESTS_EXTRA_ARGS="-d extension=<< parameters.ext_name >>-${curlVersion}.so" \
+                  RUN_TESTS_EXTRA_ARGS="-d extension=mbstring.so -d extension=<< parameters.ext_name >>-${curlVersion}.so" \
                   TESTS="tests/ext/integrations/<< parameters.ext_name >>"
               done
             fi
@@ -858,6 +902,10 @@ jobs:
       name: with_httpbin_and_request_replayer
       docker_image: datadog/dd-trace-ci:php-<< parameters.php_version >>-shared-ext
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - <<: *STEP_PREPARE_TEST_RESULTS_DIR
       - <<: *STEP_EXPORT_CI_ENV
@@ -898,6 +946,10 @@ jobs:
       name: with_agent
       docker_image: cimg/php:7.3
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_remote_docker
       - run: make -f dockerfiles/frameworks/Makefile << parameters.framework_target >>
@@ -930,6 +982,13 @@ jobs:
           # see https://support.circleci.com/hc/en-us/articles/360016505753-Resolve-Certificate-Signed-By-Unknown-Authority-error-in-Alpine-images?flash_digest=39b76521a337cecacac0cc10cb28f3747bb5fc6a
           name: Install ca-certificates
           command: apk add --no-cache ca-certificates
+      - run:
+          name: Install git
+          command: apk add git
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Validate alpine package
@@ -960,6 +1019,15 @@ jobs:
           INSTALL_TYPE: << parameters.install_type >>
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Install git
+          command: |
+            yum update -y
+            yum install -y git
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Validate centos package
@@ -976,6 +1044,15 @@ jobs:
     machine:
       image: ubuntu-2004:202111-02
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Install git
+          command: |
+            yum update -y
+            yum install -y git
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run: mkdir -p test-results
       - run:
@@ -1013,6 +1090,15 @@ jobs:
           INSTALL_TYPE: << parameters.install_type >>
       - <<: *IMAGE_DOCKER_REQUEST_REPLAYER
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Install git
+          command: |
+            apt-get update
+            apt-get install -y git
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Validate debian package
@@ -1028,6 +1114,15 @@ jobs:
         default: medium
     <<: *BARE_DOCKER_MACHINE
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Install git
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y git
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
           docker_image: debian:buster
@@ -1045,6 +1140,13 @@ jobs:
           # see https://support.circleci.com/hc/en-us/articles/360016505753-Resolve-Certificate-Signed-By-Unknown-Authority-error-in-Alpine-images?flash_digest=39b76521a337cecacac0cc10cb28f3747bb5fc6a
           name: Install ca-certificates
           command: apk add --no-cache ca-certificates
+      - run:
+          name: Install git
+          command: apk add git
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Test
@@ -1055,6 +1157,10 @@ jobs:
     machine:
       image: ubuntu-2004:202111-02
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           # In order to hard-code the proper version required in tests, we need to regenerate the 'released' installer
@@ -1077,6 +1183,10 @@ jobs:
         # Batch is only used to run a number of this jobs in parallel via a testing matrix.
         type: integer
     steps: &randomized_tests_steps
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           command: ls -al
@@ -1149,6 +1259,10 @@ jobs:
       name: with_agent
       docker_image: "datadog/dd-trace-ci:php-7.4_buster"
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Make PECL build
@@ -1173,6 +1287,10 @@ jobs:
       name: with_httpbin_and_request_replayer
       docker_image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Install from PECL build
@@ -1212,6 +1330,10 @@ jobs:
     docker:
       - image: << parameters.docker_image >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Install cmake << parameters.cmake_version >>
@@ -1321,6 +1443,10 @@ jobs:
     docker:
       - image: datadog/dd-trace-ci:php-<< parameters.php_version >>_<< parameters.os >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Install cmake << parameters.cmake_version >>
@@ -1466,6 +1592,10 @@ jobs:
     docker:
       - image: datadog/dd-trace-ci:php-<< parameters.php_version >>-shared-ext
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Switch PHP to nts
@@ -1552,6 +1682,10 @@ jobs:
         default: medium
     <<: *BARE_DOCKER_MACHINE
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
           docker_image: datadog/dd-trace-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
@@ -1587,6 +1721,10 @@ jobs:
         default: medium # mostly for more RAM for ramdisk
     <<: *BARE_DOCKER_MACHINE
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
           docker_image: << parameters.docker_image >>
@@ -1699,6 +1837,9 @@ jobs:
     environment:
       - CARGO_TARGET_DIR: /mnt/ramdisk/cargo
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
       - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
@@ -1747,6 +1888,10 @@ jobs:
         type: string
     <<: *BARE_DOCKER_MACHINE
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - setup_docker:
           docker_image: << parameters.docker_image >>
@@ -1797,12 +1942,9 @@ jobs:
       - run:
           name: Showing folder containing generated files
           command: ls -al ~/datadog/bridge
-      - run:
-          name: Removing composer generated files
-          command: rm -rf ~/datadog/composer.lock ~/datadog/vendor
       - persist_to_workspace:
           root: '.'
-          paths: ['./']
+          paths: ['./bridge/_generated*.php']
 
   "package extension":
     working_directory: ~/datadog
@@ -1812,6 +1954,10 @@ jobs:
         type: boolean
         default: false
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - unless:
           condition: << parameters.asan_build >>
@@ -1859,6 +2005,10 @@ jobs:
     working_directory: ~/datadog
     docker: [ image: 'datadog/docker-library:ddtrace_php_fpm_packaging' ]
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Build SFX packages
@@ -1874,6 +2024,10 @@ jobs:
     docker:
       - image: datadog/dd-trace-ci:php-compile-extension-alpine-<< parameters.php_major_minor >>
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Run cross-product profiling phpt tests
@@ -1902,6 +2056,10 @@ jobs:
     resource_class: large
     working_directory: ~/datadog
     steps:
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+      - <<: *STEP_CHECKOUT
       - <<: *STEP_ATTACH_WORKSPACE
       - run:
           name: Install good version of docker-compose
@@ -2089,6 +2247,17 @@ workflows:
           abi_no: "20220829"
           triplet: "aarch64-alpine-linux-musl"
           resource_class: "arm.xlarge"
+      - "cargo build --release":
+          name: "Profiler PHP v8.3 - x86_64-alpine-linux-musl"
+          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.3"
+          abi_no: "20230831"
+          triplet: "x86_64-alpine-linux-musl"
+      - "cargo build --release":
+          name: "Profiler PHP v8.3 - aarch64-alpine-linux-musl"
+          docker_image: "datadog/dd-trace-ci:php-compile-extension-alpine-8.3"
+          abi_no: "20230831"
+          triplet: "aarch64-alpine-linux-musl"
+          resource_class: "arm.medium"
 
       # These don't actually need the other job to complete, but this way
       # there are fewer resources used when the build step fails.
@@ -2271,6 +2440,17 @@ workflows:
           abi_no: "20220829"
           triplet: "aarch64-unknown-linux-gnu"
           resource_class: "arm.xlarge"
+      - "cargo build --release":
+          name: "Profiler PHP v8.3 - x86_64-unknown-linux-gnu"
+          docker_image: "datadog/dd-trace-ci:php-8.3_centos-7"
+          abi_no: "20230831"
+          triplet: "x86_64-unknown-linux-gnu"
+      - "cargo build --release":
+          name: "Profiler PHP v8.3 - aarch64-unknown-linux-gnu"
+          docker_image: "datadog/dd-trace-ci:php-8.3_centos-7"
+          abi_no: "20230831"
+          triplet: "aarch64-unknown-linux-gnu"
+          resource_class: "arm.medium"
 
       # These don't actually need the other job to complete, but this way
       # there are fewer resources used when the build step fails.
@@ -2380,6 +2560,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               resource_class:
                 - "medium"
                 - "arm.medium"
@@ -2489,6 +2670,19 @@ workflows:
           php_version: "8.2"
           so_suffix: "20220829"
           resource_class: "arm.medium"
+      - compile_extension_centos:
+          requires: [ 'Prepare Code' ]
+          name: "Compile x86_64 PHP 83 nts + zts + debug"
+          docker_image: "datadog/dd-trace-ci:php-8.3_centos-7"
+          php_version: "8.3"
+          so_suffix: "20230831"
+      - compile_extension_centos:
+          requires: [ 'Prepare Code' ]
+          name: "Compile aarch64 PHP 83 nts + zts + debug"
+          docker_image: "datadog/dd-trace-ci:php-8.3_centos-7"
+          php_version: "8.3"
+          so_suffix: "20230831"
+          resource_class: "arm.medium"
       # SIGNALFX: disable PECL
       # - pecl_build:
       #     requires: [ 'Prepare Code' ]
@@ -2513,6 +2707,8 @@ workflows:
             - "Compile aarch64 PHP 81 nts + zts + debug"
             - "Compile x86_64 PHP 82 nts + zts + debug"
             - "Compile aarch64 PHP 82 nts + zts + debug"
+            - "Compile x86_64 PHP 83 nts + zts + debug"
+            - "Compile aarch64 PHP 83 nts + zts + debug"
             # SIGNALFX: disable PECL
             # - "Build PECL"
 
@@ -2523,6 +2719,7 @@ workflows:
             - "Profiler PHP v8.0 - x86_64-alpine-linux-musl"
             - "Profiler PHP v8.1 - x86_64-alpine-linux-musl"
             - "Profiler PHP v8.2 - x86_64-alpine-linux-musl"
+            - "Profiler PHP v8.3 - x86_64-alpine-linux-musl"
 
             - "Profiler PHP v7.1 - x86_64-unknown-linux-gnu"
             - "Profiler PHP v7.2 - x86_64-unknown-linux-gnu"
@@ -2531,6 +2728,7 @@ workflows:
             - "Profiler PHP v8.0 - x86_64-unknown-linux-gnu"
             - "Profiler PHP v8.1 - x86_64-unknown-linux-gnu"
             - "Profiler PHP v8.2 - x86_64-unknown-linux-gnu"
+            - "Profiler PHP v8.3 - x86_64-unknown-linux-gnu"
 
             - "Profiler PHP v7.1 - aarch64-alpine-linux-musl"
             - "Profiler PHP v7.2 - aarch64-alpine-linux-musl"
@@ -2539,6 +2737,7 @@ workflows:
             - "Profiler PHP v8.0 - aarch64-alpine-linux-musl"
             - "Profiler PHP v8.1 - aarch64-alpine-linux-musl"
             - "Profiler PHP v8.2 - aarch64-alpine-linux-musl"
+            - "Profiler PHP v8.3 - aarch64-alpine-linux-musl"
 
             - "Profiler PHP v7.1 - aarch64-unknown-linux-gnu"
             - "Profiler PHP v7.2 - aarch64-unknown-linux-gnu"
@@ -2547,6 +2746,7 @@ workflows:
             - "Profiler PHP v8.0 - aarch64-unknown-linux-gnu"
             - "Profiler PHP v8.1 - aarch64-unknown-linux-gnu"
             - "Profiler PHP v8.2 - aarch64-unknown-linux-gnu"
+            - "Profiler PHP v8.3 - aarch64-unknown-linux-gnu"
 
       # SIGNALFX: run job to repackage DD extension archives to SignalFX ones
       - "package SFX extension":
@@ -2596,6 +2796,17 @@ workflows:
           docker_image: "datadog/dd-trace-ci:php-8.2_buster"
           so_suffix: "20220829"
           resource_class: "arm.medium"
+      - compile_extension_asan:
+          requires: [ 'Prepare Code' ]
+          name: "Compile x86_64 PHP 83 debug-zts-asan"
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
+          so_suffix: "20230831"
+      - compile_extension_asan:
+          requires: [ 'Prepare Code' ]
+          name: "Compile aarch64 PHP 83 debug-zts-asan"
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
+          so_suffix: "20230831"
+          resource_class: "arm.medium"
 
       - "package extension":
           name: "package extension zts-debug-asan"
@@ -2609,6 +2820,8 @@ workflows:
             - "Compile aarch64 PHP 81 debug-zts-asan"
             - "Compile x86_64 PHP 82 debug-zts-asan"
             - "Compile aarch64 PHP 82 debug-zts-asan"
+            - "Compile x86_64 PHP 83 debug-zts-asan"
+            - "Compile aarch64 PHP 83 debug-zts-asan"
 
       - "x-profiling phpt tests on Alpine":
           requires: [ 'package extension' ]
@@ -2622,6 +2835,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
 
       - randomized_tests:
           requires: [ 'package extension' ]
@@ -2733,6 +2947,7 @@ workflows:
                 - alpine:3.12
                 - alpine:3.15
                 - alpine:3.16
+                - alpine:3.17
                 # SIGNALFX: latest breaks if dd install/verify is not kept up-to-date with upstream
                 #- alpine:latest
       - verify_alpine:
@@ -2771,7 +2986,8 @@ workflows:
                 - php:7.4-fpm-alpine
                 - php:8.0-fpm-alpine
                 - php:8.1-fpm-alpine
-                - php:8.2-rc-fpm-alpine
+                - php:8.2-fpm-alpine
+                - php:8.3-fpm-alpine
       - verify_centos:
           requires: [ "package extension" ]
           matrix:
@@ -2790,6 +3006,7 @@ workflows:
                 - PHP_MAJOR=8 PHP_MINOR=0
                 - PHP_MAJOR=8 PHP_MINOR=1
                 - PHP_MAJOR=8 PHP_MINOR=2
+                - PHP_MAJOR=8 PHP_MINOR=3
       - verify_debian:
           requires: [ "package extension" ]
           matrix:
@@ -2811,6 +3028,7 @@ workflows:
                 - PHP_VERSION=8.0
                 - PHP_VERSION=8.1
                 - PHP_VERSION=8.2
+                - PHP_VERSION=8.3
 
       - verify_tar_gz:
           requires: [ "package extension" ]
@@ -2860,6 +3078,10 @@ workflows:
       #     requires: [ "Build PECL" ]
       #     name: "PHP 82 PECL tests"
       #     docker_image: "datadog/dd-trace-ci:php-8.2_buster"
+      # - pecl_tests:
+      #     requires: [ "Build PECL" ]
+      #     name: "PHP 83 PECL tests"
+      #     docker_image: "datadog/dd-trace-ci:php-8.3_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
           name: "PHP 72 web tests with apache (+ opcache)"
@@ -2939,6 +3161,20 @@ workflows:
           docker_image: "datadog/dd-trace-ci:php-8.2_buster"
       - integration_tests:
           requires: [ 'Prepare Code' ]
+          name: "PHP 83 web tests with apache (+ opcache)"
+          resource_class: medium+
+          sapi: apache2handler
+          integration_testsuite: "test_web"
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
+      - integration_tests:
+          requires: [ 'Prepare Code' ]
+          name: "PHP 83 web tests with nginx + FastCGI"
+          resource_class: medium+
+          sapi: cgi-fcgi
+          integration_testsuite: "test_web"
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
+      - integration_tests:
+          requires: [ 'Prepare Code' ]
           name: "PHP 74 custom autoloaded web tests with nginx + PHP-FPM"
           resource_class: medium+
           sapi: fpm-fcgi
@@ -2991,6 +3227,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               switch_php_version:
                 - debug-zts-asan
               resource_class:
@@ -3007,6 +3244,11 @@ workflows:
                 resource_class: medium
                 make_target: test_opcache_asan
                 switch_php_version: debug-zts-asan
+                # SIGNALFX: asan causes some post hooks not to get called on ARM + 8.3
+              - php_major_minor: '8.3'
+                resource_class: arm.medium
+                make_target: test_c_asan
+                switch_php_version: debug-zts-asan
 
       - integration:
           requires: [ 'Prepare Code' ]
@@ -3022,6 +3264,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               make_target:
                 - test_composer
                 - test_integration
@@ -3044,6 +3287,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               make_target:
                 - test_web
 
@@ -3063,6 +3307,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               make_target:
                 - test_distributed_tracing
 
@@ -3080,6 +3325,7 @@ workflows:
                 - '8.0'
                 - '8.1'
                 - '8.2'
+                - '8.3'
               switch_php_version:
                 - nts
               make_target:
@@ -3133,9 +3379,19 @@ workflows:
           name: "PHP 82 Xdebug tests"
           docker_image: "datadog/dd-trace-ci:php-8.2_buster"
           xdebug_version_one: "3.2.2"
+      - xdebug_tests:
+          requires: [ 'Prepare Code' ]
+          name: "PHP 83 Xdebug tests"
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
+          xdebug_version_one: "3.3.0"
       - placeholder:
           requires: [ 'Prepare Code' ]
           name: Language tests
+      - php_language_tests:
+          requires: [ 'Language tests' ]
+          name: "PHP 83 language tests"
+          xfail_list: dockerfiles/ci/xfail_tests/8.3.list
+          docker_image: "datadog/dd-trace-ci:php-8.3_buster"
       - php_language_tests:
           requires: [ 'Language tests' ]
           name: "PHP 82 language tests"

@@ -20,7 +20,7 @@ ARCHITECTURE=$(shell uname -m)
 
 VERSION := $(shell awk -F\' '/const VERSION/ {print $$2}' < src/DDTrace/Tracer.php)
 PROFILING_RELEASE_URL := https://github.com/DataDog/dd-prof-php/releases/download/v0.7.2/datadog-profiling.tar.gz
-APPSEC_RELEASE_URL := https://github.com/DataDog/dd-appsec-php/releases/download/v0.4.5/dd-appsec-php-0.4.5-amd64.tar.gz
+APPSEC_RELEASE_URL := https://github.com/DataDog/dd-appsec-php/releases/download/v0.6.0/dd-appsec-php-0.6.0-amd64.tar.gz
 
 INI_FILE := $(shell php -i | awk -F"=>" '/Scan this dir for additional .ini files/ {print $$2}')/ddtrace.ini
 
@@ -808,9 +808,37 @@ TEST_WEB_82 := \
 	test_web_slim_312 \
 	test_web_slim_4 \
 	test_web_symfony_52 \
+	test_web_symfony_62 \
 	test_web_wordpress_59 \
 	test_web_custom
 #	test_web_yii_2 \
+
+TEST_INTEGRATIONS_83 := \
+	test_integrations_curl \
+	test_integrations_deferred_loading \
+	test_integrations_memcached \
+	test_integrations_mongodb1 \
+	test_integrations_mysqli \
+	test_integrations_pcntl \
+	test_integrations_pdo \
+	test_integrations_elasticsearch7 \
+	test_integrations_elasticsearch8 \
+	test_integrations_predis1 \
+	test_integrations_roadrunner \
+	test_opentracing_10
+
+TEST_WEB_83 := \
+	test_metrics \
+	test_web_codeigniter_22 \
+	test_web_laravel_8x \
+	test_web_nette_24 \
+	test_web_nette_30 \
+	test_web_slim_312 \
+	test_web_slim_4 \
+	test_web_symfony_52 \
+	test_web_symfony_62 \
+	test_web_wordpress_59 \
+	test_web_custom
 
 FILTER := .
 
@@ -1017,6 +1045,10 @@ test_web_symfony_52: global_test_run_dependencies
 	$(COMPOSER) --working-dir=tests/Frameworks/Symfony/Version_5_2 update
 	php tests/Frameworks/Symfony/Version_5_2/bin/console cache:clear --no-warmup --env=prod
 	$(call run_tests,--testsuite=symfony-52-test)
+test_web_symfony_62: global_test_run_dependencies
+	$(COMPOSER) --working-dir=tests/Frameworks/Symfony/Version_6_2 update
+	php tests/Frameworks/Symfony/Version_6_2/bin/console cache:clear --no-warmup --env=prod
+	$(call run_tests,--testsuite=symfony-62-test)
 
 test_web_wordpress_48: global_test_run_dependencies
 	$(call run_tests,tests/Integrations/WordPress/V4_8)

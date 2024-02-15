@@ -57,7 +57,11 @@ The following tests assert the output of `var_dump($obj)` and fail because we ad
 
 # Specific tests
 
-## `Zend/tests/object_gc_in_shutdown.phpt`, `Zend/tests/bug81104.phpt`
+## `sapi/cli/tests/bug80092.phpt`
+
+Temporarily disabled due to a too strict of a check for the precise php -v output.
+
+## `Zend/tests/object_gc_in_shutdown.phpt`, `Zend/tests/bug81104.phpt`, `Zend/tests/gh11189(_1).phpt`, `Zend/tests/gh12073.phpt`
 
 Tests memory limits, which we exceed due to tracer being loaded.
 
@@ -69,7 +73,7 @@ By _chance_ the internal comparison happens against another GC protected array w
 
 Test does http request to shut down server.
 
-## `ext/curl/tests/curl_postfields_array.phpt`
+## `ext/curl/tests/curl_postfields_array.phpt`, `ext/curl/tests/curl_setopt_CURLOPT_ACCEPT_ENCODING.phpt`
 
 Distributed tracing headers are injected
 
@@ -152,3 +156,31 @@ SKIP Test if socket_create_listen() returns false, when it cannot bind to the po
 ## `Zend/fibers/out-of-memory-in*`
 
 ddtrace request init hook consumes more than 2 MB of memory and fails too early instead of testing what it should.
+
+## `Zend/tests/fibers/gh10496-001.phpt`
+
+ddtrace affects the order of destructor execution due to creating span stacks etc.
+
+## `Zend/tests/stack_limit/stack_limit_013.phpt`
+
+This particular test is very close to the stack limit, and thus sometimes fails to actually exceed the stack limit with ddtrace.
+
+## `ext/zend_test/tests/`, `Zend/tests/gh10346.phpt`
+
+Observer tests trace all functions, including dd setup. Exclude these from being observed.
+
+## `ext/standard/tests/network/syslog_null_byte.phpt`, `ext/standard/tests/network/syslog_new_line.phpt`
+
+Both of them have a additional `PHPT: DIGEST-MD5 common mech free` in the output which is not expected in the test. This line originates from `libdigestmd5.so` which is shipped as part of `libsasl2-modules` in Debian. We are currently running those tests on Debian Buster which is stuck on Version 2.1.27 of that package, while the "fix" is in 2.1.28 version of the Debian package.
+
+See also: https://github.com/DataDog/dd-trace-php/pull/2218
+
+## SKIP\_ONLINE\_TESTS
+
+The env var `SKIP_ONLINE_TESTS` is set so that in newer PHP versions, we skip
+any test which checks this env var. Online tests are too flaky for CI.
+
+The exact PHP version that a given test checks this env var varies, but these
+are some tests which are skipped for older versions which don't check it:
+
+ - `ext/sockets/tests/socket_shutdown.phpt`

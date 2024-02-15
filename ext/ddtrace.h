@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "ext/version.h"
-#include "random.h"
+#include "compatibility.h"
 
 // SIGNALFX: automagically fix some references to PHP module name ddtrace -> signalfx, allows making less changes to
 // code and not editing other source files at all that use ZEND_EXTERN_MODULE_GLOBALS(ddtrace)
@@ -77,6 +77,7 @@ void dd_prepare_for_new_trace(void);
 void ddtrace_disable_tracing_in_current_request(void);
 bool ddtrace_alter_dd_trace_disabled_config(zval *old_value, zval *new_value);
 bool ddtrace_alter_sampling_rules_file_config(zval *old_value, zval *new_value);
+bool ddtrace_alter_default_propagation_style(zval *old_value, zval *new_value);
 void dd_force_shutdown_tracing(void);
 
 typedef struct {
@@ -84,8 +85,21 @@ typedef struct {
     zend_string *message;
 } ddtrace_error_data;
 
-// SIGNALFX: renamed extension
+typedef struct {
+    uint64_t low;
+    union {
+        uint64_t high;
+        struct {
+            ZEND_ENDIAN_LOHI(
+                uint32_t padding // zeroes
+            ,
+                uint32_t time
+            )
+        };
+    };
+} ddtrace_trace_id;
 
+// SIGNALFX: renamed extension
 // clang-format off
 ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
     char *auto_prepend_file;
@@ -96,6 +110,8 @@ ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
     zend_array *additional_global_tags;
     zend_array root_span_tags_preset;
     zend_array propagated_root_span_tags;
+    zend_string *tracestate;
+    zend_array tracestate_unknown_dd_keys;
     zend_bool backtrace_handler_already_run;
     ddtrace_error_data active_error;
     dogstatsd_client dogstatsd_client;
@@ -110,7 +126,7 @@ ZEND_BEGIN_MODULE_GLOBALS(signalfx_tracing)
     uint32_t closed_spans_count;
     uint32_t dropped_spans_count;
     int64_t compile_time_microseconds;
-    uint64_t distributed_trace_id;
+    ddtrace_trace_id distributed_trace_id;
     uint64_t distributed_parent_trace_id;
     zend_string *dd_origin;
 
@@ -148,5 +164,7 @@ ZEND_END_MODULE_GLOBALS(signalfx_tracing)
 #define DDTRACE_SUB_NS_FE(ns, name, arg_info) DDTRACE_RAW_FENTRY("DDTrace\\" ns #name, zif_##name, arg_info, 0)
 #define DDTRACE_FALIAS(name, alias, arg_info) DDTRACE_RAW_FENTRY(#name, zif_##alias, arg_info, 0)
 #define DDTRACE_FE_END ZEND_FE_END
+
+#include "random.h"
 
 #endif  // DDTRACE_H

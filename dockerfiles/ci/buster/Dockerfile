@@ -4,7 +4,11 @@ ENV LANG=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV DEVLIBS \
-    libclang-13-dev \
+    clang-16 \
+    libclang-16-dev \
+    libclang-rt-16-dev \
+    llvm-16-dev \
+    lld-16 \
     libcurl4-openssl-dev \
     libedit-dev \
     libffi-dev \
