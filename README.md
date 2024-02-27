@@ -1,7 +1,9 @@
 > [!IMPORTANT]
 > The SignalFx Tracing Library for PHP is deprecated as of February 21, 2024 and will reach End of Support on February 21 2025. Until then, only critical security fixes and bug fixes will be provided. After the date, the library will be archived and no longer maintained.
 >
-> If you want to instrument new or existing PHP applications, [use the OpenTelemetry PHP instrumentation](https://docs.splunk.com/observability/en/gdi/get-data-in/application/php/get-started.html), which offers similar capabilities.
+> New customers should use the OpenTelemetry PHP instrumentation, which offers similar capabilities. Existing customers should consider migrating to OpenTelemetry PHP instrumentation which offers similar capabilities. To learn how to migrate, see the [migration guide](https://docs.splunk.com/observability/en/gdi/get-data-in/application/php/php-migration-guide.html). To learn how to use OpenTelmetry PHP instrumentation refer to the [Splunk documentation]([use the OpenTelemetry PHP instrumentation](https://docs.splunk.com/observability/en/gdi/get-data-in/application/php/get-started.html). 
+
+> If you want to instrument new or existing PHP applications, , which offers similar capabilities.
 
 # SignalFx Tracing Library for PHP
 
