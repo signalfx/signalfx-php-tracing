@@ -3,8 +3,6 @@
 >
 > New customers should use the OpenTelemetry PHP instrumentation, which offers similar capabilities. Existing customers should consider migrating to OpenTelemetry PHP instrumentation which offers similar capabilities. To learn how to migrate, see the [migration guide](https://docs.splunk.com/observability/en/gdi/get-data-in/application/php/php-migration-guide.html). To learn how to use OpenTelmetry PHP instrumentation refer to the [Splunk documentation]([use the OpenTelemetry PHP instrumentation](https://docs.splunk.com/observability/en/gdi/get-data-in/application/php/get-started.html). 
 
-> If you want to instrument new or existing PHP applications, , which offers similar capabilities.
-
 # SignalFx Tracing Library for PHP
 
 [![CircleCI](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/main.svg?style=svg)](https://circleci.com/gh/signalfx/signalfx-php-tracing/tree/main)
